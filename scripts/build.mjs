@@ -79,8 +79,9 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     await cp(path.join(source, file), path.join(dest, file));
   }
   await cp(path.join(root, 'LICENSE'), path.join(dest, 'LICENSE.txt'));
-  await cp(path.join(root, 'PRIVACY.md'), path.join(dest, 'PRIVACY.md'));
-  await cp(path.join(root, 'SECURITY.md'), path.join(dest, 'SECURITY.md'));
+  for (const file of ['PRIVACY.md', 'PRIVACY.en.md', 'SECURITY.md', 'SECURITY.en.md']) {
+    await cp(path.join(root, file), path.join(dest, file));
+  }
   const manifest = { ...common };
   if (browser === 'firefox') {
     manifest.background = { scripts: ['settings.js', 'background.js'] };

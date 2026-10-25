@@ -13,7 +13,17 @@ for (const dir of ['extension', 'scripts', 'tests']) {
   }
 }
 // Catch broken relative links and missing README screenshots before publishing.
-for (const file of ['README.md', 'PRIVACY.md', 'CONTRIBUTING.md', 'SECURITY.md', 'CHANGELOG.md', 'docs/TESTING.md']) {
+const documents = (await readdir(root, { withFileTypes: true }))
+  .filter(entry => entry.isFile() && entry.name.endsWith('.md')).map(entry => entry.name);
+async function collectDocuments(dir) {
+  for (const entry of await readdir(path.join(root, dir), { withFileTypes: true })) {
+    const relative = path.join(dir, entry.name);
+    if (entry.isDirectory()) await collectDocuments(relative);
+    else if (entry.isFile() && entry.name.endsWith('.md')) documents.push(relative);
+  }
+}
+await collectDocuments('docs');
+for (const file of documents) {
   const text = await readFile(path.join(root, file), 'utf8');
   const targets = [...text.matchAll(/\]\(([^)]+)\)|src="([^"]+)"/g)].map(match => match[1] || match[2]);
   for (const target of targets) {
@@ -21,4 +31,4 @@ for (const file of ['README.md', 'PRIVACY.md', 'CONTRIBUTING.md', 'SECURITY.md',
     await access(path.resolve(root, path.dirname(file), target.split('#')[0]));
   }
 }
-console.log(`PASS: syntax of ${count} JavaScript files and local documentation links`);
+console.log(`PASS: syntax of ${count} JavaScript files and local links in ${documents.length} Markdown files`);

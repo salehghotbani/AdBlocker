@@ -25,7 +25,9 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
       assert.deepEqual(await read(base + file), await read('extension/' + file));
     }
     assert.deepEqual(await read(base + 'LICENSE.txt'), await read('LICENSE'));
-    assert.deepEqual(await read(base + 'PRIVACY.md'), await read('PRIVACY.md'));
+    for (const file of ['PRIVACY.md', 'PRIVACY.en.md', 'SECURITY.md', 'SECURITY.en.md']) {
+      assert.deepEqual(await read(base + file), await read(file));
+    }
     const rules = await json(base + 'rules/ads.json');
     const domains = await json('extension/ad-domains.json');
     assert.equal(rules.length, domains.length);
