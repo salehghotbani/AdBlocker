@@ -1,0 +1,40 @@
+name: Build and test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check
+      - run: npm run package
+      - run: npm test
+      - run: npm run test:dist
+      - run: npx playwright install --with-deps chromium
+      - name: DOM and extension integration
+        shell: bash
+        run: |
+          export CHROMIUM_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")"
+          npm run test:dom
+          npm run test:browser
+      - run: npm run lint:firefox
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: extension-builds-and-screenshots
+          path: |
+            dist/*.zip
+            artifacts/*.png

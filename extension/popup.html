@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AdBlocker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header><span class="shield" aria-hidden="true">✓</span><div><h1>AdBlocker</h1><p>وب آرام‌تر، محتوای دست‌نخورده</p></div></header>
+  <main>
+    <section class="status"><span id="dot"></span><strong id="status">در حال بررسی…</strong></section>
+    <label class="row"><span>مسدودسازی تبلیغات<small>برای همهٔ سایت‌ها</small></span><input id="enabled" type="checkbox" role="switch" disabled></label>
+    <section class="site"><p>سایت فعلی</p><b id="host" dir="ltr">—</b><label class="row"><span>فعال برای این سایت</span><input id="siteEnabled" type="checkbox" role="switch" disabled></label></section>
+    <p class="hint">اگر محتوایی درست نمایش داده نشد، مسدودسازی را برای همین سایت خاموش کنید. تغییرات شبکه پس از بارگذاری مجدد اعمال می‌شوند.</p>
+    <button id="reload" disabled>بارگذاری مجدد سایت</button>
+    <button id="clear" class="secondary" disabled>پاک‌کردن استثناهای سایت‌ها <span id="count">(۰)</span></button>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+  <footer>بدون ردیابی · بدون ارسال سابقهٔ مرور</footer>
+  <script src="settings.js"></script><script src="popup.js"></script>
+</body>
+</html>
