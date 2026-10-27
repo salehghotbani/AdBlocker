@@ -9,7 +9,9 @@ A Manifest V3 extension for Chrome, Edge, and Firefox with a Persian interface. 
 
 ## Interface preview
 
-<p align="center"><img src="docs/images/popup.png" width="350" alt="Persian AdBlocker popup with global toggle, site exception and reload controls"></p>
+| Light mode | Dark mode |
+| --- | --- |
+| <img src="docs/images/popup-light.png" width="280" alt="Redesigned AdBlocker popup in light mode"> | <img src="docs/images/popup-dark.png" width="280" alt="Redesigned AdBlocker popup in dark mode"> |
 
 This screenshot shows the actual interface rendered in a browser test with a sample site and mocked extension messaging. It does not establish that the extension was successfully installed.
 
@@ -20,6 +22,7 @@ This screenshot shows the actual interface rendered in a browser test with a sam
 - Preserves `main`, `article`, main headings, forms, media players, and containers that contain these elements. Does not indiscriminately remove `.banner`, `.sponsored`, or elements containing the word “advertisement.”
 - Provides a global toggle, site exceptions covering subdomains, exception reset, and settings stored on the current device.
 - Supports a one-time pause for a page in one tab and a permanent exception for an exact URL.
+- Persian interface with a protection card, consistent icons, collapsible exception management, and light/dark themes.
 - Restores previous element styles when disabled. Reload the page to recover resources whose network requests were already blocked.
 
 **Removing every ad while preserving all main content on every site cannot be guaranteed.** This version is intentionally conservative. First-party ads, ads embedded in video streams (including some YouTube ads), native advertising, and providers outside the list may remain visible. Sites with ad-block detection may need an exception. The domain list is maintained locally and is not automatically downloaded. This project is not a complete implementation of EasyList or uBlock Origin.
@@ -59,6 +62,10 @@ The `dist/adblocker-*-1.0.0.zip` files are unsigned packages.
 
 Temporary installations disappear when Firefox closes. Permanent installation requires Mozilla signing. Publishing to the three browser stores is a separate task and has not been performed. The manifest declares Android 142 as the minimum Android version, but Android has not been tested.
 
+## Light and dark modes
+
+Use the sun and moon buttons at the top of the popup to select light or dark mode. Your selection is saved locally and survives closing and reopening the popup. Before any manual selection, the popup follows your system color scheme. Changing the appearance does not change blocking settings or exceptions. Buttons support keyboard navigation, and animations respect the system's reduced-motion preference.
+
 ## Pause or permanently exclude a page
 
 The popup's page section displays the current URL:
@@ -84,7 +91,7 @@ npm run test:browser
 
 - `npm test`: thirteen tests for settings, worker state restoration, exceptions, exact URL matching, temporary-pause expiry, tab isolation, command serialization, and rejection of unauthorized changes. Browser APIs are mocked.
 - `test:dist`: four tests covering generated manifests, file references, source copies, licensing, PNG icons, blocking rules, and ZIP integrity.
-- `test:dom`: runs actual Chromium with mocked extension messaging. Checks article, form, video, and safe iframe preservation, dynamic ad hiding, style restoration, and interaction with the Persian popup. Does not test network blocking.
+- `test:dom`: runs actual Chromium with mocked extension messaging and storage. Checks article, form, video, and safe iframe preservation, dynamic ad hiding, style restoration, Persian controls, both themes, preference persistence, keyboard selection, and recovery after a storage failure. Does not test network blocking.
 - `test:browser`: installs the extension and requires real blocking of an ad request, followed by allowance when the site is excluded or the extension is disabled. External fixture responses are provided locally; no advertising site is contacted. Requires a browser that permits unpacked extensions.
 
 The default browser path is `/usr/bin/chromium`. On other systems, set `CHROMIUM_PATH` to a Chrome/Chromium executable. Playwright is only a development and test dependency and is not included in the extension.

@@ -7,7 +7,7 @@ This report records the latest local execution with Node.js 24.19.0 and Chromium
 | Check | Result |
 | --- | --- |
 | Dependency installation using the lockfile | Passed: `npm ci` |
-| Syntax of 11 JavaScript files and local links in 13 bilingual Markdown documents | Passed: `npm run check` |
+| Syntax of 12 JavaScript files and local links in 13 bilingual Markdown documents | Passed: `npm run check` |
 | Three browser builds and ZIP packages | Passed: `npm run package` |
 | Thirteen settings, worker, URL, and one-time-pause unit tests | Passed: `npm test` |
 | Four distribution, icon, rule, and ZIP tests | Passed: `npm run test:dist` |
@@ -19,6 +19,8 @@ This report records the latest local execution with Node.js 24.19.0 and Chromium
 ## Test scope
 
 Unit tests use mocked browser APIs. The DOM suite runs the actual script and interface in Chromium, but extension messaging is mocked. Distribution tests inspect Manifest V3 configuration, referenced files, source/output consistency, license documentation, PNG structure, network rules, and ZIP integrity.
+
+The redesigned popup tests use mocked messaging and storage to check initial system-theme following, keyboard day/night selection, preference persistence on reopening, unchanged blocking settings, previous-theme restoration after a failed save, and no horizontal overflow at 390 pixels. Both theme screenshots are captured from this browser run.
 
 `test:browser` requires unpacked extension installation to be permitted and fails if the worker cannot start. It does not report a successful run without the extension. Managed environment policies are left unchanged.
 

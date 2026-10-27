@@ -4,22 +4,48 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>AdBlocker</title>
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header><span class="shield" aria-hidden="true">✓</span><div><h1>AdBlocker</h1><p>وب آرام‌تر، محتوای دست‌نخورده</p></div></header>
+  <svg class="svg-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4 4 7 8 9 4-2 8-5 8-9V6Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="moon" viewBox="0 0 24 24"><path d="M20.5 14A9 9 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z"/></symbol>
+    <symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></symbol>
+    <symbol id="link" viewBox="0 0 24 24"><path d="m10 14 4-4m-6 5-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 3 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></symbol>
+    <symbol id="refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 6a8 8 0 0 1 13 3M5 15a8 8 0 0 0 13 3"/></symbol>
+    <symbol id="pause-icon" viewBox="0 0 24 24"><path d="M8 5v14m8-14v14"/></symbol>
+    <symbol id="chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></symbol>
+  </svg>
+  <header>
+    <div class="brand"><span class="brand-mark"><svg aria-hidden="true"><use href="#shield"/></svg></span><div><h1 dir="ltr">AdBlocker<span>.</span></h1><p>فضای بیشتر برای محتوای واقعی</p></div></div>
+    <div class="theme-picker" role="group" aria-label="رنگ‌بندی رابط">
+      <button type="button" data-theme-choice="light" aria-label="حالت روز" title="حالت روز" aria-pressed="false" disabled><svg aria-hidden="true"><use href="#sun"/></svg></button>
+      <button type="button" data-theme-choice="dark" aria-label="حالت شب" title="حالت شب" aria-pressed="false" disabled><svg aria-hidden="true"><use href="#moon"/></svg></button>
+    </div>
+    <span id="themeStatus" class="sr-only" role="status"></span>
+  </header>
   <main>
-    <section class="status"><span id="dot"></span><strong id="status">در حال بررسی…</strong></section>
-    <label class="row"><span>مسدودسازی تبلیغات<small>برای همهٔ سایت‌ها</small></span><input id="enabled" type="checkbox" role="switch" disabled></label>
-    <section class="site"><p>سایت فعلی</p><b id="host" dir="ltr">—</b><label class="row"><span>فعال برای این سایت</span><input id="siteEnabled" type="checkbox" role="switch" disabled></label></section>
-    <section class="site"><p>همین صفحه</p><b id="url" class="url" dir="ltr">—</b><label class="row"><span>فعال برای همین URL<small>خاموش = استثنای دائمی این نشانی</small></span><input id="urlEnabled" type="checkbox" role="switch" disabled></label><button id="pause" class="secondary" disabled>توقف این بار و بارگذاری مجدد</button><small>توقف موقت با بارگذاری بعدی یا خروج از صفحه تمام می‌شود.</small></section>
-    <p class="hint">اگر محتوایی درست نمایش داده نشد، مسدودسازی را برای همین سایت خاموش کنید. تغییرات شبکه پس از بارگذاری مجدد اعمال می‌شوند.</p>
-    <button id="reload" disabled>بارگذاری مجدد سایت</button>
-    <button id="clear" class="secondary" disabled>پاک‌کردن استثناهای سایت‌ها <span id="count">(۰)</span></button>
-    <button id="clearUrls" class="secondary" disabled>پاک‌کردن استثناهای URL <span id="urlCount">(۰)</span></button>
+    <section class="protection" id="protection" data-state="loading" aria-labelledby="status">
+      <span class="protection-icon"><svg aria-hidden="true"><use href="#shield"/></svg></span>
+      <div class="protection-copy"><span class="eyebrow"><i id="dot"></i>وضعیت محافظت</span><strong id="status">در حال بررسی…</strong><p id="statusHint">در حال اتصال به افزونه</p></div>
+      <input id="enabled" type="checkbox" role="switch" aria-label="مسدودسازی تبلیغات در همهٔ سایت‌ها" disabled>
+    </section>
+    <div class="section-heading"><h2>کنترل این صفحه</h2><span>به انتخاب شما</span></div>
+    <section class="scope-card" aria-label="کنترل سایت و URL">
+      <label class="scope-row" for="siteEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#globe"/></svg></span><span class="scope-copy"><span class="scope-title">فعال برای این سایت</span><b id="host" dir="ltr">—</b></span><input id="siteEnabled" type="checkbox" role="switch" disabled></label>
+      <div class="divider"></div>
+      <label class="scope-row" for="urlEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#link"/></svg></span><span class="scope-copy"><span class="scope-title">فعال برای همین URL</span><b id="url" class="url" dir="ltr">—</b></span><input id="urlEnabled" type="checkbox" role="switch" disabled></label>
+      <div class="page-actions"><button id="pause" class="pause-button" disabled><svg aria-hidden="true"><use href="#pause-icon"/></svg><span id="pauseLabel">توقف این بار و بارگذاری مجدد</span></button><p>فقط برای همین تب؛ با بارگذاری بعدی تمام می‌شود.</p></div>
+    </section>
+    <p class="hint">خاموش‌کردن کلید URL، همان نشانی را دائماً مستثنا می‌کند. برای اعمال کامل تغییرات، صفحه را بازخوانی کنید.</p>
+    <button id="reload" class="primary" disabled><svg aria-hidden="true"><use href="#refresh"/></svg>بارگذاری مجدد صفحه</button>
     <p id="message" role="status" aria-live="polite"></p>
+    <details class="exceptions" id="exceptions"><summary><span>مدیریت استثناها</span><span class="count-chip" id="totalCount">۰</span><svg aria-hidden="true"><use href="#chevron"/></svg></summary><div class="exception-actions"><button id="clear" disabled>پاک‌کردن استثناهای سایت <span id="count">(۰)</span></button><button id="clearUrls" disabled>پاک‌کردن استثناهای URL <span id="urlCount">(۰)</span></button></div></details>
   </main>
-  <footer>بدون ردیابی · بدون ارسال سابقهٔ مرور</footer>
+  <footer><svg aria-hidden="true"><use href="#lock"/></svg><span>بدون ردیابی؛ تنظیمات روی دستگاه شما.</span><span class="version" dir="ltr">v1.0</span></footer>
   <script src="settings.js"></script><script src="popup.js"></script>
 </body>
 </html>

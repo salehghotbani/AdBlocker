@@ -21,7 +21,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     for (const file of paths) assert.ok((await read(base + file)).length > 0, file);
     if (browser === 'firefox') assert.equal(manifest.background.service_worker, undefined);
     else assert.equal(manifest.background.service_worker, 'background.js');
-    for (const file of ['settings.js', 'background.js', 'content.js', 'popup.js', 'popup.css', 'popup.html']) {
+    for (const file of ['settings.js', 'background.js', 'content.js', 'popup.js', 'popup.css', 'popup.html', 'theme.js']) {
       assert.deepEqual(await read(base + file), await read('extension/' + file));
     }
     assert.deepEqual(await read(base + 'LICENSE.txt'), await read('LICENSE'));

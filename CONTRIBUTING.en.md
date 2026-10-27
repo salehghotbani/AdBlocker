@@ -31,6 +31,6 @@ For cosmetic rules, check that articles, sign-in forms, video, safe iframes, and
 
 When changing page pauses, check expiry on the next reload, ordinary and SPA navigation, tab closure, and worker restoration. URL exceptions must not cover another path or query, and a paused tab must not affect another tab. Use synthetic test URLs without sensitive data.
 
-`dist/`, `node_modules/`, and test outputs are generated and are not committed. The documentation screenshot is stored in `docs/images/popup.png`. To update it, run `npm run test:dom` and copy `artifacts/popup.png`; the screenshot uses test data.
+`dist/`, `node_modules/`, and test outputs are generated and are not committed. Documentation screenshots are stored in `docs/images/popup.png`, `docs/images/popup-light.png`, and `docs/images/popup-dark.png`. To update them, run `npm run test:dom` and copy the three matching files from `artifacts/`; screenshots use test data. Check interface changes in both themes, with keyboard navigation and a saved preference.
 
 Document feature, limitation, and privacy changes in README, CHANGELOG, and PRIVACY where relevant. Keep the Persian and English versions synchronized and link each version to its counterpart. Submitted contributions are licensed under the project's MIT License.

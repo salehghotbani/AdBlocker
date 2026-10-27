@@ -75,7 +75,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
   await rm(dest, { recursive: true, force: true });
   await mkdir(path.join(dest, 'rules'), { recursive: true });
   await mkdir(path.join(dest, 'icons'), { recursive: true });
-  for (const file of ['settings.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js']) {
+  for (const file of ['settings.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js', 'theme.js']) {
     await cp(path.join(source, file), path.join(dest, file));
   }
   await cp(path.join(root, 'LICENSE'), path.join(dest, 'LICENSE.txt'));

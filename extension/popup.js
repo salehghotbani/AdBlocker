@@ -18,7 +18,8 @@ function render() {
   $('urlEnabled').checked = !urlAllowed;
   $('urlEnabled').disabled = busy || !url || !settings.enabled || allowed;
   $('pause').disabled = busy || !url || (!paused && (!settings.enabled || allowed || urlAllowed));
-  $('pause').textContent = paused ? 'ادامهٔ مسدودسازی و بارگذاری مجدد' : 'توقف این بار و بارگذاری مجدد';
+  $('pauseLabel').textContent = paused ? 'ادامهٔ مسدودسازی و بارگذاری مجدد' : 'توقف این بار و بارگذاری مجدد';
+  $('totalCount').textContent = (settings.allowedSites.length + settings.allowedUrls.length).toLocaleString('fa-IR');
   $('clearUrls').disabled = busy || !settings.allowedUrls.length;
   $('urlCount').textContent = `(${settings.allowedUrls.length.toLocaleString('fa-IR')})`;
   $('reload').disabled = busy || !host;
@@ -28,6 +29,9 @@ function render() {
     !host ? 'برای صفحات وب آماده است' : allowed ? 'این سایت در فهرست استثناهاست' :
       urlAllowed ? 'این URL همیشه مستثناست' : paused ? 'توقف موقت برای همین صفحه' : 'مسدودسازی فعال است';
   $('dot').classList.toggle('on', Boolean(on));
+  $('protection').dataset.state = on ? 'on' : 'off';
+  $('statusHint').textContent = !settings.enabled ? 'هر وقت خواستید، دوباره روشن کنید.' :
+    !host ? 'کنترل‌ها در صفحه‌های وب فعال می‌شوند.' : on ? 'فیلترهای تبلیغ برای این صفحه فعال‌اند.' : 'فیلترها برای این صفحه متوقف شده‌اند.';
 }
 
 async function send(message) {
@@ -69,6 +73,7 @@ $('reload').addEventListener('click', async () => {
     url = AdBlockSettings.pageUrl(tab?.url);
     $('host').textContent = host || 'این صفحه پشتیبانی نمی‌شود';
     $('url').textContent = url || 'این صفحه پشتیبانی نمی‌شود';
+    $('url').title = url || '';
     const result = await send({ type: 'getSettings', tabId: tab?.id });
     settings = AdBlockSettings.normalize(result.settings);
     paused = result.paused === true;

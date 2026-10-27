@@ -70,10 +70,11 @@ try {
   console.log('PASS: back/forward cache restoration refreshes an expired pause');
 
   // Render the real popup using a mock transport only; logic and styles are real.
-  const popup = await browser.newPage({ viewport: { width: 350, height: 590 } });
+  const popup = await browser.newPage({ viewport: { width: 390, height: 600 } });
+  await popup.emulateMedia({ colorScheme: 'light' });
   await popup.route('https://popup.example/**', async route => {
     const file = new URL(route.request().url()).pathname.slice(1) || 'popup.html';
-    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js'].includes(file)) return route.abort();
+    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js', 'theme.js'].includes(file)) return route.abort();
     await route.fulfill({ body: await readFile(new URL(`extension/${file}`, root)),
       contentType: file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'application/javascript' });
   });
@@ -81,6 +82,13 @@ try {
     let settings = { enabled: true, allowedSites: [], allowedUrls: [] };
     let paused = false;
     window.chrome = {
+      storage: { local: {
+        async get() { return { theme: localStorage.getItem('theme') }; },
+        async set({ theme }) {
+          if (window.rejectThemeSave) throw new Error('Simulated storage failure');
+          localStorage.setItem('theme', theme);
+        }
+      } },
       runtime: { async sendMessage(message) {
         if (message.type === 'setEnabled') settings.enabled = message.enabled;
         if (message.type === 'setSite') settings.allowedSites = message.allowed ? [message.host] : [];
@@ -96,6 +104,7 @@ try {
   await popup.goto('https://popup.example/');
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
   assert.equal(await popup.locator('#enabled').isChecked(), true);
+  await popup.locator('#exceptions summary').click();
   await popup.locator('#siteEnabled').uncheck();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('استثنا'));
   await popup.locator('#clear').click();
@@ -113,8 +122,41 @@ try {
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('موقت'));
   await popup.locator('#pause').click();
   await popup.waitForFunction(() => document.getElementById('status').textContent === 'مسدودسازی فعال است');
+  await popup.locator('#exceptions summary').click();
+  await popup.emulateMedia({ colorScheme: 'dark' });
+  await popup.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
+  await popup.getByRole('button', { name: 'حالت روز', exact: true }).focus();
+  await popup.keyboard.press('Enter');
+  await popup.waitForFunction(() => localStorage.getItem('theme') === 'light');
+  const lightBackground = await popup.locator('body').evaluate(el => getComputedStyle(el).backgroundColor);
+  await popup.emulateMedia({ colorScheme: 'light' });
+  await popup.emulateMedia({ colorScheme: 'dark' });
+  assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light');
+  await popup.getByRole('button', { name: 'حالت شب', exact: true }).click();
+  await popup.waitForFunction(() => localStorage.getItem('theme') === 'dark');
+  await popup.reload();
+  await popup.waitForFunction(() => !document.querySelector('[data-theme-choice="dark"]').disabled);
+  assert.equal(await popup.locator('html').getAttribute('data-theme'), 'dark');
+  assert.equal(await popup.getByRole('button', { name: 'حالت شب', exact: true }).getAttribute('aria-pressed'), 'true');
+  assert.notEqual(await popup.locator('body').evaluate(el => getComputedStyle(el).backgroundColor), lightBackground);
+  assert.equal(await popup.locator('#enabled').isChecked(), true, 'theme changes preserve blocking settings');
+  assert.equal(await popup.locator('#urlEnabled').isChecked(), true);
+  assert.equal(await popup.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'no horizontal overflow');
   await mkdir(new URL('artifacts/', root), { recursive: true });
+  await popup.screenshot({ path: new URL('artifacts/popup-dark.png', root).pathname, fullPage: true });
+  await popup.getByRole('button', { name: 'حالت روز', exact: true }).click();
+  await popup.waitForFunction(() => localStorage.getItem('theme') === 'light');
+  await popup.reload();
+  await popup.waitForFunction(() => !document.querySelector('[data-theme-choice="light"]').disabled);
+  assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light');
+  await popup.screenshot({ path: new URL('artifacts/popup-light.png', root).pathname, fullPage: true });
   await popup.screenshot({ path: new URL('artifacts/popup.png', root).pathname, fullPage: true });
+  await popup.evaluate(() => { window.rejectThemeSave = true; });
+  await popup.getByRole('button', { name: 'حالت شب', exact: true }).click();
+  await popup.waitForFunction(() => document.getElementById('message').textContent.includes('رنگ‌بندی'));
+  assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light', 'failed save restores prior theme');
+  assert.equal(await popup.evaluate(() => localStorage.getItem('theme')), 'light');
   console.log('PASS: real Persian popup renders; site/global switches and reset work with mocked transport');
   console.log('PASS: permanent URL toggle, URL reset, one-time pause and resume controls work');
+  console.log('PASS: system theme, keyboard selection, day/night persistence, save-failure recovery and layout');
 } finally { await browser.close(); }

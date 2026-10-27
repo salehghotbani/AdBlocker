@@ -5,7 +5,7 @@
 This policy describes version 1.0.0 of the AdBlocker extension.
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
-- The enabled/disabled setting, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
+- The enabled/disabled setting, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
 - For a one-time pause, the tab ID and URL are temporarily held in `storage.session`. The next reload after the automatic reload, navigation to another page, tab closure, or browser shutdown clears the pause. Worker suspension and restart alone do not clear it.
 - The active tab's hostname is read for display in the popup and is not sent to a server.
 - A local content script examines elements with specific advertising markers to hide those elements. Processing takes place inside the browser; page content is not collected.

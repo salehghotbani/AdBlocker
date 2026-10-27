@@ -131,7 +131,7 @@ try {
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
   assert.equal(await popup.locator('#enabled').isChecked(), true);
   await mkdir(path.join(root, 'artifacts'), { recursive: true });
-  await popup.setViewportSize({ width: 350, height: 590 });
+  await popup.setViewportSize({ width: 390, height: 600 });
   await popup.screenshot({ path: path.join(root, 'artifacts/popup.png') });
   console.log('PASS: popup loads and reads persisted settings; screenshot saved');
 } finally {

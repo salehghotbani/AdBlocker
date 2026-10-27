@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- Redesigned popup with a protection card, consistent icons, and collapsible exception management.
+- Light/dark themes with local persistence, initial system preference, keyboard access, and reduced-motion support.
+- Screenshots of both themes and tests for persistence, storage-failure recovery, and horizontal overflow.
 - One-time page pauses in a single tab, with automatic reload and expiry on the next reload or navigation.
 - Permanent URL exceptions with exact path/query matching, reset controls, and privacy documentation.
 - Tests for expiry, tab isolation, worker restoration, popup controls, and distinct URL paths.
