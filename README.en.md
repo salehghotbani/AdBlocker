@@ -8,7 +8,7 @@ An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interfac
 
 ## Features
 
-- Blocks 149 advertising and tracking domains and specific ad-script paths.
+- Current source blocks 150 advertising and tracking domains and specific ad-script paths, with targeted Soft98 banner filtering.
 - Hides static and dynamic ad placements while protecting forms and media players.
 - Global toggle, site and exact-URL exceptions, one-time page pauses, and light/dark themes.
 - Grayscale interface when protection is off for the site or page, preserving the light/dark preference.

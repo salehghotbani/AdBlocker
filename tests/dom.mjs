@@ -18,6 +18,8 @@ try {
     contentType: 'text/html', body: `<!doctype html><main><h1>Article</h1><p id="story">Main content</p>
     <video id="player" controls></video><form id="login"><input></form></main>
     <div id="ordinary" class="banner sponsored">Useful banner</div>
+    <div id="foreign-abdd" class="abdd">Unrelated content on another host</div>
+    <div id="kaprila_soft98_ir_side">Unrelated ID on another host</div>
     <ins id="ad" class="adsbygoogle" style="display:inline-block!important">Advertisement</ins>
     <div id="static-ad" class="adbox banner_ads adsbox" style="display:block!important">Ad</div>
     <div id="text-content" class="textads">Useful text with a single ambiguous class</div>
@@ -36,7 +38,8 @@ try {
   await page.addScriptTag({ content: contentScript });
   await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
   await page.waitForFunction(() => document.getElementById('static-ad').offsetHeight === 0);
-  for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe', 'text-content', 'compound-protected']) {
+  for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe', 'text-content', 'compound-protected',
+    'foreign-abdd', 'kaprila_soft98_ir_side']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `${id} must be preserved`);
   }
   console.log('PASS: ad hidden; main article, player, form, banner, safe iframe retained');
@@ -94,6 +97,55 @@ try {
   });
   await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
   console.log('PASS: back/forward cache restoration refreshes an expired pause');
+
+  // Minimal structures observed on Soft98, without copying site articles or ads.
+  const soft98 = await context.newPage();
+  const soft98Fixture = `<!doctype html><main><h1>Downloads</h1><article id="download-post">
+    <a id="download-link" href="/files/example.zip">Download</a><p>Software description</p></article></main>
+    <form id="search"><input></form><div class="abdd" id="abddh" style="display:flex!important">Direct banner</div>
+    <div class="abdd" id="abdds"><div id="kaprila_soft98_ir_related-top-post">Related ads</div></div>
+    <aside><section id="useful-sidebar">Useful software list</section><div id="sbds"><section class="cbdd">
+    <header>Advertising</header><div class="cbddb"><div class="abdds"><div id="kaprila_soft98_ir_side">Ad</div></div></div>
+    </section></div><div class="cbdd" id="hosting-ad"><header>Hosting promotion</header>
+    <div class="cbddb abdd">Direct banner</div></div><div class="cbdd" id="useful-card"><div class="cbddb">Useful card</div></div></aside>
+    <div class="abdd" id="protected-soft98"><article>Real article</article></div>`;
+  await soft98.route('https://soft98.ir/**', route => route.fulfill({ contentType: 'text/html', body: soft98Fixture }));
+  await soft98.goto('https://soft98.ir/');
+  await soft98.evaluate(() => {
+    window.chrome = { runtime: {
+      onMessage: { addListener(listener) { window.contentListener = listener; } },
+      async sendMessage() { return { settings: { enabled: true } }; }
+    } };
+  });
+  await soft98.addScriptTag({ content: settingsScript });
+  await soft98.addScriptTag({ content: contentScript });
+  const soft98Hidden = ['abddh', 'abdds', 'sbds', 'hosting-ad'];
+  await soft98.waitForFunction(ids => ids.every(id => getComputedStyle(document.getElementById(id)).display === 'none'), soft98Hidden);
+  for (const id of ['download-post', 'download-link', 'search', 'useful-sidebar', 'useful-card', 'protected-soft98']) {
+    assert.equal(await soft98.locator(`#${id}`).isVisible(), true, id);
+  }
+  await soft98.evaluate(() => {
+    const placement = document.createElement('div'); placement.id = 'kaprila_soft98_ir_dynamic';
+    placement.textContent = 'Delayed ad'; document.body.append(placement);
+  });
+  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('kaprila_soft98_ir_dynamic')).display === 'none');
+  await soft98.evaluate(() => {
+    const content = document.createElement('article'); content.textContent = 'Real new content';
+    document.getElementById('hosting-ad').append(content);
+  });
+  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('hosting-ad')).display !== 'none');
+  await soft98.evaluate(() => document.querySelector('#hosting-ad article').remove());
+  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('hosting-ad')).display === 'none');
+  for (const settings of [{ enabled: false }, { enabled: true, allowedSites: ['soft98.ir'] },
+    { enabled: true, allowedUrls: ['https://soft98.ir/'] }]) {
+    await soft98.evaluate(settings => window.contentListener({ type: 'settingsChanged', settings }), settings);
+    assert.deepEqual(await soft98.locator('#abddh').evaluate(el => [el.style.display, el.style.getPropertyPriority('display')]), ['flex', 'important']);
+    for (const id of soft98Hidden) assert.equal(await soft98.locator(`#${id}`).isVisible(), true, id);
+    await soft98.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: { enabled: true } }));
+    await soft98.waitForFunction(ids => ids.every(id => getComputedStyle(document.getElementById(id)).display === 'none'), soft98Hidden);
+  }
+  await soft98.close();
+  console.log('PASS: Soft98 direct, Kaprila and hosting slots collapse; dynamic ads, protected content and exact style restoration work; selectors stay off other hosts');
 
   // Render the real popup using a mock transport only; logic and styles are real.
   const popup = await context.newPage();

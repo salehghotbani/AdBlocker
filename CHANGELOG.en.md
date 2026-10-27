@@ -2,6 +2,11 @@
 
 [فارسی](CHANGELOG.md) | **English**
 
+## Unreleased
+
+- Block the observed Kaprila ad host and collapse Soft98's direct banners, related-ad grid, side-ad section, and hosting promotion using selectors restricted to the main site.
+- Preserve shared image/download hosts, software descriptions, search and useful sidebar content; add live and fixture checks for exceptions, dynamic placements and exact style restoration.
+
 ## 1.3.0 — 2026-10-28
 
 - Manual update check and a browser alarm every three days, restored after browser restart.

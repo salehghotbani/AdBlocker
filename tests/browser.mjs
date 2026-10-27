@@ -144,7 +144,8 @@ try {
     'www.reddit.com', 'www.tiktok.com', 'grs.hicloud.com', 'extmaps-api.yandex.net',
     'careers.hotjar.com', 'app.bugsnag.com', 'api.bugsnag.com', 'app.getsentry.com',
     'business-api.tiktok.com', 'google-analytics.com.example.org', 'www.bing.com',
-    'www.hotjar.com', 'www.segment.com'];
+    'www.hotjar.com', 'www.segment.com', 'kaprila.com', 'faradars.org',
+    'soft98.ir', 'forum.soft98.ir', 'img.soft98.ir', 'file3.soft98.ir', 'cdn.hostdl.com'];
   const probe = hosts => page.evaluate(hosts => Promise.all(hosts.map(async host => {
     try { await fetch(`https://${host}/adblocker-probe`, { method: 'HEAD', mode: 'no-cors' }); return false; }
     catch { return true; }
@@ -257,6 +258,64 @@ try {
   await popup.setViewportSize({ width: 390, height: 600 });
   await popup.screenshot({ path: path.join(root, 'artifacts/popup.png') });
   console.log('PASS: popup loads and reads persisted settings; screenshot saved');
+  const soft98 = await context.newPage();
+  await context.route('https://soft98.ir/adblocker-fixture', route => route.fulfill({
+    contentType: 'text/html', body: `<!doctype html><main><h1>Software downloads</h1><article id="post">
+    <a href="/files/example.zip">Download file</a></article></main><form id="search"><input></form>
+    <div class="abdd" id="abddh">Direct banner</div><div class="abdd" id="abdds">Kaprila grid</div>
+    <aside><section id="useful-sidebar">Useful software list</section><div id="sbds"><section>Side ads</section></div>
+    <div class="cbdd" id="hosting-ad"><header>Hosting ad</header><div class="cbddb abdd">Banner</div></div></aside>`
+  }));
+  await soft98.goto('https://soft98.ir/adblocker-fixture');
+  await soft98.waitForFunction(() => ['abddh', 'abdds', 'sbds', 'hosting-ad'].every(id =>
+    getComputedStyle(document.getElementById(id)).display === 'none'));
+  for (const id of ['post', 'search', 'useful-sidebar']) assert.equal(await soft98.locator(`#${id}`).isVisible(), true, id);
+  await command({ type: 'setSite', host: 'soft98.ir', allowed: true });
+  await soft98.waitForFunction(() => document.getElementById('abddh').style.display !== 'none');
+  await soft98.reload();
+  assert.equal(await soft98.locator('#hosting-ad').isVisible(), true);
+  await command({ type: 'setSite', host: 'soft98.ir', allowed: false });
+  await soft98.reload();
+  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('abdds')).display === 'none');
+  await soft98.close();
+  console.log('PASS: actual extension collapses Soft98 ad slots, preserves downloads/search/sidebar, and respects site exceptions');
+
+  if (process.env.ADBLOCK_LIVE_SOFT98 === '1') {
+    const live = await context.newPage();
+    await live.setViewportSize({ width: 1365, height: 1000 });
+    await command({ type: 'setSite', host: 'soft98.ir', allowed: true });
+    await live.goto('https://soft98.ir/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await live.locator('#abdds').waitFor({ state: 'visible' });
+    await live.screenshot({ path: path.join(root, 'artifacts/soft98-before.png'), fullPage: true });
+    const beforePosts = await live.locator('.cbddpb:visible').allTextContents();
+    assert.ok(beforePosts.length > 0, 'record real software descriptions before filtering');
+    await command({ type: 'setSite', host: 'soft98.ir', allowed: false });
+    const liveFailures = [];
+    live.on('requestfailed', request => liveFailures.push({ url: request.url(), error: request.failure()?.errorText }));
+    await live.reload({ waitUntil: 'domcontentloaded', timeout: 45000 });
+    await live.waitForFunction(() => ['abddh', 'abdds', 'sbds'].every(id => {
+      const element = document.getElementById(id);
+      return element && getComputedStyle(element).display === 'none';
+    }));
+    assert.ok(liveFailures.some(item => item.url.startsWith('https://beta.kaprila.com/') && item.error?.includes('BLOCKED_BY_CLIENT')),
+      'Kaprila loader must be explicitly blocked, not fail from DNS or network errors');
+    await live.screenshot({ path: path.join(root, 'artifacts/soft98-after.png'), fullPage: true });
+    // The site's own script rewrites semantic tags after load; compare the
+    // visible software descriptions rather than assuming <article> survives.
+    assert.deepEqual(await live.locator('.cbddpb:visible').allTextContents(), beforePosts,
+      'all real software descriptions remain visible and unchanged');
+    const report = await live.evaluate(() => ({
+      url: location.href, visiblePosts: [...document.querySelectorAll('.cbddpb')].filter(el => el.getClientRects().length > 0).length,
+      placements: ['#abddh', '#abdds', '#sbds', '.cbdd:has(> .cbddb.abdd)'].map(selector => ({
+        selector, displays: [...document.querySelectorAll(selector)].map(el => getComputedStyle(el).display)
+      }))
+    }));
+    assert.ok(report.placements.every(slot => slot.displays.every(display => display === 'none')),
+      'remaining ad containers must stay collapsed after site initialization');
+    await writeFile(path.join(root, 'artifacts/soft98-result.json'), JSON.stringify({ ...report, failures: liveFailures }, null, 2) + '\n');
+    await live.close();
+    console.log('LIVE Soft98: ad containers collapsed, articles visible, Kaprila loader explicitly blocked; report/screenshots saved');
+  }
   // Opt-in external check. Kept out of CI because DNS/network failures can inflate
   // this site's score; the local fixtures above require explicit browser blocking.
   if (process.env.ADBLOCK_LIVE_TEST === '1') {

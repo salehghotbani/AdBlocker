@@ -2,6 +2,12 @@
   'use strict';
   const api = globalThis.browser || chrome;
   const { normalize, isAllowed, pageUrl } = AdBlockSettings;
+  // Soft98 serves direct banners from its shared image/download hosts as well
+  // as Kaprila placements. Keep these layout-specific rules on the main site.
+  const siteSelectors = ['soft98.ir', 'www.soft98.ir'].includes(location.hostname) ? [
+    '.abdd', '.abdds', '#sbds', '[id^="kaprila_soft98_ir_"]',
+    '.cbdd:has(> .cbddb.abdd)'
+  ] : [];
   const selector = [
     'ins.adsbygoogle',
     '.adbox.banner_ads.adsbox',
@@ -10,7 +16,8 @@
     'iframe[id^="google_ads_iframe"]',
     'iframe[src*="//googleads.g.doubleclick.net/"]',
     'iframe[src*="//tpc.googlesyndication.com/"]',
-    'iframe[src*="//ad.doubleclick.net/"]'
+    'iframe[src*="//ad.doubleclick.net/"]',
+    ...siteSelectors
   ].join(',');
   const protectedContent = 'main,article,[role="main"],h1,video,audio,form';
   const hidden = new Map();
