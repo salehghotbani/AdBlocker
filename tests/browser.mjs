@@ -156,7 +156,15 @@ try {
   assert.equal(saved.settings.enabled, true);
   await command({ type: 'setUrl', url: url + '/exact?campaign=one#section', allowed: true });
   await page.goto(url + '/exact?campaign=one');
-  assert.equal(await page.evaluate(() => window.adScriptLoaded), true);
+  const exceptionScript = await page.evaluate(() => window.adScriptLoaded);
+  if (exceptionScript !== true) {
+    const diagnostic = await popup.evaluate(async () => ({
+      rules: await chrome.declarativeNetRequest.getDynamicRules(),
+      settings: (await chrome.storage.local.get('settings')).settings
+    }));
+    throw new Error(`Exact-URL fixture did not load: ${JSON.stringify({ url: page.url(),
+      failures: failures.slice(-8), ...diagnostic })}`);
+  }
   assert.equal(await page.locator('#ad').isVisible(), true);
   for (const path of ['/other', '/exact?campaign=two']) {
     await page.goto(url + path);
