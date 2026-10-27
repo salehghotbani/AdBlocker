@@ -2,6 +2,17 @@
 
 [فارسی](TESTING.md) | **English**
 
+## Version 1.1.0 CI result — 2026-10-27
+
+**Both GitHub Actions runs passed** for released commit `18321f6b87fa455fab06024d52b01ea57bdd2891`: [run 40547121864](https://github.com/salehghotbani/AdBlocker/actions/runs/40547121864) and [run 40548395334](https://github.com/salehghotbani/AdBlocker/actions/runs/40548395334).
+
+- Dependency installation, syntax and documentation links, all three browser builds, and ZIP packaging: passed.
+- Thirteen unit tests and four distribution/ZIP tests: passed.
+- DOM tests and actual extension installation/network blocking in Chromium on CI: passed, including all 145 domains, allowance of 17 useful hosts, and exception controls.
+- Firefox validation and CI artifact upload: passed. Validation does not establish Firefox runtime testing.
+
+The earlier delay was in test-browser installation; both runs have now finished with a final `success` status. The local and live results below are separate supporting evidence.
+
 ## Coverage fix validation — 2026-10-27
 
 Executed on Windows with Node.js 24.18.0 and Edge 156.0.4314.42, using an isolated temporary browser profile and the actual unpacked extension.
@@ -23,7 +34,7 @@ $env:ADBLOCK_LIVE_TEST = '1'
 npm run test:browser
 ```
 
-Leave `ADBLOCK_LIVE_TEST` unset for deterministic local fixtures without external advertising requests. Live scores depend on DNS, timeouts, browser settings, and future changes to the site. No successful CI run is implied.
+Leave `ADBLOCK_LIVE_TEST` unset for deterministic local fixtures without external advertising requests. Live scores depend on DNS, timeouts, browser settings, and future changes to the site and are separate from the deterministic CI tests. Successful CI runs are explicitly linked above.
 
 ## Previous environment validation
 
@@ -49,10 +60,10 @@ The redesigned popup tests use mocked messaging and storage to check initial sys
 
 `test:browser` requires unpacked extension installation to be permitted and fails if the worker cannot start. It does not report a successful run without the extension. Managed environment policies are left unchanged.
 
-New tests cover distinct paths and queries, style restoration for excluded URLs, single-tab pauses, the first automatic reload, expiry on the next reload, SPA navigation, tab closure, unauthorized messages, and state restoration after worker restart. The full installation test also covers distinct URLs and one-time pauses; actual network validation remains subject to the environment limitation.
+New tests cover distinct paths and queries, style restoration for excluded URLs, single-tab pauses, the first automatic reload, expiry on the next reload, SPA navigation, tab closure, unauthorized messages, and state restoration after worker restart. The full installation test also covers distinct URLs and one-time pauses; it was restricted in the historical environment below but subsequently passed in local Edge and Chromium on CI.
 
-The browser reports: `Loading of unpacked extensions is disabled by the administrator`. Actual network blocking is therefore unverified. Alongside successful validation, web-ext reports that its automatic update checker cannot access the user configuration directory; that message belongs to the tool's updater, while extension validation reports zero errors and zero warnings. The npm cache was set to a writable directory for execution; `.npmrc` defines an ignored local cache for subsequent runs.
+In that earlier environment, the browser reported: `Loading of unpacked extensions is disabled by the administrator`. Actual network blocking was therefore unverified only in that historical execution. Alongside successful validation, web-ext reported that its automatic update checker could not access the user configuration directory; that message belonged to the tool's updater, while extension validation reported zero errors and zero warnings. The npm cache was set to a writable directory for that execution; `.npmrc` defines an ignored local cache for subsequent runs.
 
 ## Rerunning
 
-Commands are listed in the [contribution guide](../CONTRIBUTING.en.md). After a push, `.github/workflows/ci.yml` is configured to run these checks, including the full Chromium integration test, in GitHub Actions. Its result must be checked separately.
+Commands are listed in the [contribution guide](../CONTRIBUTING.en.md). After a push, `.github/workflows/ci.yml` runs these checks, including the full Chromium integration test, in GitHub Actions. The successful version 1.1.0 runs are linked above; later commits must be checked against their own runs.
