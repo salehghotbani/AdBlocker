@@ -5,18 +5,30 @@ import { readFile } from 'node:fs/promises';
 
 const settingsCode = await readFile(new URL('../extension/settings.js', import.meta.url), 'utf8');
 const backgroundCode = await readFile(new URL('../extension/background.js', import.meta.url), 'utf8');
-async function harness(saved) {
+async function harness(saved, savedSession = {}) {
   let listener;
   let storage = saved;
   let dynamic = [];
+  let sessionRules = [];
+  let session = structuredClone(savedSession);
+  const tabs = [{ id: 1, url: 'https://allowed.example' }, { id: 2, url: 'https://other.example' }];
+  const handlers = {};
+  const event = name => ({ addListener(fn) { handlers[name] = fn; } });
+  const reloads = [];
   let enabled = [];
   let fail = false;
   const broadcasts = [];
   const errors = [];
   const api = {
-    storage: { local: { async get() { return { settings: storage }; }, async set({ settings }) { storage = settings; } } },
+    storage: {
+      local: { async get() { return { settings: storage }; }, async set({ settings }) { storage = settings; } },
+      session: { async get() { return structuredClone(session); }, async set(value) { session = structuredClone(value); } }
+    },
     declarativeNetRequest: {
       async getDynamicRules() { return dynamic; },
+      async getSessionRules() { return sessionRules; },
+      async updateSessionRules({ addRules }) { sessionRules = addRules; },
+      async isRegexSupported() { return { isSupported: true }; },
       async updateDynamicRules({ addRules }) { dynamic = addRules; },
       async updateEnabledRulesets({ enableRulesetIds }) {
         if (fail) throw new Error('DNR unavailable');
@@ -25,9 +37,13 @@ async function harness(saved) {
     },
     action: { async setBadgeText() {}, async setBadgeBackgroundColor() {} },
     tabs: {
-      async query() { return [{ id: 1, url: 'https://allowed.example' }]; },
+      async query() { return tabs; },
+      async get(id) { const tab = tabs.find(tab => tab.id === id); if (!tab) throw new Error('No tab'); return tab; },
+      async reload(id) { reloads.push(id); },
+      onRemoved: event('removed'),
       async sendMessage(id, message) { broadcasts.push({ id, message }); }
     },
+    webNavigation: { onBeforeNavigate: event('before'), onCommitted: event('committed'), onHistoryStateUpdated: event('history') },
     runtime: { id: 'fixture', getURL: path => `chrome-extension://fixture/${path}`,
       onMessage: { addListener(fn) { listener = fn; } } }
   };
@@ -39,7 +55,10 @@ async function harness(saved) {
   const send = (message, sender = { id: 'fixture', url: 'chrome-extension://fixture/popup.html' }) =>
     new Promise(resolve => listener(message, sender, resolve));
   await send({ type: 'getSettings' }); // awaits startup reconciliation
-  return { send, broadcasts, errors, get stored() { return storage; }, get dynamic() { return dynamic; },
+  return { send, broadcasts, errors, tabs, reloads,
+    async emit(name, details) { handlers[name](details); await send({ type: 'getSettings' }); },
+    get session() { return session; }, get sessionRules() { return sessionRules; },
+    get stored() { return storage; }, get dynamic() { return dynamic; },
     get enabled() { return enabled; }, fail() { fail = true; } };
 }
 
@@ -54,13 +73,69 @@ test('site changes persist, broadcast and apply to nested frames of excluded top
   const result = await h.send({ type: 'setSite', host: 'allowed.example', allowed: true });
   assert.equal(result.settings.allowedSites[0], 'allowed.example');
   assert.equal(h.dynamic[0].action.type, 'allowAllRequests');
-  assert.equal(h.broadcasts.at(-1).message.settings.enabled, false);
+  assert.equal(h.broadcasts.find(item => item.id === 1).message.settings.enabled, false);
   const frame = await h.send({ type: 'getSettings' }, {
     id: 'fixture', url: 'https://third-party.example/frame', tab: { url: 'https://allowed.example' }
   });
   assert.equal(frame.settings.enabled, false);
   await h.send({ type: 'setSite', host: 'news.allowed.example', allowed: false });
   assert.equal(h.dynamic.length, 0);
+});
+
+test('permanent URL exception applies to exact top-level URL and its child frames only', async () => {
+  const h = await harness();
+  const url = 'https://allowed.example/story?q=1';
+  h.tabs[0].url = url;
+  await h.send({ type: 'setUrl', url: url + '#intro', allowed: true });
+  assert.equal(h.stored.allowedUrls[0], url);
+  assert.equal(h.dynamic.length, 1);
+  const frame = await h.send({ type: 'getSettings' }, { id: 'fixture', tab: h.tabs[0] });
+  assert.equal(frame.settings.enabled, false);
+  h.tabs[0].url = 'https://allowed.example/another';
+  assert.equal((await h.send({ type: 'getSettings' }, { id: 'fixture', tab: h.tabs[0] })).settings.enabled, true);
+  await h.send({ type: 'clearUrls' });
+  assert.equal(h.dynamic.length, 0);
+});
+
+test('one-time pause reloads once, expires on next reload, and is isolated to its tab', async () => {
+  const h = await harness();
+  const url = h.tabs[0].url;
+  await h.send({ type: 'setPause', tabId: 1, url, paused: true });
+  assert.deepEqual(h.reloads, [1]);
+  assert.equal(h.stored, undefined, 'temporary URL is never persisted in local settings');
+  assert.equal(h.sessionRules[0].condition.tabIds[0], 1);
+  assert.equal((await h.send({ type: 'getSettings', tabId: 1 })).paused, true);
+  assert.equal((await h.send({ type: 'getSettings', tabId: 2 })).paused, false);
+  await h.emit('before', { tabId: 1, frameId: 0, url });
+  await h.emit('committed', { tabId: 1, frameId: 0, url });
+  assert.equal(h.session.pausedTabs[1].awaitingReload, false);
+  await h.emit('before', { tabId: 1, frameId: 1, url: 'https://frame.example/' });
+  assert.equal(h.sessionRules.length, 1, 'iframe navigation does not expire the top-level pause');
+  await h.emit('before', { tabId: 1, frameId: 0, url });
+  assert.equal(h.sessionRules.length, 0);
+  assert.equal((await h.send({ type: 'getSettings', tabId: 1 })).paused, false);
+});
+
+test('temporary state survives worker suspension, expires on SPA route change or tab close', async () => {
+  const pausedTabs = { 1: { url: 'https://allowed.example/', awaitingReload: false },
+    999: { url: 'https://closed.example/', awaitingReload: false } };
+  const h = await harness(undefined, { pausedTabs });
+  assert.equal(h.sessionRules.length, 1, 'stale tabs are discarded');
+  h.tabs[0].url = 'https://allowed.example/new';
+  await h.emit('history', { tabId: 1, frameId: 0, url: h.tabs[0].url });
+  assert.equal(h.sessionRules.length, 0);
+  await h.send({ type: 'setPause', tabId: 1, url: h.tabs[0].url, paused: true });
+  await h.emit('removed', 1);
+  assert.equal(h.sessionRules.length, 0);
+});
+
+test('stale popup and content scripts cannot pause another page or save URL exceptions', async () => {
+  const h = await harness();
+  assert.ok((await h.send({ type: 'setPause', tabId: 1, url: 'https://stale.example', paused: true })).error);
+  assert.equal(h.sessionRules.length, 0);
+  const sender = { id: 'fixture', url: 'https://site.example', tab: h.tabs[0] };
+  for (const message of [{ type: 'setPause', tabId: 1, url: h.tabs[0].url, paused: true },
+    { type: 'setUrl', url: h.tabs[0].url, allowed: true }]) assert.ok((await h.send(message, sender)).error);
 });
 test('content scripts cannot mutate settings', async () => {
   const h = await harness();

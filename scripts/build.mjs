@@ -26,7 +26,7 @@ const common = {
   name: 'AdBlocker — مرور بدون تبلیغ',
   version: '1.0.0',
   description: 'مسدودسازی محافظه‌کارانهٔ تبلیغات، با امکان استثناکردن سایت‌ها و بدون ردیابی.',
-  permissions: ['storage', 'declarativeNetRequest', 'activeTab'],
+  permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation'],
   host_permissions: ['http://*/*', 'https://*/*'],
   action: { default_popup: 'popup.html', default_title: 'AdBlocker', default_icon: {
     16: 'icons/16.png', 32: 'icons/32.png', 48: 'icons/48.png', 128: 'icons/128.png'

@@ -4,8 +4,9 @@
 
 This policy describes version 1.0.0 of the AdBlocker extension.
 
-- The extension does not store or transmit browsing history, visited page URLs, page text, sign-in details, or form contents.
-- Only the enabled/disabled setting and the site names you explicitly exclude are saved in that browser's `storage.local`. These settings are not synchronized to the cloud.
+- The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
+- The enabled/disabled setting, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
+- For a one-time pause, the tab ID and URL are temporarily held in `storage.session`. The next reload after the automatic reload, navigation to another page, tab closure, or browser shutdown clears the pause. Worker suspension and restart alone do not clear it.
 - The active tab's hostname is read for display in the popup and is not sent to a server.
 - A local content script examines elements with specific advertising markers to hide those elements. Processing takes place inside the browser; page content is not collected.
 - Local network rules are applied through the browser API. The filter list is not downloaded from an external server, and no remote executable code is loaded.
@@ -15,14 +16,15 @@ This policy describes version 1.0.0 of the AdBlocker extension.
 
 | Permission | Purpose |
 | --- | --- |
-| `storage` | Store local settings |
+| `storage` | Keep permanent settings and exceptions locally, and temporary pauses in session memory |
 | `declarativeNetRequest` | Apply blocking and exception rules through the browser |
 | `activeTab` | Read the current site's hostname when the popup is opened |
+| `webNavigation` | Detect page changes and expire one-time pauses without keeping browsing history |
 | HTTP/HTTPS page access | Run cosmetic filtering and network rules on websites |
 
 ## Deleting data
 
-The “Clear site exceptions” control deletes the saved site-name list. Uninstalling the extension also removes its local settings. There is no backend or account where data could remain.
+“Clear site exceptions” deletes saved site names; “Clear URL exceptions” deletes saved URL exceptions. The resume control ends a temporary pause. Uninstalling the extension also removes its local settings. There is no backend or account where data could remain.
 
 ## Reporting an issue
 

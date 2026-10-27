@@ -12,9 +12,11 @@
     <section class="status"><span id="dot"></span><strong id="status">در حال بررسی…</strong></section>
     <label class="row"><span>مسدودسازی تبلیغات<small>برای همهٔ سایت‌ها</small></span><input id="enabled" type="checkbox" role="switch" disabled></label>
     <section class="site"><p>سایت فعلی</p><b id="host" dir="ltr">—</b><label class="row"><span>فعال برای این سایت</span><input id="siteEnabled" type="checkbox" role="switch" disabled></label></section>
+    <section class="site"><p>همین صفحه</p><b id="url" class="url" dir="ltr">—</b><label class="row"><span>فعال برای همین URL<small>خاموش = استثنای دائمی این نشانی</small></span><input id="urlEnabled" type="checkbox" role="switch" disabled></label><button id="pause" class="secondary" disabled>توقف این بار و بارگذاری مجدد</button><small>توقف موقت با بارگذاری بعدی یا خروج از صفحه تمام می‌شود.</small></section>
     <p class="hint">اگر محتوایی درست نمایش داده نشد، مسدودسازی را برای همین سایت خاموش کنید. تغییرات شبکه پس از بارگذاری مجدد اعمال می‌شوند.</p>
     <button id="reload" disabled>بارگذاری مجدد سایت</button>
     <button id="clear" class="secondary" disabled>پاک‌کردن استثناهای سایت‌ها <span id="count">(۰)</span></button>
+    <button id="clearUrls" class="secondary" disabled>پاک‌کردن استثناهای URL <span id="urlCount">(۰)</span></button>
     <p id="message" role="status" aria-live="polite"></p>
   </main>
   <footer>بدون ردیابی · بدون ارسال سابقهٔ مرور</footer>

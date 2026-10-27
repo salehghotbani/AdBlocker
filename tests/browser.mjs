@@ -98,6 +98,33 @@ try {
   await command({ type: 'setEnabled', enabled: true });
   const saved = await command({ type: 'getSettings' });
   assert.equal(saved.settings.enabled, true);
+  await command({ type: 'setUrl', url: url + '/exact?campaign=one#section', allowed: true });
+  await page.goto(url + '/exact?campaign=one');
+  assert.equal(await page.evaluate(() => window.adScriptLoaded), true);
+  assert.equal(await page.locator('#ad').isVisible(), true);
+  for (const path of ['/other', '/exact?campaign=two']) {
+    await page.goto(url + path);
+    await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    assert.equal(await page.evaluate(() => window.adScriptLoaded), undefined);
+  }
+  await command({ type: 'clearUrls' });
+  await page.goto(url + '/paused');
+  const tabId = await popup.evaluate(async target => {
+    const tabs = await chrome.tabs.query({});
+    return tabs.find(tab => tab.url === target).id;
+  }, page.url());
+  await command({ type: 'setPause', tabId, url: page.url(), paused: true });
+  await page.waitForFunction(() => window.adScriptLoaded === true);
+  assert.equal((await popup.evaluate(tabId => chrome.runtime.sendMessage({ type: 'getSettings', tabId }), tabId)).paused, true);
+  const other = await context.newPage();
+  await other.goto(url + '/paused');
+  await other.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+  assert.equal(await other.evaluate(() => window.adScriptLoaded), undefined);
+  await other.close();
+  await page.reload();
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+  assert.equal(await page.evaluate(() => window.adScriptLoaded), undefined);
+  console.log('PASS: permanent URL distinguishes paths/query; one-time pause allows one reload in one tab only');
   await page.bringToFront();
   await popup.bringToFront();
   await popup.reload();

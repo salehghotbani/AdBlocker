@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- One-time page pauses in a single tab, with automatic reload and expiry on the next reload or navigation.
+- Permanent URL exceptions with exact path/query matching, reset controls, and privacy documentation.
+- Tests for expiry, tab isolation, worker restoration, popup controls, and distinct URL paths.
 - Paired Persian and English documentation with language navigation.
 - Documentation link checks cover every Markdown file in the repository root and `docs/`.
 - Both privacy and security policy translations are included in generated extension packages.

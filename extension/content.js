@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const api = globalThis.browser || chrome;
-  const { normalize, isAllowed } = AdBlockSettings;
+  const { normalize, isAllowed, pageUrl } = AdBlockSettings;
   const selector = [
     'ins.adsbygoogle',
     '[data-ad-client][data-ad-slot]',
@@ -76,7 +76,8 @@
 
   function apply(value) {
     const settings = normalize(value);
-    const enabled = settings.enabled && !isAllowed(location.hostname, settings.allowedSites);
+    const enabled = settings.enabled && !isAllowed(location.hostname, settings.allowedSites) &&
+      !settings.allowedUrls.includes(pageUrl(location.href));
     if (active === enabled) return;
     active = enabled;
     if (active) {
@@ -95,11 +96,17 @@
     }
   }
 
+  let revision = 0;
   api.runtime.onMessage.addListener(message => {
-    if (message?.type === 'settingsChanged') apply(message.settings);
+    if (message?.type === 'settingsChanged') { revision++; apply(message.settings); }
   });
   // Fail open if the extension is updating or the worker is unavailable.
-  api.runtime.sendMessage({ type: 'getSettings' }).then(result => {
-    if (result?.settings) apply(result.settings);
-  }).catch(() => {});
+  function refresh() {
+    const current = ++revision;
+    api.runtime.sendMessage({ type: 'getSettings' }).then(result => {
+      if (current === revision && result?.settings) apply(result.settings);
+    }).catch(() => {});
+  }
+  addEventListener('pageshow', event => { if (event.persisted) refresh(); });
+  refresh();
 })();

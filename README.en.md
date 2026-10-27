@@ -19,6 +19,7 @@ This screenshot shows the actual interface rendered in a browser test with a sam
 - Hides specific Google Ads placements, including matching elements inserted after page load.
 - Preserves `main`, `article`, main headings, forms, media players, and containers that contain these elements. Does not indiscriminately remove `.banner`, `.sponsored`, or elements containing the word “advertisement.”
 - Provides a global toggle, site exceptions covering subdomains, exception reset, and settings stored on the current device.
+- Supports a one-time pause for a page in one tab and a permanent exception for an exact URL.
 - Restores previous element styles when disabled. Reload the page to recover resources whose network requests were already blocked.
 
 **Removing every ad while preserving all main content on every site cannot be guaranteed.** This version is intentionally conservative. First-party ads, ads embedded in video streams (including some YouTube ads), native advertising, and providers outside the list may remain visible. Sites with ad-block detection may need an exception. The domain list is maintained locally and is not automatically downloaded. This project is not a complete implementation of EasyList or uBlock Origin.
@@ -58,6 +59,17 @@ The `dist/adblocker-*-1.0.0.zip` files are unsigned packages.
 
 Temporary installations disappear when Firefox closes. Permanent installation requires Mozilla signing. Publishing to the three browser stores is a separate task and has not been performed. The manifest declares Android 142 as the minimum Android version, but Android has not been tested.
 
+## Pause or permanently exclude a page
+
+The popup's page section displays the current URL:
+
+- **One-time pause and reload:** excludes only the current tab for one page display. The extension automatically reloads once to recover previously blocked resources. The next reload, navigation to another URL, tab closure, or browser shutdown ends the pause. Other tabs remain protected. The resume-and-reload button ends the pause early.
+- **Enabled for this URL:** turning this switch off permanently excludes the current URL, including after reloads and browser restarts. Turn it back on or use the URL-exception reset control to remove the exception. Reload to fully apply network changes.
+
+URL matching includes scheme, host, port, path, and query parameters; path case and query order matter. The `#fragment` is ignored because the browser's network rules do not receive it. A URL exception does not cover other paths on the same site. Up to 200 URL exceptions are supported, each at most 1,500 characters; URLs containing a username or password are rejected. The global toggle and whole-site exceptions still take precedence over page controls.
+
+On sites that change routes without loading a new document, cosmetic filtering updates, but reload to ensure network rules fully apply. Selected URLs may contain sensitive query parameters; use permanent exceptions only when you intend to store that address locally.
+
 ## Tests
 
 ```sh
@@ -70,7 +82,7 @@ npm run test:dom
 npm run test:browser
 ```
 
-- `npm test`: eight tests for settings, worker state restoration, exception rules, command serialization, and rejection of unauthorized changes. Browser APIs are mocked.
+- `npm test`: thirteen tests for settings, worker state restoration, exceptions, exact URL matching, temporary-pause expiry, tab isolation, command serialization, and rejection of unauthorized changes. Browser APIs are mocked.
 - `test:dist`: four tests covering generated manifests, file references, source copies, licensing, PNG icons, blocking rules, and ZIP integrity.
 - `test:dom`: runs actual Chromium with mocked extension messaging. Checks article, form, video, and safe iframe preservation, dynamic ad hiding, style restoration, and interaction with the Persian popup. Does not test network blocking.
 - `test:browser`: installs the extension and requires real blocking of an ad request, followed by allowance when the site is excluded or the extension is disabled. External fixture responses are provided locally; no advertising site is contacted. Requires a browser that permits unpacked extensions.
@@ -87,7 +99,7 @@ npm run lint:firefox
 
 ## Permissions and privacy
 
-HTTP/HTTPS access is needed to apply rules and find ad placements on pages. `storage` holds local settings only; `activeTab` is used to display the current site after a user click. Browsing history is not collected. There is no analytics service, API key, backend, or remote code. Settings-change messages are accepted only from the extension's own pages.
+HTTP/HTTPS access is needed to apply rules and find ad placements on pages. `storage` holds settings and user-selected exceptions locally; `activeTab` displays the current site after a user click, and `webNavigation` expires one-time pauses when the page changes. Browsing history is not collected. There is no analytics service, API key, backend, or remote code. Settings-change messages are accepted only from the extension's own pages.
 
 ## Rule development
 

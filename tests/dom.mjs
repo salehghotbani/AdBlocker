@@ -53,6 +53,21 @@ try {
   await page.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: { enabled: false, allowedSites: [] } }));
   assert.equal(await page.locator('#ad').isVisible(), true);
   console.log('PASS: site exception and global disable restore original inline styles');
+  await page.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: {
+    enabled: true, allowedSites: [], allowedUrls: ['https://fixture.example/']
+  } }));
+  assert.equal(await page.locator('#ad').isVisible(), true);
+  await page.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: {
+    enabled: true, allowedSites: [], allowedUrls: ['https://fixture.example/other']
+  } }));
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+  console.log('PASS: exact URL exception restores content without disabling a different path');
+  await page.evaluate(() => {
+    window.contentListener({ type: 'settingsChanged', settings: { enabled: false } });
+    dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+  });
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+  console.log('PASS: back/forward cache restoration refreshes an expired pause');
 
   // Render the real popup using a mock transport only; logic and styles are real.
   const popup = await browser.newPage({ viewport: { width: 350, height: 590 } });
@@ -63,13 +78,17 @@ try {
       contentType: file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'application/javascript' });
   });
   await popup.addInitScript(() => {
-    let settings = { enabled: true, allowedSites: [] };
+    let settings = { enabled: true, allowedSites: [], allowedUrls: [] };
+    let paused = false;
     window.chrome = {
       runtime: { async sendMessage(message) {
         if (message.type === 'setEnabled') settings.enabled = message.enabled;
         if (message.type === 'setSite') settings.allowedSites = message.allowed ? [message.host] : [];
         if (message.type === 'clearSites') settings.allowedSites = [];
-        return { settings };
+        if (message.type === 'setUrl') settings.allowedUrls = message.allowed ? [message.url] : [];
+        if (message.type === 'clearUrls') settings.allowedUrls = [];
+        if (message.type === 'setPause') paused = message.paused;
+        return { settings, paused };
       } },
       tabs: { async query() { return [{ id: 1, url: 'https://example.com/story' }]; }, async reload() {} }
     };
@@ -85,7 +104,17 @@ try {
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('خاموش'));
   await popup.locator('#enabled').check();
   await popup.waitForFunction(() => document.getElementById('status').textContent === 'مسدودسازی فعال است');
+  await popup.locator('#urlEnabled').uncheck();
+  await popup.waitForFunction(() => document.getElementById('status').textContent.includes('URL'));
+  assert.equal(await popup.locator('#pause').isDisabled(), true);
+  await popup.locator('#clearUrls').click();
+  await popup.waitForFunction(() => document.getElementById('urlEnabled').checked);
+  await popup.locator('#pause').click();
+  await popup.waitForFunction(() => document.getElementById('status').textContent.includes('موقت'));
+  await popup.locator('#pause').click();
+  await popup.waitForFunction(() => document.getElementById('status').textContent === 'مسدودسازی فعال است');
   await mkdir(new URL('artifacts/', root), { recursive: true });
   await popup.screenshot({ path: new URL('artifacts/popup.png', root).pathname, fullPage: true });
   console.log('PASS: real Persian popup renders; site/global switches and reset work with mocked transport');
+  console.log('PASS: permanent URL toggle, URL reset, one-time pause and resume controls work');
 } finally { await browser.close(); }
