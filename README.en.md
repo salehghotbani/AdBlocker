@@ -1,5 +1,7 @@
 # AdBlocker
 
+<img src="docs/images/logo.png" width="80" height="80" alt="AdBlocker logo">
+
 [فارسی](README.md) | **English**
 
 An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interface and no collection of browsing data.
@@ -9,6 +11,7 @@ An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interfac
 - Blocks 145 advertising and tracking domains and specific ad-script paths.
 - Hides static and dynamic ad placements while protecting forms and media players.
 - Global toggle, site and exact-URL exceptions, one-time page pauses, and light/dark themes.
+- Grayscale interface when protection is off for the site or page, preserving the light/dark preference.
 
 | Light | Dark |
 | --- | --- |

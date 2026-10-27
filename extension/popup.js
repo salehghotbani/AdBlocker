@@ -30,6 +30,7 @@ function render() {
       urlAllowed ? 'این URL همیشه مستثناست' : paused ? 'توقف موقت برای همین صفحه' : 'مسدودسازی فعال است';
   $('dot').classList.toggle('on', Boolean(on));
   $('protection').dataset.state = on ? 'on' : 'off';
+  document.documentElement.dataset.protection = on ? 'on' : 'off';
   $('statusHint').textContent = !settings.enabled ? 'هر وقت خواستید، دوباره روشن کنید.' :
     !host ? 'کنترل‌ها در صفحه‌های وب فعال می‌شوند.' : on ? 'فیلترهای تبلیغ برای این صفحه فعال‌اند.' : 'فیلترها برای این صفحه متوقف شده‌اند.';
 }

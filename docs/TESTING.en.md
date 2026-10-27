@@ -2,6 +2,13 @@
 
 [فارسی](TESTING.md) | **English**
 
+## Interface changes after version 1.1.0 — 2026-10-27
+
+- The new PNG logo is packaged in four sizes for all three browsers. Packaged icons match source bytes, and the loaded logo's transparency was checked.
+- DOM tests passed in Edge for gray site/URL exceptions, one-time pauses, and global-off states; light/dark preference survives reopening and color returns when protection resumes.
+- Actual extension/network integration, 13 unit tests, and four distribution/ZIP tests passed. These local checks are separate from the released-version CI runs below.
+- Appearance was reviewed in [disabled light mode](images/popup-disabled-light.png) and [disabled dark mode](images/popup-disabled-dark.png).
+
 ## Version 1.1.0 CI result — 2026-10-27
 
 **Both GitHub Actions runs passed** for released commit `18321f6b87fa455fab06024d52b01ea57bdd2891`: [run 40547121864](https://github.com/salehghotbani/AdBlocker/actions/runs/40547121864) and [run 40548395334](https://github.com/salehghotbani/AdBlocker/actions/runs/40548395334).

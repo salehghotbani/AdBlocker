@@ -2,6 +2,12 @@
 
 [فارسی](CHANGELOG.md) | **English**
 
+## Unreleased
+
+- New shared popup and browser logo with transparent PNG icons in four sizes.
+- Grayscale site/URL exceptions, one-time pauses, and global-off states in both light and dark mode; color returns when protection resumes.
+- Logo transparency/packaging checks and tests for gray state on reopening and preservation of the light/dark preference.
+
 ## 1.1.0 — 2026-10-27
 
 - Reapply cosmetic filtering when protected descendants are removed or lose their main-content role.

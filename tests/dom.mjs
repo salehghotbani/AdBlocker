@@ -1,15 +1,17 @@
 // Browser DOM integration without installing an extension. Some managed browsers
 // forbid unpacked extensions; this harness does NOT claim to exercise DNR APIs.
 import { chromium } from 'playwright';
-import { readFile, mkdir } from 'node:fs/promises';
+import { readFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 const root = new URL('../', import.meta.url);
 const settingsScript = await readFile(new URL('extension/settings.js', root), 'utf8');
 const contentScript = await readFile(new URL('extension/content.js', root), 'utf8');
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
+await mkdir(new URL('.cache/dom-profiles/', root), { recursive: true });
+const profile = await mkdtemp(fileURLToPath(new URL('.cache/dom-profiles/profile-', root)));
+const context = await chromium.launchPersistentContext(profile, { executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
 try {
-  const page = await browser.newPage();
+  const page = await context.newPage();
   page.setDefaultTimeout(5000);
   await page.route('https://fixture.example/**', route => route.fulfill({
     contentType: 'text/html', body: `<!doctype html><main><h1>Article</h1><p id="story">Main content</p>
@@ -93,16 +95,19 @@ try {
   console.log('PASS: back/forward cache restoration refreshes an expired pause');
 
   // Render the real popup using a mock transport only; logic and styles are real.
-  const popup = await browser.newPage({ viewport: { width: 390, height: 600 } });
+  const popup = await context.newPage();
+  await popup.setViewportSize({ width: 390, height: 600 });
   await popup.emulateMedia({ colorScheme: 'light' });
   await popup.route('https://popup.example/**', async route => {
     const file = new URL(route.request().url()).pathname.slice(1) || 'popup.html';
-    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js', 'theme.js'].includes(file)) return route.abort();
+    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js', 'theme.js'].includes(file) &&
+        !/^icons\/(16|32|48|128)\.png$/.test(file)) return route.abort();
     await route.fulfill({ body: await readFile(new URL(`extension/${file}`, root)),
-      contentType: file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'application/javascript' });
+      contentType: file.endsWith('.png') ? 'image/png' : file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'application/javascript' });
   });
   await popup.addInitScript(() => {
-    let settings = { enabled: true, allowedSites: [], allowedUrls: [] };
+    let settings = JSON.parse(localStorage.getItem('fixture-settings') ||
+      '{"enabled":true,"allowedSites":[],"allowedUrls":[]}');
     let paused = false;
     window.chrome = {
       storage: { local: {
@@ -119,6 +124,7 @@ try {
         if (message.type === 'setUrl') settings.allowedUrls = message.allowed ? [message.url] : [];
         if (message.type === 'clearUrls') settings.allowedUrls = [];
         if (message.type === 'setPause') paused = message.paused;
+        localStorage.setItem('fixture-settings', JSON.stringify(settings));
         return { settings, paused };
       } },
       tabs: { async query() { return [{ id: 1, url: 'https://example.com/story' }]; }, async reload() {} }
@@ -126,25 +132,85 @@ try {
   });
   await popup.goto('https://popup.example/');
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
+  const assertProtection = async expected => {
+    await popup.waitForFunction(expected => {
+      const channels = getComputedStyle(document.getElementById('reload')).backgroundColor
+        .match(/[\d.]+/g).slice(0, 3).map(Number);
+      const neutral = channels.every(value => value === channels[0]);
+      return document.documentElement.dataset.protection === expected && neutral === (expected === 'off');
+    }, expected);
+    const appearance = await popup.evaluate(() => {
+      const color = (selector, property) => getComputedStyle(document.querySelector(selector))[property]
+        .match(/[\d.]+/g).slice(0, 3).map(Number);
+      return {
+        background: color('body', 'backgroundColor'),
+        accent: color('#reload', 'backgroundColor'),
+        text: color('#reload', 'color'),
+        filter: getComputedStyle(document.querySelector('.brand-logo')).filter
+      };
+    });
+    const neutral = color => color.every(value => value === color[0]);
+    assert.equal(neutral(appearance.accent), expected === 'off', 'accent reflects actual page protection');
+    if (expected === 'off') {
+      assert.ok(neutral(appearance.background), 'disabled background is gray');
+      assert.ok(neutral(appearance.text), 'disabled text is gray');
+    }
+    assert.equal(appearance.filter, expected === 'off' ? 'grayscale(1)' : 'none');
+  };
+  await assertProtection('on');
+  await popup.waitForFunction(() => [...document.querySelectorAll('.brand-logo')]
+    .every(image => image.complete && image.naturalWidth === 128));
+  assert.equal(await popup.locator('.brand-logo').first().evaluate(image => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const context = canvas.getContext('2d'); context.drawImage(image, 0, 0);
+    return context.getImageData(0, 0, 1, 1).data[3];
+  }), 0, 'logo background is transparent');
+  await popup.emulateMedia({ colorScheme: 'dark' });
+  await popup.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
+  await popup.emulateMedia({ colorScheme: 'light' });
+  await popup.waitForFunction(() => document.documentElement.dataset.theme === 'light');
   assert.equal(await popup.locator('#enabled').isChecked(), true);
   await popup.locator('#exceptions summary').click();
   await popup.locator('#siteEnabled').uncheck();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('استثنا'));
+  await assertProtection('off');
+  await popup.getByRole('button', { name: 'حالت روز', exact: true }).click();
+  await popup.waitForFunction(() => localStorage.getItem('theme') === 'light');
+  await assertProtection('off');
+  await mkdir(new URL('artifacts/', root), { recursive: true });
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-disabled-light.png', root)), fullPage: true, animations: 'disabled' });
+  await popup.getByRole('button', { name: 'حالت شب', exact: true }).click();
+  await popup.waitForFunction(() => localStorage.getItem('theme') === 'dark');
+  await assertProtection('off');
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-disabled-dark.png', root)), fullPage: true, animations: 'disabled' });
+  await popup.reload();
+  await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
+  await assertProtection('off');
+  assert.equal(await popup.evaluate(() => localStorage.getItem('theme')), 'dark', 'gray state preserves theme preference');
+  await popup.locator('#exceptions summary').click();
   await popup.locator('#clear').click();
   await popup.waitForFunction(() => document.getElementById('siteEnabled').checked);
+  await assertProtection('on');
   await popup.locator('#enabled').uncheck();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('خاموش'));
+  await assertProtection('off');
   await popup.locator('#enabled').check();
   await popup.waitForFunction(() => document.getElementById('status').textContent === 'مسدودسازی فعال است');
+  await assertProtection('on');
   await popup.locator('#urlEnabled').uncheck();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('URL'));
+  await assertProtection('off');
   assert.equal(await popup.locator('#pause').isDisabled(), true);
   await popup.locator('#clearUrls').click();
   await popup.waitForFunction(() => document.getElementById('urlEnabled').checked);
+  await assertProtection('on');
   await popup.locator('#pause').click();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('موقت'));
+  await assertProtection('off');
   await popup.locator('#pause').click();
   await popup.waitForFunction(() => document.getElementById('status').textContent === 'مسدودسازی فعال است');
+  await assertProtection('on');
   await popup.locator('#exceptions summary').click();
   await popup.emulateMedia({ colorScheme: 'dark' });
   await popup.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
@@ -166,14 +232,14 @@ try {
   assert.equal(await popup.locator('#urlEnabled').isChecked(), true);
   assert.equal(await popup.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'no horizontal overflow');
   await mkdir(new URL('artifacts/', root), { recursive: true });
-  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-dark.png', root)), fullPage: true });
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-dark.png', root)), fullPage: true, animations: 'disabled' });
   await popup.getByRole('button', { name: 'حالت روز', exact: true }).click();
   await popup.waitForFunction(() => localStorage.getItem('theme') === 'light');
   await popup.reload();
   await popup.waitForFunction(() => !document.querySelector('[data-theme-choice="light"]').disabled);
   assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light');
-  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-light.png', root)), fullPage: true });
-  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup.png', root)), fullPage: true });
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-light.png', root)), fullPage: true, animations: 'disabled' });
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup.png', root)), fullPage: true, animations: 'disabled' });
   await popup.evaluate(() => { window.rejectThemeSave = true; });
   await popup.getByRole('button', { name: 'حالت شب', exact: true }).click();
   await popup.waitForFunction(() => document.getElementById('message').textContent.includes('رنگ‌بندی'));
@@ -182,4 +248,8 @@ try {
   console.log('PASS: real Persian popup renders; site/global switches and reset work with mocked transport');
   console.log('PASS: permanent URL toggle, URL reset, one-time pause and resume controls work');
   console.log('PASS: system theme, keyboard selection, day/night persistence, save-failure recovery and layout');
-} finally { await browser.close(); }
+  console.log('PASS: logo loads with transparency; disabled site, URL, pause and global states are gray in both themes; reopening preserves preference and re-enabling restores color');
+} finally {
+  await context.close();
+  await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+}

@@ -49,44 +49,11 @@ const common = {
   declarative_net_request: { rule_resources: [{ id: 'ads', enabled: true, path: 'rules/ads.json' }] }
 };
 
-// Generate small PNG icons using only Node built-ins (no downloaded artwork).
-const { deflateSync } = await import('node:zlib');
-function crc32(bytes) {
-  let crc = -1;
-  for (const byte of bytes) {
-    crc ^= byte;
-    for (let i = 0; i < 8; i++) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
-  }
-  return (crc ^ -1) >>> 0;
-}
-function chunk(type, data) {
-  const body = Buffer.concat([Buffer.from(type), data]);
-  const size = Buffer.alloc(4); size.writeUInt32BE(data.length);
-  const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(body));
-  return Buffer.concat([size, body, crc]);
-}
-function icon(size) {
-  const rows = Buffer.alloc(size * (1 + size * 4));
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    const nx = (x + .5) / size, ny = (y + .5) / size;
-    const inside = ny > .08 && ny < .92 && Math.abs(nx - .5) <
-      (ny < .52 ? .35 : .35 * Math.sqrt((.92 - ny) / .4));
-    const tick = inside && ((nx > .28 && nx < .46 && Math.abs(ny - (nx + .13)) < .045) ||
-      (nx >= .46 && nx < .74 && Math.abs(ny - (1.05 - nx)) < .045));
-    const offset = y * (1 + size * 4) + 1 + x * 4;
-    rows.set(tick ? [16, 23, 34, 255] : inside ? [45, 212, 163, 255] : [0, 0, 0, 0], offset);
-  }
-  const header = Buffer.alloc(13);
-  header.writeUInt32BE(size, 0); header.writeUInt32BE(size, 4); header[8] = 8; header[9] = 6;
-  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]), chunk('IHDR', header),
-    chunk('IDAT', deflateSync(rows)), chunk('IEND', Buffer.alloc(0))]);
-}
-
 for (const browser of ['chrome', 'edge', 'firefox']) {
   const dest = path.join(root, 'dist', browser);
   await rm(dest, { recursive: true, force: true });
   await mkdir(path.join(dest, 'rules'), { recursive: true });
-  await mkdir(path.join(dest, 'icons'), { recursive: true });
+  await cp(path.join(source, 'icons'), path.join(dest, 'icons'), { recursive: true });
   for (const file of ['settings.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js', 'theme.js']) {
     await cp(path.join(source, file), path.join(dest, file));
   }
@@ -105,7 +72,6 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     manifest.minimum_chrome_version = '120';
     manifest.background = { service_worker: 'background.js' };
   }
-  for (const size of [16, 32, 48, 128]) await writeFile(path.join(dest, 'icons', `${size}.png`), icon(size));
   await writeFile(path.join(dest, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
   await writeFile(path.join(dest, 'rules', 'ads.json'), JSON.stringify(rules, null, 2) + '\n');
   console.log(`${browser}: ${rules.length} rules → ${path.relative(root, dest)}`);
