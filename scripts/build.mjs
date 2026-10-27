@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const source = path.join(root, 'extension');
+const { version } = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const domains = JSON.parse(await readFile(path.join(source, 'ad-domains.json'), 'utf8'));
 if (new Set(domains).size !== domains.length ||
     domains.some(domain => !/^(?:[a-z0-9-]+\.)+[a-z]{2,}$/.test(domain))) {
@@ -20,11 +21,22 @@ const rules = domains.map((domain, index) => ({
       'sub_frame', 'ping', 'websocket', 'other']
   }
 }));
+// Ad-only script paths may be served by the page's own host. Match paths, not
+// arbitrary "ads" substrings or ad URLs inside a useful script's query string.
+rules.push({
+  id: 10000,
+  priority: 1,
+  action: { type: 'block' },
+  condition: {
+    regexFilter: '^https?://[^/?#]+/([^?#]*/)?(pagead|widget/ads)(\\.[a-z0-9_-]+)?\\.js([?#]|$)',
+    resourceTypes: ['script']
+  }
+});
 
 const common = {
   manifest_version: 3,
   name: 'AdBlocker — مرور بدون تبلیغ',
-  version: '1.0.0',
+  version,
   description: 'مسدودسازی محافظه‌کارانهٔ تبلیغات، با امکان استثناکردن سایت‌ها و بدون ردیابی.',
   permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation'],
   host_permissions: ['http://*/*', 'https://*/*'],

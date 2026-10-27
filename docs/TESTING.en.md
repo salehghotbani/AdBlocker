@@ -1,8 +1,33 @@
-# Version 1.0.0 validation report
+# Version 1.1.0 validation report
 
 [فارسی](TESTING.md) | **English**
 
-This report records the latest local execution with Node.js 24.19.0 and Chromium 154.0.8037.57. It does not establish a successful CI run or complete testing across every browser and real website.
+## Coverage fix validation — 2026-10-27
+
+Executed on Windows with Node.js 24.18.0 and Edge 156.0.4314.42, using an isolated temporary browser profile and the actual unpacked extension.
+
+- Unit tests: 13 passed. Distribution and ZIP checks: 4 passed. Syntax and documentation links: passed.
+- Follow-up review reproduced and fixed missed cosmetic rescans after removal of protected content or its `role="main"`. Both regressions now pass in the DOM suite. `npm run package` was verified on Windows after fixing Python command selection; packaging also excludes Chromium's generated `_metadata`, verified with the actual cache left by the integration run. Edge network tests and Firefox validation passed again after these fixes.
+- DOM suite: passed, including static/dynamic compound ad classes, ambiguous class preservation, protected articles, class-change recovery, and exact style restoration.
+- Network integration: passed for all 145 domain entries and representative subdomains, with explicit browser blocking errors. All 17 useful-host fixtures stayed allowed. First-party ad scripts were blocked; useful scripts containing ad paths in queries and non-script fetches stayed allowed. Site/global/URL exceptions and one-time pauses passed.
+- Firefox web-ext 10.8.0: zero errors, warnings, or notices. Firefox runtime and Chrome runtime were not tested in this session.
+- Live [Turtlecute test](https://adblock.turtlecute.org/): **95%, 126 of 132 blocked**, both cosmetic and both script checks passed. Browser events independently recorded **123 requests blocked by the client**. One additional host (`extmaps-api.yandex.net`) timed out and was counted as blocked by the site; that timeout is not evidence of extension blocking. The two cosmetic checks do not issue network requests.
+
+Six live checks stayed unblocked intentionally: `careers.hotjar.com`, `api.bugsnag.com`, `app.bugsnag.com`, `app.getsentry.com`, `business-api.tiktok.com`, and `grs.hicloud.com`. These careers, management, business API, and routing endpoints are excluded from blanket tracker rules. Shared hosting and primary social/content domains are also kept usable. Actual page navigation remains allowed for every domain rule.
+
+The opt-in live check saves `artifacts/turtlecute-result.json` and `artifacts/turtlecute-result.png`. Run it in PowerShell with:
+
+```powershell
+$env:CHROMIUM_PATH = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'
+$env:ADBLOCK_LIVE_TEST = '1'
+npm run test:browser
+```
+
+Leave `ADBLOCK_LIVE_TEST` unset for deterministic local fixtures without external advertising requests. Live scores depend on DNS, timeouts, browser settings, and future changes to the site. No successful CI run is implied.
+
+## Previous environment validation
+
+The following historical execution used Node.js 24.19.0 and Chromium 154.0.8037.57. Its managed-browser restrictions do not apply to the successful Edge run above.
 
 | Check | Result |
 | --- | --- |

@@ -3,6 +3,7 @@
 import { chromium } from 'playwright';
 import { readFile, mkdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 const root = new URL('../', import.meta.url);
 const settingsScript = await readFile(new URL('extension/settings.js', root), 'utf8');
 const contentScript = await readFile(new URL('extension/content.js', root), 'utf8');
@@ -15,6 +16,9 @@ try {
     <video id="player" controls></video><form id="login"><input></form></main>
     <div id="ordinary" class="banner sponsored">Useful banner</div>
     <ins id="ad" class="adsbygoogle" style="display:inline-block!important">Advertisement</ins>
+    <div id="static-ad" class="adbox banner_ads adsbox" style="display:block!important">Ad</div>
+    <div id="text-content" class="textads">Useful text with a single ambiguous class</div>
+    <div id="compound-protected" class="textads adsbox"><article>Useful story</article></div>
     <div data-ad-slot="a" data-ad-client="b" id="protected"><article>Useful story</article></div>
     <iframe id="safe" src="about:blank?reference=//ad.doubleclick.net/"></iframe>`
   }));
@@ -28,25 +32,44 @@ try {
   await page.addScriptTag({ content: settingsScript });
   await page.addScriptTag({ content: contentScript });
   await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
-  for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe']) {
+  await page.waitForFunction(() => document.getElementById('static-ad').offsetHeight === 0);
+  for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe', 'text-content', 'compound-protected']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `${id} must be preserved`);
   }
   console.log('PASS: ad hidden; main article, player, form, banner, safe iframe retained');
   await page.evaluate(() => {
     const el = document.createElement('ins'); el.className = 'adsbygoogle'; el.id = 'dynamic';
     document.body.append(el);
+    const box = document.createElement('div'); box.id = 'dynamic-box';
+    box.className = 'textads banner-ads banner_ads ad-unit afs_ads ad-zone ad-space adsbox';
+    box.textContent = 'Ad'; document.body.append(box);
   });
   await page.waitForFunction(() => getComputedStyle(document.getElementById('dynamic')).display === 'none');
+  await page.waitForFunction(() => document.getElementById('dynamic-box').offsetHeight === 0);
+  await page.evaluate(() => document.getElementById('dynamic-box').className = 'ordinary');
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('dynamic-box')).display !== 'none');
   await page.evaluate(() => {
     const article = document.createElement('article'); article.textContent = 'Real new story';
     document.getElementById('dynamic').append(article);
   });
   await page.waitForFunction(() => getComputedStyle(document.getElementById('dynamic')).display !== 'none');
   console.log('PASS: dynamically added ad hidden, then restored when real article is inserted');
+  await page.evaluate(() => document.querySelector('#dynamic article').remove());
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('dynamic')).display === 'none');
+  await page.evaluate(() => {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = '<div id="changing-role" role="main">Useful content</div>';
+    document.getElementById('dynamic').append(wrapper);
+  });
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('dynamic')).display !== 'none');
+  await page.evaluate(() => document.getElementById('changing-role').removeAttribute('role'));
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('dynamic')).display === 'none');
+  console.log('PASS: removing protected content or its role reapplies filtering to ancestor ad boxes');
   await page.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: {
     enabled: true, allowedSites: ['fixture.example']
   } }));
   assert.equal(await page.locator('#ad').isVisible(), true);
+  assert.deepEqual(await page.locator('#static-ad').evaluate(el => [el.style.display, el.style.getPropertyPriority('display')]), ['block', 'important']);
   assert.deepEqual(await page.locator('#ad').evaluate(el => [el.style.getPropertyValue('display'), el.style.getPropertyPriority('display')]), ['inline-block', 'important']);
   await page.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: { enabled: true, allowedSites: [] } }));
   await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
@@ -143,14 +166,14 @@ try {
   assert.equal(await popup.locator('#urlEnabled').isChecked(), true);
   assert.equal(await popup.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'no horizontal overflow');
   await mkdir(new URL('artifacts/', root), { recursive: true });
-  await popup.screenshot({ path: new URL('artifacts/popup-dark.png', root).pathname, fullPage: true });
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-dark.png', root)), fullPage: true });
   await popup.getByRole('button', { name: 'حالت روز', exact: true }).click();
   await popup.waitForFunction(() => localStorage.getItem('theme') === 'light');
   await popup.reload();
   await popup.waitForFunction(() => !document.querySelector('[data-theme-choice="light"]').disabled);
   assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light');
-  await popup.screenshot({ path: new URL('artifacts/popup-light.png', root).pathname, fullPage: true });
-  await popup.screenshot({ path: new URL('artifacts/popup.png', root).pathname, fullPage: true });
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup-light.png', root)), fullPage: true });
+  await popup.screenshot({ path: fileURLToPath(new URL('artifacts/popup.png', root)), fullPage: true });
   await popup.evaluate(() => { window.rejectThemeSave = true; });
   await popup.getByRole('button', { name: 'حالت شب', exact: true }).click();
   await popup.waitForFunction(() => document.getElementById('message').textContent.includes('رنگ‌بندی'));

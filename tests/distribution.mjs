@@ -30,12 +30,19 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     }
     const rules = await json(base + 'rules/ads.json');
     const domains = await json('extension/ad-domains.json');
-    assert.equal(rules.length, domains.length);
+    const domainRules = rules.filter(rule => rule.condition.requestDomains);
+    const scriptRules = rules.filter(rule => rule.condition.regexFilter);
+    assert.equal(domainRules.length, domains.length);
+    assert.equal(scriptRules.length, 1);
     assert.equal(new Set(rules.map(rule => rule.id)).size, rules.length);
-    assert.deepEqual(rules.map(rule => rule.condition.requestDomains[0]), domains);
+    assert.deepEqual(domainRules.map(rule => rule.condition.requestDomains[0]), domains);
     for (const rule of rules) {
       assert.equal(rule.action.type, 'block');
-      assert.equal(rule.condition.domainType, 'thirdParty');
+      if (rule.condition.requestDomains) assert.equal(rule.condition.domainType, 'thirdParty');
+      else {
+        assert.deepEqual(rule.condition.resourceTypes, ['script']);
+        assert.equal(rule.condition.domainType, undefined, 'ad-only script paths also cover first-party ads');
+      }
       assert.equal(rule.condition.resourceTypes.includes('main_frame'), false);
       assert.equal(rule.priority, 1);
     }
@@ -55,18 +62,22 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
   });
 }
 test('all ZIPs are intact, match generated files, include license and exclude development dependencies', () => {
-  const result = spawnSync('python3', ['-c', `
+  const result = spawnSync(process.platform === 'win32' ? 'python' : 'python3', ['-c', `
 from pathlib import Path
 from zipfile import ZipFile
+import json
 root=Path.cwd()
+version=json.loads((root/'package.json').read_text(encoding='utf-8'))['version']
 for browser in ('chrome','edge','firefox'):
     folder=root/'dist'/browser
-    with ZipFile(root/'dist'/f'adblocker-{browser}-1.0.0.zip') as archive:
+    with ZipFile(root/'dist'/f'adblocker-{browser}-{version}.zip') as archive:
         assert archive.testzip() is None
-        assert set(archive.namelist()) == {str(file.relative_to(folder)) for file in folder.rglob('*') if file.is_file()}
+        assert set(archive.namelist()) == {file.relative_to(folder).as_posix() for file in folder.rglob('*')
+            if file.is_file() and '_metadata' not in file.relative_to(folder).parts}
         assert 'manifest.json' in archive.namelist()
         assert 'LICENSE.txt' in archive.namelist()
         assert not any('node_modules' in name for name in archive.namelist())
+        assert not any('_metadata' in name.split('/') for name in archive.namelist())
         for name in archive.namelist():
             assert archive.read(name) == (folder/name).read_bytes()
 `], { cwd: fileURLToPath(root), encoding: 'utf8' });

@@ -2,8 +2,14 @@
 
 [فارسی](CHANGELOG.md) | **English**
 
-## Unreleased
+## 1.1.0 — 2026-10-27
 
+- Reapply cosmetic filtering when protected descendants are removed or lose their main-content role.
+- Make `npm run package` select the Python command for Windows/Linux, and exclude browser-generated `_metadata` from ZIPs.
+- Expanded third-party ad/tracker coverage from 60 to 145 locally maintained domains, including regional telemetry endpoints.
+- Added first-party ad-script path blocking and conservative static/dynamic ad-box selectors, preserving exceptions and main content.
+- Browser regression checks require explicit blocking of every domain and preserve 17 useful hosts. Optional live Turtlecute check saves a report and screenshot.
+- Fixed Windows test screenshot paths, ZIP path comparisons, Python selection, and temporary-profile cleanup retries.
 - Redesigned popup with a protection card, consistent icons, and collapsible exception management.
 - Light/dark themes with local persistence, initial system preference, keyboard access, and reduced-motion support.
 - Screenshots of both themes and tests for persistence, storage-failure recovery, and horizontal overflow.
@@ -13,6 +19,8 @@
 - Paired Persian and English documentation with language navigation.
 - Documentation link checks cover every Markdown file in the repository root and `docs/`.
 - Both privacy and security policy translations are included in generated extension packages.
+- Concise Persian and English READMEs with installation steps and a dedicated MIT license section.
+- Manifest and ZIP versions now follow package.json to keep release assets consistent.
 
 ## 1.0.0
 

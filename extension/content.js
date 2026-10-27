@@ -4,6 +4,8 @@
   const { normalize, isAllowed, pageUrl } = AdBlockSettings;
   const selector = [
     'ins.adsbygoogle',
+    '.adbox.banner_ads.adsbox',
+    '.textads.adsbox',
     '[data-ad-client][data-ad-slot]',
     'iframe[id^="google_ads_iframe"]',
     'iframe[src*="//googleads.g.doubleclick.net/"]',
@@ -17,7 +19,7 @@
   const roots = new Set();
   const observer = new MutationObserver(records => {
     for (const record of records) {
-      if (record.type === 'attributes') roots.add(record.target);
+      if (record.type === 'attributes' || record.removedNodes.length) roots.add(record.target);
       for (const node of record.addedNodes) if (node.nodeType === 1) roots.add(node);
     }
     schedule();
@@ -66,6 +68,10 @@
       if (!root.isConnected) continue;
       if (root.nodeType === 1) hide(root);
       root.querySelectorAll(selector).forEach(hide);
+      // A removed article or changed role can make an ancestor ad box eligible
+      // again, even when the changed descendant is not itself an ad placement.
+      for (let ancestor = root.parentElement?.closest(selector); ancestor;
+        ancestor = ancestor.parentElement?.closest(selector)) hide(ancestor);
     }
     roots.clear();
   }

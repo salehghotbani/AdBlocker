@@ -1,15 +1,16 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { mkdtemp, rm, mkdir } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdtemp, rm, mkdir, readFile, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import assert from 'node:assert/strict';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const root = fileURLToPath(new URL('../', import.meta.url));
-const profile = await mkdtemp(path.join(os.tmpdir(), 'adblocker-test-'));
+const profileRoot = path.join(root, '.cache', 'browser-profiles');
+await mkdir(profileRoot, { recursive: true });
+const profile = await mkdtemp(path.join(profileRoot, 'adblocker-test-'));
 const extension = path.join(root, 'dist/chrome');
 const html = `<!doctype html><html><body>
 <main><h1>Real article</h1><p id="story">The main story stays visible.</p>
@@ -19,8 +20,17 @@ const html = `<!doctype html><html><body>
 <div data-ad-client="test" data-ad-slot="slot" id="protected"><article>Real content</article></div>
 <iframe id="safe-frame" src="/frame?reference=//ad.doubleclick.net/"></iframe>
 <script src="https://ads.doubleclick.net/adblocker-fixture.js"></script>
+<script src="/pagead.js?campaign=test"></script>
+<script src="/widget/ads.fixture.js"></script>
+<script src="/reader.js?reference=/widget/ads.js"></script>
 </body></html>`;
 const server = http.createServer((req, res) => {
+  if (/^\/(pagead\.js|widget\/ads\.fixture\.js|reader\.js)/.test(req.url)) {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.end(req.url.startsWith('/reader.js') ? 'window.readerLoaded = true;' :
+      req.url.startsWith('/pagead.js') ? 'window.pageAdLoaded = true;' : 'window.widgetAdLoaded = true;');
+    return;
+  }
   res.setHeader('Content-Type', 'text/html');
   res.end(req.url.startsWith('/frame') ? '<p>Useful embedded content</p>' : html);
 });
@@ -34,12 +44,12 @@ try {
     args: ['--no-sandbox', `--disable-extensions-except=${extension}`, `--load-extension=${extension}`]
   });
   context.setDefaultTimeout(15000);
-  context.on('console', message => {
-    if (message.type() === 'error') console.error('Browser:', message.text());
-  });
   // Satisfy external fixtures locally; no external website is contacted by this test.
   await context.route('https://ads.doubleclick.net/**', route => route.fulfill({
     contentType: 'application/javascript', body: 'window.adScriptLoaded = true;'
+  }));
+  await context.route('https://*/adblocker-probe', route => route.fulfill({
+    contentType: 'text/plain', body: 'Local network fixture'
   }));
   let worker = context.serviceWorkers()[0];
   if (!worker) {
@@ -64,6 +74,34 @@ try {
   assert.equal(await page.evaluate(() => window.adScriptLoaded), undefined);
   assert.ok(failures.some(failure => failure.url.includes('adblocker-fixture.js') && failure.error.includes('BLOCKED')),
     `Expected actual DNR blocking; got ${JSON.stringify(failures)}`);
+  for (const marker of ['pageAdLoaded', 'widgetAdLoaded']) {
+    assert.equal(await page.evaluate(key => window[key], marker), undefined);
+  }
+  for (const file of ['/pagead.js?campaign=test', '/widget/ads.fixture.js']) {
+    assert.ok(failures.some(failure => failure.url === url + file && failure.error.includes('BLOCKED')), file);
+  }
+  assert.equal(await page.evaluate(() => window.readerLoaded), true, 'ad path inside a useful script query stays allowed');
+  assert.equal(await page.evaluate(() => fetch('/pagead.js').then(res => res.ok)), true,
+    'path rules only block script resources');
+  const domains = JSON.parse(await readFile(path.join(root, 'extension/ad-domains.json'), 'utf8'));
+  const trackerHosts = [...domains, 'stats.g.doubleclick.net', 'cdn.mouseflow.com',
+    'config.unityads.unity3d.com', 'data.mistat.india.xiaomi.com', 'data.mistat.rus.xiaomi.com'];
+  const allowedHosts = ['www.google.com', 'accounts.google.com', 's3.amazonaws.com',
+    'useful-bucket.s3.amazonaws.com', 'www.youtube.com', 'www.facebook.com', 'www.linkedin.com',
+    'www.reddit.com', 'www.tiktok.com', 'grs.hicloud.com', 'extmaps-api.yandex.net',
+    'careers.hotjar.com', 'app.bugsnag.com', 'api.bugsnag.com', 'app.getsentry.com',
+    'business-api.tiktok.com', 'google-analytics.com.example.org'];
+  const probe = hosts => page.evaluate(hosts => Promise.all(hosts.map(async host => {
+    try { await fetch(`https://${host}/adblocker-probe`, { method: 'HEAD', mode: 'no-cors' }); return false; }
+    catch { return true; }
+  })), hosts);
+  assert.ok((await probe(trackerHosts)).every(Boolean), 'every advertising/tracking domain is blocked');
+  for (const host of trackerHosts) {
+    assert.ok(failures.some(failure => failure.url === `https://${host}/adblocker-probe` &&
+      failure.error.includes('BLOCKED')), `Browser must report client blocking for ${host}`);
+  }
+  assert.ok((await probe(allowedHosts)).every(blocked => !blocked), 'shared services, dashboards and lookalike domains remain usable');
+  console.log(`PASS: ${domains.length} domains blocked by the browser; ${allowedHosts.length} useful hosts allowed; first-party ad scripts blocked; benign script queries and fetches allowed`);
   for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe-frame']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `${id} must be preserved`);
   }
@@ -83,6 +121,8 @@ try {
   await page.waitForFunction(() => document.getElementById('ad').style.display === 'inline-block');
   await page.reload();
   assert.equal(await page.evaluate(() => window.adScriptLoaded), true);
+  assert.equal(await page.evaluate(() => window.pageAdLoaded && window.widgetAdLoaded), true);
+  assert.ok((await probe(domains)).every(blocked => !blocked), 'site exception permits all tracker requests');
   assert.equal(await page.locator('#ad').isVisible(), true);
   console.log('PASS: site exception restores cosmetic styles and allows network resources after reload');
   await command({ type: 'setSite', host: '127.0.0.1', allowed: false });
@@ -93,6 +133,7 @@ try {
   await page.waitForFunction(() => document.getElementById('ad').style.display === 'inline-block');
   await page.reload();
   assert.equal(await page.evaluate(() => window.adScriptLoaded), true);
+  assert.equal(await page.evaluate(() => window.pageAdLoaded && window.widgetAdLoaded), true);
   assert.equal(await page.locator('#ad').isVisible(), true);
   console.log('PASS: re-enable site and global disable both affect network and cosmetics');
   await command({ type: 'setEnabled', enabled: true });
@@ -134,8 +175,32 @@ try {
   await popup.setViewportSize({ width: 390, height: 600 });
   await popup.screenshot({ path: path.join(root, 'artifacts/popup.png') });
   console.log('PASS: popup loads and reads persisted settings; screenshot saved');
+  // Opt-in external check. Kept out of CI because DNS/network failures can inflate
+  // this site's score; the local fixtures above require explicit browser blocking.
+  if (process.env.ADBLOCK_LIVE_TEST === '1') {
+    const live = await context.newPage();
+    await live.setViewportSize({ width: 1280, height: 960 });
+    const blockedRequests = [];
+    live.on('requestfailed', request => {
+      if (request.failure()?.errorText.includes('BLOCKED_BY_CLIENT')) blockedRequests.push(request.url());
+    });
+    await live.goto('https://adblock.turtlecute.org/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await live.waitForFunction(() => /Total\s*:\s*\d+/.test(document.querySelector('#adb_test_r')?.textContent),
+      null, { timeout: 60000 });
+    const report = await live.evaluate(() => ({
+      score: document.body.style.getPropertyValue('--liquid-title'),
+      totals: document.querySelector('#adb_test_r').textContent.trim(),
+      log: document.querySelector('#test_log').innerText
+    }));
+    report.blockedByClient = blockedRequests;
+    await writeFile(path.join(root, 'artifacts/turtlecute-result.json'), JSON.stringify(report, null, 2) + '\n');
+    await live.screenshot({ path: path.join(root, 'artifacts/turtlecute-result.png') });
+    console.log(`LIVE Turtlecute: ${report.score}; ${report.totals}; ${blockedRequests.length} requests explicitly blocked by client`);
+    assert.ok(blockedRequests.length > 100, 'expect actual extension blocking, not only network errors');
+    await live.close();
+  }
 } finally {
   await context?.close();
   await new Promise(resolve => server.close(resolve));
-  await rm(profile, { recursive: true, force: true });
+  await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
 }

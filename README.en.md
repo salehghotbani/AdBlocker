@@ -2,124 +2,45 @@
 
 [فارسی](README.md) | **English**
 
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![Manifest V3](https://img.shields.io/badge/manifest-V3-blue)
+An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interface and no collection of browsing data.
 
-A Manifest V3 extension for Chrome, Edge, and Firefox with a Persian interface. No backend, tracking, browsing-history collection, or transmission of browsing data.
+## Features
 
-## Interface preview
+- Blocks 145 advertising and tracking domains and specific ad-script paths.
+- Hides static and dynamic ad placements while protecting forms and media players.
+- Global toggle, site and exact-URL exceptions, one-time page pauses, and light/dark themes.
 
-| Light mode | Dark mode |
+| Light | Dark |
 | --- | --- |
-| <img src="docs/images/popup-light.png" width="280" alt="Redesigned AdBlocker popup in light mode"> | <img src="docs/images/popup-dark.png" width="280" alt="Redesigned AdBlocker popup in dark mode"> |
+| <img src="docs/images/popup-light.png" width="250" alt="Light mode"> | <img src="docs/images/popup-dark.png" width="250" alt="Dark mode"> |
 
-This screenshot shows the actual interface rendered in a browser test with a sample site and mocked extension messaging. It does not establish that the extension was successfully installed.
+## Install
 
-## Features and limitations
+Download your browser's ZIP from the [latest release](https://github.com/salehghotbani/AdBlocker/releases/latest) and extract it.
 
-- Blocks third-party requests to 60 advertising and related tracking domains using the browser's native `declarativeNetRequest` API, including selected Iranian ad-serving hosts.
-- Hides specific Google Ads placements, including matching elements inserted after page load.
-- Preserves `main`, `article`, main headings, forms, media players, and containers that contain these elements. Does not indiscriminately remove `.banner`, `.sponsored`, or elements containing the word “advertisement.”
-- Provides a global toggle, site exceptions covering subdomains, exception reset, and settings stored on the current device.
-- Supports a one-time pause for a page in one tab and a permanent exception for an exact URL.
-- Persian interface with a protection card, consistent icons, collapsible exception management, and light/dark themes.
-- Restores previous element styles when disabled. Reload the page to recover resources whose network requests were already blocked.
+| Browser | Installation |
+| --- | --- |
+| Chrome 120+ | Open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose the extracted folder. |
+| Edge 120+ | Follow the same steps at `edge://extensions`. |
+| Firefox 140+ | Open `about:debugging#/runtime/this-firefox`, select **Load Temporary Add-on**, and choose `manifest.json`. |
 
-**Removing every ad while preserving all main content on every site cannot be guaranteed.** This version is intentionally conservative. First-party ads, ads embedded in video streams (including some YouTube ads), native advertising, and providers outside the list may remain visible. Sites with ad-block detection may need an exception. The domain list is maintained locally and is not automatically downloaded. This project is not a complete implementation of EasyList or uBlock Origin.
+Packages are unsigned. Firefox installation is temporary and ends when the browser closes. Reload existing pages after installation or an update.
 
-## Build
+Some ads, especially ads embedded in video, may remain. Use a site or page exception if a website stops working. [Test results and limitations](docs/TESTING.en.md)
 
-Requires Node.js 20 or later. The extension itself and its build step have no runtime dependencies:
+## Build from source
+
+Requires Node.js 20+ and Python 3 for ZIP packaging.
 
 ```sh
-git clone https://github.com/salehghotbani/AdBlocker.git
-cd AdBlocker
 npm run build
-```
-
-Outputs are generated in `dist/chrome`, `dist/edge`, and `dist/firefox`. To create ZIP packages using Python 3:
-
-```sh
 npm run package
 ```
 
-The `dist/adblocker-*-1.0.0.zip` files are unsigned packages.
+Browser folders are generated in `dist/chrome`, `dist/edge`, and `dist/firefox`; ZIPs are in `dist/`. [Development and testing guide](CONTRIBUTING.en.md)
 
-## Local installation
+## License
 
-### Chrome / Edge (120 or later)
+[MIT](LICENSE) — © 2026 Saleh Ghotbani. Use, modification, and redistribution are permitted when retaining the copyright and license notice. Provided without warranty. [Persian translation](LICENSE.fa.md)
 
-1. Open `chrome://extensions` in Chrome or `edge://extensions` in Edge.
-2. Enable **Developer mode**.
-3. Click **Load unpacked** and select `dist/chrome` or `dist/edge`.
-4. Pin the extension to the toolbar and reload existing tabs.
-
-### Desktop Firefox (140 or later)
-
-1. Open `about:debugging#/runtime/this-firefox`.
-2. Select **Load Temporary Add-on**.
-3. Open `dist/firefox/manifest.json`.
-
-Temporary installations disappear when Firefox closes. Permanent installation requires Mozilla signing. Publishing to the three browser stores is a separate task and has not been performed. The manifest declares Android 142 as the minimum Android version, but Android has not been tested.
-
-## Light and dark modes
-
-Use the sun and moon buttons at the top of the popup to select light or dark mode. Your selection is saved locally and survives closing and reopening the popup. Before any manual selection, the popup follows your system color scheme. Changing the appearance does not change blocking settings or exceptions. Buttons support keyboard navigation, and animations respect the system's reduced-motion preference.
-
-## Pause or permanently exclude a page
-
-The popup's page section displays the current URL:
-
-- **One-time pause and reload:** excludes only the current tab for one page display. The extension automatically reloads once to recover previously blocked resources. The next reload, navigation to another URL, tab closure, or browser shutdown ends the pause. Other tabs remain protected. The resume-and-reload button ends the pause early.
-- **Enabled for this URL:** turning this switch off permanently excludes the current URL, including after reloads and browser restarts. Turn it back on or use the URL-exception reset control to remove the exception. Reload to fully apply network changes.
-
-URL matching includes scheme, host, port, path, and query parameters; path case and query order matter. The `#fragment` is ignored because the browser's network rules do not receive it. A URL exception does not cover other paths on the same site. Up to 200 URL exceptions are supported, each at most 1,500 characters; URLs containing a username or password are rejected. The global toggle and whole-site exceptions still take precedence over page controls.
-
-On sites that change routes without loading a new document, cosmetic filtering updates, but reload to ensure network rules fully apply. Selected URLs may contain sensitive query parameters; use permanent exceptions only when you intend to store that address locally.
-
-## Tests
-
-```sh
-npm ci --ignore-scripts --no-audit --no-fund
-npm run check
-npm run package
-npm test
-npm run test:dist
-npm run test:dom
-npm run test:browser
-```
-
-- `npm test`: thirteen tests for settings, worker state restoration, exceptions, exact URL matching, temporary-pause expiry, tab isolation, command serialization, and rejection of unauthorized changes. Browser APIs are mocked.
-- `test:dist`: four tests covering generated manifests, file references, source copies, licensing, PNG icons, blocking rules, and ZIP integrity.
-- `test:dom`: runs actual Chromium with mocked extension messaging and storage. Checks article, form, video, and safe iframe preservation, dynamic ad hiding, style restoration, Persian controls, both themes, preference persistence, keyboard selection, and recovery after a storage failure. Does not test network blocking.
-- `test:browser`: installs the extension and requires real blocking of an ad request, followed by allowance when the site is excluded or the extension is disabled. External fixture responses are provided locally; no advertising site is contacted. Requires a browser that permits unpacked extensions.
-
-The default browser path is `/usr/bin/chromium`. On other systems, set `CHROMIUM_PATH` to a Chrome/Chromium executable. Playwright is only a development and test dependency and is not included in the extension.
-
-Execution results and limitations are recorded in the [test report](docs/TESTING.en.md). After a push, CI is configured to build, run unit and DOM tests, install the actual extension in Chromium, and validate Firefox output. Check the result of the particular CI run; these instructions do not establish that CI has passed.
-
-To validate Firefox output:
-
-```sh
-npm run lint:firefox
-```
-
-## Permissions and privacy
-
-HTTP/HTTPS access is needed to apply rules and find ad placements on pages. `storage` holds settings and user-selected exceptions locally; `activeTab` displays the current site after a user click, and `webNavigation` expires one-time pauses when the page changes. Browsing history is not collected. There is no analytics service, API key, backend, or remote code. Settings-change messages are accepted only from the extension's own pages.
-
-## Rule development
-
-The domain list is in `extension/ad-domains.json`; conservative cosmetic rules are in `extension/content.js`. Rebuild after changes and click Reload in the browser's extension manager. Before adding a domain, verify that it does not serve essential content, sign-in, or video. Main-frame navigation is intentionally never blocked, and listed domains are blocked only when used as third parties. Exceptions have higher priority than blocking rules.
-
-## Documentation and license
-
-- [Privacy policy](PRIVACY.en.md)
-- [Contributing](CONTRIBUTING.en.md)
-- [Security reporting](SECURITY.en.md)
-- [Changelog](CHANGELOG.en.md)
-- [Test report](docs/TESTING.en.md)
-
-This project is available under the [MIT License](LICENSE). You may use, modify, and redistribute it while retaining the copyright and license notice. No warranty is provided for ad coverage or compatibility with every site. Playwright is an Apache-2.0 development tool and is not included in the extension package. Icons and rules are generated or maintained locally; no third-party filter list is redistributed in the package.
-
-A [Persian license translation](LICENSE.fa.md) is available for reference; the English `LICENSE` file is authoritative.
+[Privacy](PRIVACY.en.md) · [Changelog](CHANGELOG.en.md) · [Security](SECURITY.en.md)
