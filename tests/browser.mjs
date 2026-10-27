@@ -195,14 +195,22 @@ try {
   assert.equal(saved.settings.enabled, true);
   await command({ type: 'setUrl', url: url + '/exact?campaign=one#section', allowed: true });
   await page.goto(url + '/exact?campaign=one');
-  const exceptionScript = await page.evaluate(() => window.adScriptLoaded);
-  if (exceptionScript !== true) {
+  try {
+    // Wait for the observable result of the routed script, rather than racing
+    // its execution with an immediate evaluation after navigation.
+    await page.waitForFunction(() => window.adScriptLoaded === true);
+  } catch (error) {
     const diagnostic = await popup.evaluate(async () => ({
       rules: await chrome.declarativeNetRequest.getDynamicRules(),
       settings: (await chrome.storage.local.get('settings')).settings
     }));
+    const documentState = await page.evaluate(() => ({
+      readyState: document.readyState, pageAdLoaded: window.pageAdLoaded,
+      widgetAdLoaded: window.widgetAdLoaded, readerLoaded: window.readerLoaded,
+      scripts: [...document.scripts].map(script => script.src)
+    }));
     throw new Error(`Exact-URL fixture did not load: ${JSON.stringify({ url: page.url(),
-      failures: failures.slice(-8), ...diagnostic })}`);
+      failures: failures.slice(-8), documentState, ...diagnostic })}`, { cause: error });
   }
   assert.equal(await page.locator('#ad').isVisible(), true);
   for (const path of ['/other', '/exact?campaign=two']) {
