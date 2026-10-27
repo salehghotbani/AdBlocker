@@ -2,7 +2,7 @@
 
 [فارسی](PRIVACY.md) | **English**
 
-This policy describes version 1.3.0 of the AdBlocker extension.
+This policy describes version 1.3.1 of the AdBlocker extension.
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
 - The enabled/disabled setting, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.

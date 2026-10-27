@@ -2,13 +2,14 @@
 
 [فارسی](TESTING.md) | **English**
 
-## Unreleased Soft98 fix — 2026-10-28
+## Version 1.3.1 Soft98 fix — 2026-10-28
 
 - 25 unit tests, four distribution/ZIP tests, DOM checks, and actual Edge extension tests passed. All 150 advertising/tracking domains were explicitly blocked; 27 useful-host fixtures remained reachable, including Soft98, its forum/image/file hosts, Faradars and the main Kaprila website.
 - Site-specific selectors collapse direct banners, related-ad placements, side-ad sections and the hosting card. Fixtures cover dynamic insertions, protection of real articles and search/download controls, restoration after site/URL/global exceptions, and absence of these rules on other hosts.
 - A live [Soft98](https://soft98.ir/) check with the actual extension confirmed all four target containers were hidden. All six visible software descriptions were identical before and after filtering, and `beta.kaprila.com/a/loader.js` failed with explicit `ERR_BLOCKED_BY_CLIENT`. Screenshots were visually reviewed. Network failures alone were not counted as blocking.
 - Opt-in reproduction in PowerShell: set `CHROMIUM_PATH` to a Chromium-based browser, set `$env:ADBLOCK_LIVE_SOFT98='1'`, then run `npm run test:browser`. It saves `artifacts/soft98-before.png`, `artifacts/soft98-after.png` and `artifacts/soft98-result.json` using an isolated test profile. The live check stays outside CI; deterministic Soft98 fixtures run in CI.
-- This fix is in the current source; the existing v1.3.0 release assets are unchanged. The historical Turtlecute percentage below was not rerun for this fix.
+- The filtering fix passed [CI run 40585173675](https://github.com/salehghotbani/AdBlocker/actions/runs/40585173675) for commit `10747d1410687c8edf7e2c9a909c97a2891068aa`, including real Chromium integration and Firefox validation. Final CI for the versioned release commit and package checksums are recorded in the [v1.3.1 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.1).
+- The historical Turtlecute percentage below was not rerun for this fix. Local browser execution used Edge; Firefox runtime and OS toast delivery were not tested. No browser permissions or dependencies were added.
 
 ## Version 1.3.0 update checks — 2026-10-28
 

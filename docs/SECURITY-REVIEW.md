@@ -1,6 +1,6 @@
-# Version 1.3.0 security and coverage review
+# Version 1.3.1 security and coverage review
 
-## Unreleased Soft98 rule review — 2026-10-28
+## Version 1.3.1 Soft98 rule review — 2026-10-28
 
 The [Soft98 page](https://soft98.ir/) directly includes `https://beta.kaprila.com/a/loader.js` and ad containers with `.abdd`, `.abdds` and `kaprila_soft98_ir_` IDs. The dedicated ad host is blocked; shared image/file servers, Faradars, the main Kaprila site and hosting CDNs remain allowed. Cosmetic rules are limited to `soft98.ir` and `www.soft98.ir`, preserving the existing protected-content and exception checks. No permissions, outbound update endpoints or executable sources are added. Live before/after checks preserved all six software descriptions; see the [test report](TESTING.en.md).
 
