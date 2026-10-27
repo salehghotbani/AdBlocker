@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = new URL('../', import.meta.url);
 const settingsScript = await readFile(new URL('extension/settings.js', root), 'utf8');
 const contentScript = await readFile(new URL('extension/content.js', root), 'utf8');
+const { version } = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
 await mkdir(new URL('.cache/dom-profiles/', root), { recursive: true });
 const profile = await mkdtemp(fileURLToPath(new URL('.cache/dom-profiles/profile-', root)));
 const context = await chromium.launchPersistentContext(profile, { executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
@@ -105,7 +106,9 @@ try {
     await route.fulfill({ body: await readFile(new URL(`extension/${file}`, root)),
       contentType: file.endsWith('.png') ? 'image/png' : file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'application/javascript' });
   });
-  await popup.addInitScript(() => {
+  await popup.addInitScript(({ version }) => {
+    window.popupReloads = [];
+    window.fixtureTabUrl = 'https://example.com/story';
     let settings = JSON.parse(localStorage.getItem('fixture-settings') ||
       '{"enabled":true,"allowedSites":[],"allowedUrls":[]}');
     let paused = false;
@@ -117,19 +120,21 @@ try {
           localStorage.setItem('theme', theme);
         }
       } },
-      runtime: { async sendMessage(message) {
+      runtime: { getManifest() { return { version }; }, async sendMessage(message) {
         if (message.type === 'setEnabled') settings.enabled = message.enabled;
         if (message.type === 'setSite') settings.allowedSites = message.allowed ? [message.host] : [];
         if (message.type === 'clearSites') settings.allowedSites = [];
         if (message.type === 'setUrl') settings.allowedUrls = message.allowed ? [message.url] : [];
         if (message.type === 'clearUrls') settings.allowedUrls = [];
-        if (message.type === 'setPause') paused = message.paused;
+        if (message.type === 'setPause') { paused = message.paused; window.popupReloads.push(1); }
         localStorage.setItem('fixture-settings', JSON.stringify(settings));
         return { settings, paused };
       } },
-      tabs: { async query() { return [{ id: 1, url: 'https://example.com/story' }]; }, async reload() {} }
+      tabs: { async query() { return [{ id: 1, url: window.fixtureTabUrl }]; },
+        async get() { return { id: 1, url: window.fixtureTabUrl }; },
+        async reload(id) { window.popupReloads.push(id); } }
     };
-  });
+  }, { version });
   await popup.goto('https://popup.example/');
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
   const assertProtection = async expected => {
@@ -158,6 +163,7 @@ try {
     assert.equal(appearance.filter, expected === 'off' ? 'grayscale(1)' : 'none');
   };
   await assertProtection('on');
+  assert.equal(await popup.locator('#version').textContent(), `v${version}`);
   await popup.waitForFunction(() => [...document.querySelectorAll('.brand-logo')]
     .every(image => image.complete && image.naturalWidth === 128));
   assert.equal(await popup.locator('.brand-logo').first().evaluate(image => {
@@ -175,6 +181,7 @@ try {
   await popup.locator('#siteEnabled').uncheck();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('استثنا'));
   await assertProtection('off');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 1, 'site change reloads once without confirmation');
   await popup.getByRole('button', { name: 'حالت روز', exact: true }).click();
   await popup.waitForFunction(() => localStorage.getItem('theme') === 'light');
   await assertProtection('off');
@@ -192,15 +199,18 @@ try {
   await popup.locator('#clear').click();
   await popup.waitForFunction(() => document.getElementById('siteEnabled').checked);
   await assertProtection('on');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 1, 'clearing the current exception reloads after reopening');
   await popup.locator('#enabled').uncheck();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('خاموش'));
   await assertProtection('off');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 2, 'global change reloads current page once');
   await popup.locator('#enabled').check();
   await popup.waitForFunction(() => document.getElementById('status').textContent === 'مسدودسازی فعال است');
   await assertProtection('on');
   await popup.locator('#urlEnabled').uncheck();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('URL'));
   await assertProtection('off');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 4, 'URL exception reloads current page');
   assert.equal(await popup.locator('#pause').isDisabled(), true);
   await popup.locator('#clearUrls').click();
   await popup.waitForFunction(() => document.getElementById('urlEnabled').checked);
@@ -208,6 +218,7 @@ try {
   await popup.locator('#pause').click();
   await popup.waitForFunction(() => document.getElementById('status').textContent.includes('موقت'));
   await assertProtection('off');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 6, 'pause is reloaded only by the background');
   await popup.locator('#pause').click();
   await popup.waitForFunction(() => document.getElementById('status').textContent === 'مسدودسازی فعال است');
   await assertProtection('on');
@@ -245,10 +256,15 @@ try {
   await popup.waitForFunction(() => document.getElementById('message').textContent.includes('رنگ‌بندی'));
   assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light', 'failed save restores prior theme');
   assert.equal(await popup.evaluate(() => localStorage.getItem('theme')), 'light');
+  await popup.evaluate(() => { window.fixtureTabUrl = 'https://other.example/changed'; });
+  await popup.locator('#enabled').uncheck();
+  await assertProtection('off');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 0, 'a stale popup must not reload a different page');
   console.log('PASS: real Persian popup renders; site/global switches and reset work with mocked transport');
   console.log('PASS: permanent URL toggle, URL reset, one-time pause and resume controls work');
   console.log('PASS: system theme, keyboard selection, day/night persistence, save-failure recovery and layout');
   console.log('PASS: logo loads with transparency; disabled site, URL, pause and global states are gray in both themes; reopening preserves preference and re-enabling restores color');
+  console.log('PASS: protection changes reload once automatically; pause does not double reload; stale popup does not reload another page');
 } finally {
   await context.close();
   await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });

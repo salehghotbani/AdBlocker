@@ -8,10 +8,11 @@ An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interfac
 
 ## Features
 
-- Blocks 145 advertising and tracking domains and specific ad-script paths.
+- Blocks 149 advertising and tracking domains and specific ad-script paths.
 - Hides static and dynamic ad placements while protecting forms and media players.
 - Global toggle, site and exact-URL exceptions, one-time page pauses, and light/dark themes.
 - Grayscale interface when protection is off for the site or page, preserving the light/dark preference.
+- Automatically reloads the current page after a protection change, without another confirmation.
 
 | Light | Dark |
 | --- | --- |
@@ -60,3 +61,5 @@ Browser folders are generated in `dist/chrome`, `dist/edge`, and `dist/firefox`;
 [MIT](LICENSE) — © 2026 Saleh Ghotbani. Use, modification, and redistribution are permitted when retaining the copyright and license notice. Provided without warranty. [Persian translation](LICENSE.fa.md)
 
 [Privacy](PRIVACY.en.md) · [Changelog](CHANGELOG.en.md) · [Security](SECURITY.en.md)
+
+[Version 1.2.0 security review scope and results](docs/SECURITY-REVIEW.md)

@@ -2,11 +2,16 @@
 
 [فارسی](CHANGELOG.md) | **English**
 
-## Unreleased
+## 1.2.0 — 2026-10-27
 
 - New shared popup and browser logo with transparent PNG icons in four sizes.
 - Grayscale site/URL exceptions, one-time pauses, and global-off states in both light and dark mode; color returns when protection resumes.
 - Logo transparency/packaging checks and tests for gray state on reopening and preservation of the light/dark preference.
+- Expand coverage from 145 to 149 hosts using documented Hotjar, Microsoft UET, and Segment endpoints.
+- Reload the current page automatically after protection changes; avoid duplicate pause reloads and stale-page reloads.
+- Limit page messages to effective protection state, restrict Chromium local-storage access, and restore network policy after a failed save.
+- Explicit CSP blocks inline scripts, network connections, and active embedded content in extension pages; CI checks dependency advisories.
+- Show the actual manifest version in the popup.
 
 ## 1.1.0 — 2026-10-27
 

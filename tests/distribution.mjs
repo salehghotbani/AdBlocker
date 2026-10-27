@@ -14,6 +14,11 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     assert.equal(manifest.manifest_version, 3);
     assert.equal(manifest.version, (await json('package.json')).version);
     assert.equal(manifest.permissions.includes('declarativeNetRequest'), true);
+    const policy = manifest.content_security_policy.extension_pages;
+    for (const directive of ["script-src 'self'", "object-src 'none'", "base-uri 'none'", "connect-src 'none'"]) {
+      assert.ok(policy.includes(directive), directive);
+    }
+    assert.equal(/unsafe-eval|unsafe-inline|https?:/.test(policy), false);
     const paths = [manifest.action.default_popup, ...Object.values(manifest.icons),
       ...manifest.content_scripts.flatMap(script => script.js),
       ...manifest.declarative_net_request.rule_resources.map(rule => rule.path),

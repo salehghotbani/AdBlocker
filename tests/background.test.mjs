@@ -17,11 +17,15 @@ async function harness(saved, savedSession = {}) {
   const reloads = [];
   let enabled = [];
   let fail = false;
+  let failStorage = false;
+  let storageAccess;
   const broadcasts = [];
   const errors = [];
   const api = {
     storage: {
-      local: { async get() { return { settings: storage }; }, async set({ settings }) { storage = settings; } },
+      local: { async get() { return { settings: storage }; },
+        async set({ settings }) { if (failStorage) throw new Error('Storage unavailable'); storage = settings; },
+        async setAccessLevel({ accessLevel }) { storageAccess = accessLevel; } },
       session: { async get() { return structuredClone(session); }, async set(value) { session = structuredClone(value); } }
     },
     declarativeNetRequest: {
@@ -59,7 +63,8 @@ async function harness(saved, savedSession = {}) {
     async emit(name, details) { handlers[name](details); await send({ type: 'getSettings' }); },
     get session() { return session; }, get sessionRules() { return sessionRules; },
     get stored() { return storage; }, get dynamic() { return dynamic; },
-    get enabled() { return enabled; }, fail() { fail = true; } };
+    get enabled() { return enabled; }, get storageAccess() { return storageAccess; },
+    fail() { fail = true; }, failStorage() { failStorage = true; } };
 }
 
 test('worker startup restores persisted disabled ruleset and site exceptions', async () => {
@@ -155,5 +160,41 @@ test('network API failure is returned and is not persisted as success', async ()
   const result = await h.send({ type: 'setEnabled', enabled: false });
   assert.match(result.error, /DNR unavailable/);
   assert.equal(h.stored, undefined);
-  assert.equal(h.errors.length, 1, 'simulated API failure is logged');
+  assert.equal(h.errors.length, 2, 'persistent API failure and failed rollback are both logged');
+  assert.match(h.errors[0].join(' '), /could not restore/);
+});
+
+test('page messages and broadcasts disclose only effective protection, not private exceptions', async () => {
+  const secretUrl = 'https://private.example/report?token=private-value';
+  const h = await harness({ enabled: true, allowedSites: ['private.example'], allowedUrls: [secretUrl] });
+  assert.equal(h.storageAccess, 'TRUSTED_CONTEXTS');
+  const response = await h.send({ type: 'getSettings' }, { id: 'fixture', url: h.tabs[1].url, tab: h.tabs[1] });
+  assert.deepEqual(JSON.parse(JSON.stringify(response.settings)), { enabled: true });
+  await h.send({ type: 'setSite', host: 'allowed.example', allowed: true });
+  for (const item of h.broadcasts) {
+    assert.deepEqual(Object.keys(item.message.settings), ['enabled']);
+    assert.equal(JSON.stringify(item).includes('private-value'), false);
+  }
+  assert.equal((await h.send({ type: 'getSettings' })).settings.allowedUrls[0], secretUrl,
+    'trusted popup retains access to exception management');
+});
+
+test('a failed settings save restores the previous network policy without broadcasting success', async () => {
+  const h = await harness();
+  h.failStorage();
+  const response = await h.send({ type: 'setSite', host: 'allowed.example', allowed: true });
+  assert.match(response.error, /Storage unavailable/);
+  assert.equal(h.stored, undefined);
+  assert.equal(h.dynamic.length, 0, 'failed exception is rolled back');
+  assert.deepEqual(Array.from(h.enabled), ['ads']);
+  assert.equal(h.broadcasts.length, 0);
+});
+
+test('a foreign extension or forged page URL cannot issue privileged commands', async () => {
+  const h = await harness();
+  for (const sender of [
+    { id: 'foreign', url: 'chrome-extension://fixture/popup.html' },
+    { id: 'fixture', url: 'https://site.example/?next=chrome-extension://fixture/popup.html' }
+  ]) assert.ok((await h.send({ type: 'setEnabled', enabled: false }, sender)).error);
+  assert.equal(h.stored, undefined);
 });

@@ -60,6 +60,20 @@ try {
   const popup = await context.newPage();
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
+  await popup.evaluate(() => {
+    window.policyViolations = [];
+    document.addEventListener('securitypolicyviolation', event => window.policyViolations.push(event.violatedDirective));
+    const script = document.createElement('script');
+    script.textContent = 'window.inlineShouldNotRun = true';
+    document.head.append(script);
+    const base = document.createElement('base'); base.href = 'https://foreign.example/';
+    document.head.append(base);
+  });
+  await popup.waitForFunction(() => window.policyViolations.some(value => value.startsWith('script-src')) &&
+    window.policyViolations.includes('base-uri'));
+  assert.equal(await popup.evaluate(() => window.inlineShouldNotRun), undefined);
+  assert.ok((await popup.evaluate(() => document.baseURI)).startsWith(`chrome-extension://${extensionId}/`));
+  console.log('PASS: real extension CSP rejects inline script execution and foreign base URLs');
   const command = message => popup.evaluate(async message => {
     const result = await chrome.runtime.sendMessage(message);
     if (result.error) throw new Error(result.error);
@@ -90,7 +104,8 @@ try {
     'useful-bucket.s3.amazonaws.com', 'www.youtube.com', 'www.facebook.com', 'www.linkedin.com',
     'www.reddit.com', 'www.tiktok.com', 'grs.hicloud.com', 'extmaps-api.yandex.net',
     'careers.hotjar.com', 'app.bugsnag.com', 'api.bugsnag.com', 'app.getsentry.com',
-    'business-api.tiktok.com', 'google-analytics.com.example.org'];
+    'business-api.tiktok.com', 'google-analytics.com.example.org', 'www.bing.com',
+    'www.hotjar.com', 'www.segment.com'];
   const probe = hosts => page.evaluate(hosts => Promise.all(hosts.map(async host => {
     try { await fetch(`https://${host}/adblocker-probe`, { method: 'HEAD', mode: 'no-cors' }); return false; }
     catch { return true; }
@@ -167,9 +182,21 @@ try {
   assert.equal(await page.evaluate(() => window.adScriptLoaded), undefined);
   console.log('PASS: permanent URL distinguishes paths/query; one-time pause allows one reload in one tab only');
   await page.bringToFront();
-  await popup.bringToFront();
   await popup.reload();
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
+  let automaticLoads = 0;
+  page.on('domcontentloaded', () => automaticLoads++);
+  await popup.waitForFunction(() => !document.getElementById('siteEnabled').disabled);
+  await popup.locator('#siteEnabled').click();
+  await page.waitForFunction(() => window.adScriptLoaded === true);
+  assert.equal(automaticLoads, 1, 'disabling current site reloads it automatically once');
+  assert.equal(await popup.locator('html').getAttribute('data-protection'), 'off');
+  await popup.locator('#siteEnabled').click();
+  await page.waitForFunction(() => window.adScriptLoaded === undefined &&
+    getComputedStyle(document.getElementById('ad')).display === 'none');
+  assert.equal(automaticLoads, 2, 're-enabling current site reloads it automatically once');
+  console.log('PASS: actual popup site toggles reload the page automatically, without confirmation');
+  await popup.bringToFront();
   assert.equal(await popup.locator('#enabled').isChecked(), true);
   await mkdir(path.join(root, 'artifacts'), { recursive: true });
   await popup.setViewportSize({ width: 390, height: 600 });
@@ -202,5 +229,8 @@ try {
 } finally {
   await context?.close();
   await new Promise(resolve => server.close(resolve));
-  await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }).catch(error => {
+    if (process.platform !== 'win32' || !['EPERM', 'EBUSY'].includes(error.code)) throw error;
+    console.warn(`Windows retained a lock on the isolated test profile: ${profile}`);
+  });
 }

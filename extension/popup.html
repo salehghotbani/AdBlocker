@@ -40,12 +40,12 @@
       <label class="scope-row" for="urlEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#link"/></svg></span><span class="scope-copy"><span class="scope-title">فعال برای همین URL</span><b id="url" class="url" dir="ltr">—</b></span><input id="urlEnabled" type="checkbox" role="switch" disabled></label>
       <div class="page-actions"><button id="pause" class="pause-button" disabled><svg aria-hidden="true"><use href="#pause-icon"/></svg><span id="pauseLabel">توقف این بار و بارگذاری مجدد</span></button><p>فقط برای همین تب؛ با بارگذاری بعدی تمام می‌شود.</p></div>
     </section>
-    <p class="hint">خاموش‌کردن کلید URL، همان نشانی را دائماً مستثنا می‌کند. برای اعمال کامل تغییرات، صفحه را بازخوانی کنید.</p>
+    <p class="hint">خاموش‌کردن کلید URL، همان نشانی را دائماً مستثنا می‌کند. تغییر وضعیت محافظت، همین صفحه را خودکار بازخوانی می‌کند.</p>
     <button id="reload" class="primary" disabled><svg aria-hidden="true"><use href="#refresh"/></svg>بارگذاری مجدد صفحه</button>
     <p id="message" role="status" aria-live="polite"></p>
     <details class="exceptions" id="exceptions"><summary><span>مدیریت استثناها</span><span class="count-chip" id="totalCount">۰</span><svg aria-hidden="true"><use href="#chevron"/></svg></summary><div class="exception-actions"><button id="clear" disabled>پاک‌کردن استثناهای سایت <span id="count">(۰)</span></button><button id="clearUrls" disabled>پاک‌کردن استثناهای URL <span id="urlCount">(۰)</span></button></div></details>
   </main>
-  <footer><svg aria-hidden="true"><use href="#lock"/></svg><span>بدون ردیابی؛ تنظیمات روی دستگاه شما.</span><span class="version" dir="ltr">v1.0</span></footer>
+  <footer><svg aria-hidden="true"><use href="#lock"/></svg><span>بدون ردیابی؛ تنظیمات روی دستگاه شما.</span><span id="version" class="version" dir="ltr"></span></footer>
   <script src="settings.js"></script><script src="popup.js"></script>
 </body>
 </html>

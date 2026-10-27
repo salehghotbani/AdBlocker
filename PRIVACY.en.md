@@ -2,7 +2,7 @@
 
 [فارسی](PRIVACY.md) | **English**
 
-This policy describes version 1.1.0 of the AdBlocker extension.
+This policy describes version 1.2.0 of the AdBlocker extension.
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
 - The enabled/disabled setting, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
@@ -11,6 +11,8 @@ This policy describes version 1.1.0 of the AdBlocker extension.
 - A local content script examines elements with specific advertising markers to hide those elements. Processing takes place inside the browser; page content is not collected.
 - Local network rules are applied through the browser API. The filter list is not downloaded from an external server, and no remote executable code is loaded.
 - The extension contains no analytics, telemetry, or advertising SDK. Playwright is a development test tool and is not included in installation packages.
+- Messages sent to content scripts contain only that tab's effective protection state, not the saved site or URL exceptions. Chromium also restricts direct content-script access to `storage.local`.
+- Protection changes automatically reload the current page. The tab's URL is checked first so a different page is not reloaded.
 
 ## Permissions
 

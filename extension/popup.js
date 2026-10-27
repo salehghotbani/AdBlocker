@@ -7,10 +7,23 @@ let url;
 let paused = false;
 let busy = false;
 
+function protectionOn() {
+  return settings.enabled && !(host && AdBlockSettings.isAllowed(host, settings.allowedSites)) &&
+    !settings.allowedUrls.includes(url) && !paused;
+}
+
+async function reloadCurrentPage() {
+  if (!url || !Number.isInteger(tab?.id)) return false;
+  const current = await api.tabs.get(tab.id);
+  if (AdBlockSettings.pageUrl(current.url) !== url) return false;
+  await api.tabs.reload(tab.id);
+  return true;
+}
+
 function render() {
   const allowed = host && AdBlockSettings.isAllowed(host, settings.allowedSites);
   const urlAllowed = settings.allowedUrls.includes(url);
-  const on = settings.enabled && !allowed && !urlAllowed && !paused;
+  const on = protectionOn();
   $('enabled').checked = settings.enabled;
   $('enabled').disabled = busy;
   $('siteEnabled').checked = !allowed;
@@ -42,6 +55,7 @@ async function send(message) {
 }
 
 async function change(message) {
+  const wasOn = protectionOn();
   busy = true;
   $('message').textContent = '';
   render();
@@ -49,9 +63,10 @@ async function change(message) {
     const result = await send(message);
     settings = AdBlockSettings.normalize(result.settings);
     if (typeof result.paused === 'boolean') paused = result.paused;
+    const reloaded = message.type !== 'setPause' && wasOn !== protectionOn() ? await reloadCurrentPage() : false;
     $('message').textContent = message.type === 'setPause' ?
       (paused ? 'توقف یک‌باره فعال شد. بارگذاری بعدی یا خروج از صفحه آن را پایان می‌دهد.' : 'مسدودسازی دوباره فعال شد.') :
-      'ذخیره شد. برای اعمال کامل تغییرات، سایت را دوباره بارگذاری کنید.';
+      reloaded ? 'ذخیره شد و صفحه خودکار دوباره بارگذاری شد.' : 'تنظیمات ذخیره شد.';
   } catch (error) { $('message').textContent = error.message; }
   finally { busy = false; render(); }
 }
@@ -63,12 +78,16 @@ $('urlEnabled').addEventListener('change', () => change({ type: 'setUrl', url, a
 $('clearUrls').addEventListener('click', () => change({ type: 'clearUrls' }));
 $('pause').addEventListener('click', () => change({ type: 'setPause', tabId: tab.id, url, paused: !paused }));
 $('reload').addEventListener('click', async () => {
-  try { await api.tabs.reload(tab.id); window.close(); }
+  try {
+    if (await reloadCurrentPage()) window.close();
+    else $('message').textContent = 'صفحه عوض شده است؛ پنجرهٔ افزونه را دوباره باز کنید.';
+  }
   catch (error) { $('message').textContent = error.message; }
 });
 
 (async () => {
   try {
+    $('version').textContent = `v${api.runtime.getManifest().version}`;
     [tab] = await api.tabs.query({ active: true, currentWindow: true });
     host = tab?.url && /^https?:/.test(tab.url) ? AdBlockSettings.hostname(tab.url) : null;
     url = AdBlockSettings.pageUrl(tab?.url);

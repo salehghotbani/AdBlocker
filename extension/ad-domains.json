@@ -143,5 +143,9 @@
   "api-adservices.apple.com",
   "books-analytics-events.apple.com",
   "weather-analytics-events.apple.com",
-  "notes-analytics-events.apple.com"
+  "notes-analytics-events.apple.com",
+  "static.hotjar.com",
+  "bat.bing.com",
+  "api.segment.io",
+  "cdn.segment.com"
 ]

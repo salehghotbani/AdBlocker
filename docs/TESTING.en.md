@@ -1,6 +1,14 @@
-# Version 1.1.0 validation report
+# Version 1.2.0 validation report
 
 [فارسی](TESTING.md) | **English**
+
+## Version 1.2.0 validation — 2026-10-27
+
+- 16 unit tests, four distribution/ZIP tests, DOM checks, and actual Edge extension tests passed: 149 domains blocked and 20 useful hosts allowed.
+- Exactly-once automatic reload, gray-state behavior, the actual version label, and refusal to reload another page after navigation were checked.
+- Unauthorized-message rejection, minimized page messages, rollback after a failed save, and real CSP probes passed. `npm audit` reported no known advisories; Firefox validation reported zero errors or warnings.
+- The live benchmark was rerun: **95%, 126/132**, with 123 explicit client-blocked requests. The site counted one additional host timeout as blocked. The four new hosts are outside this test's host list; broader coverage does not imply a guaranteed higher percentage on every site.
+- See the [security-review scope and rule sources](SECURITY-REVIEW.md). CI status for the release commit is recorded in the [release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.2.0).
 
 ## Interface changes after version 1.1.0 — 2026-10-27
 

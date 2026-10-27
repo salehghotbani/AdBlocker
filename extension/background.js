@@ -60,8 +60,14 @@ function enqueue(task) {
 async function broadcast(settings) {
   const tabs = await api.tabs.query({});
   await Promise.all(tabs.filter(tab => tab.id !== undefined).map(tab =>
-    api.tabs.sendMessage(tab.id, { type: 'settingsChanged', settings: forTab(settings, tab) }).catch(() => {})
+    api.tabs.sendMessage(tab.id, { type: 'settingsChanged', settings: forContent(settings, tab) }).catch(() => {})
   ));
+}
+
+// Page scripts need only their effective state, never another site's exceptions
+// or saved URLs, which may include private query parameters.
+function forContent(settings, tab) {
+  return { enabled: forTab(settings, tab).enabled };
 }
 
 function forTab(settings, tab) {
@@ -77,7 +83,7 @@ async function handle(message, sender) {
   if (message.type === 'getSettings') {
     const fromPage = sender.url?.startsWith(api.runtime.getURL(''));
     const tab = fromPage ? (Number.isInteger(message.tabId) ? await api.tabs.get(message.tabId) : null) : sender.tab;
-    return { settings: !fromPage && tab ? forTab(settings, tab) : settings,
+    return { settings: fromPage ? settings : forContent(settings, tab),
       paused: Boolean(tab && pausedTabs[tab.id]?.url === pageUrl(tab.url)) };
   }
   if (message.type === 'setPause' && Number.isInteger(message.tabId) && typeof message.paused === 'boolean') {
@@ -127,8 +133,15 @@ async function handle(message, sender) {
     throw new Error('درخواست نامعتبر است.');
   }
   // Apply network policy first; a failed API call must be visible to the UI.
-  await sync(next);
-  await api.storage.local.set({ settings: next });
+  try {
+    await sync(next);
+    await api.storage.local.set({ settings: next });
+  } catch (error) {
+    // Undo a partial network update or failed settings write before reporting it.
+    try { await sync(settings); }
+    catch { console.error('AdBlocker: could not restore the previous network policy'); }
+    throw error;
+  }
   await broadcast(next);
   return { settings: next };
 }
@@ -173,6 +186,9 @@ api.tabs.onRemoved.addListener(tabId => { enqueue(async () => {
 }); });
 
 enqueue(async () => {
+  if (api.storage.local.setAccessLevel) {
+    await api.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
+  }
   const saved = (await api.storage.session.get('pausedTabs')).pausedTabs || {};
   for (const tab of await api.tabs.query({})) {
     const pause = saved[tab.id];

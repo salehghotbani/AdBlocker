@@ -39,6 +39,8 @@ const common = {
   version,
   description: 'مسدودسازی محافظه‌کارانهٔ تبلیغات، با امکان استثناکردن سایت‌ها و بدون ردیابی.',
   permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation'],
+  content_security_policy: { extension_pages:
+    "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'; frame-ancestors 'none'" },
   host_permissions: ['http://*/*', 'https://*/*'],
   action: { default_popup: 'popup.html', default_title: 'AdBlocker', default_icon: {
     16: 'icons/16.png', 32: 'icons/32.png', 48: 'icons/48.png', 128: 'icons/128.png'
