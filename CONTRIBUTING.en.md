@@ -2,7 +2,7 @@
 
 [فارسی](CONTRIBUTING.md) | **English**
 
-Create a branch in the existing checkout for your changes. Each cloud task already has an isolated environment; creating another Git worktree is unnecessary.
+Work only on the `main` branch; do not create additional branches. Review and test changes, then commit and push them to `main`.
 
 ## Setup
 

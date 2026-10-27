@@ -14,6 +14,19 @@ An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interfac
 | --- | --- |
 | <img src="docs/images/popup-light.png" width="250" alt="Light mode"> | <img src="docs/images/popup-dark.png" width="250" alt="Dark mode"> |
 
+## Test results
+
+Recorded [Turtlecute](https://adblock.turtlecute.org/) result in Edge on 2026-10-27:
+
+| Test category | Result |
+| --- | --- |
+| Overall | **95%**; 126 of 132 checks |
+| Hosts, as scored by the site | 95.3%; 122 of 128 checks |
+| Static and dynamic cosmetic filtering | 100%; 2 of 2 checks |
+| Ad-script blocking | 100%; 2 of 2 checks |
+
+One host timed out and was counted by the site; that is not evidence of extension blocking. Percentages describe this test, not all websites or browsers. [Full report and successful CI](docs/TESTING.en.md)
+
 ## Install
 
 Download your browser's ZIP from the [latest release](https://github.com/salehghotbani/AdBlocker/releases/latest) and extract it.
