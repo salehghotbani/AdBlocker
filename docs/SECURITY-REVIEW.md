@@ -1,6 +1,14 @@
-# Version 1.2.0 security and coverage review
+# Version 1.3.0 security and coverage review
 
-Development update-check addition: the current source adds `alarms` and `notifications`, and permits connections only to this repository's fixed GitHub latest-release API endpoint. Metadata is size-limited, version tags are validated, redirects/cookies/credentials are denied, and download links are rebuilt locally. No remote code or automatic installation is introduced. The original released-version review below predates this explicitly documented network exception.
+## Version 1.3.0 update checks — 2026-10-28
+
+The update checker adds `alarms` and `notifications`. Its only permitted outbound connection is this repository's fixed GitHub latest-release API endpoint. Metadata is limited to 1 MiB with a ten-second timeout; version tags are validated, redirects/cookies/credentials are denied, and download links are rebuilt locally. No browsing data or installed version is included in the request. GitHub receives the IP address and ordinary connection headers, as disclosed in the privacy policy. No remote code or automatic installation is introduced.
+
+Only this extension's own pages may request or read update checks. Tests cover invalid metadata and URLs, offline/rate-limit errors, numeric version comparison, notification deduplication, and continued protection changes while an update request is pending. Native alarms, safe links, cached popup reads, and rejection of unrelated CSP connections were checked in the real browser. OS toast delivery was not tested. See the [validation report](TESTING.en.md) and [release CI result](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.0).
+
+## Version 1.2.0 baseline review
+
+The historical review below describes version 1.2.0 before update checks added the two permissions and narrowly scoped network exception above.
 
 Reviewed on 2026-10-27. This is a source review with automated regression and browser checks, not an independent penetration test or a guarantee that no vulnerabilities exist. The extension has no runtime dependencies or remote executable code.
 

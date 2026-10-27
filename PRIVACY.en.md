@@ -2,7 +2,7 @@
 
 [فارسی](PRIVACY.md) | **English**
 
-This policy describes version 1.2.0 of the AdBlocker extension.
+This policy describes version 1.3.0 of the AdBlocker extension.
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
 - The enabled/disabled setting, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
@@ -14,7 +14,7 @@ This policy describes version 1.2.0 of the AdBlocker extension.
 - Messages sent to content scripts contain only that tab's effective protection state, not the saved site or URL exceptions. Chromium also restricts direct content-script access to `storage.local`.
 - Protection changes automatically reload the current page. The tab's URL is checked first so a different page is not reloaded.
 
-## Update checks in the development version
+## Update checks
 
 The button and three-day browser alarm contact only `https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest`. The first automatic check is scheduled about one minute after startup; closed browsers or sleeping devices may delay checks until the browser opens or the device wakes. GitHub sees the IP address and normal connection headers, as any Internet service does. Requests omit cookies and credentials and contain no browsing history, current site, exceptions, or installed version. Version comparison happens locally.
 
@@ -24,7 +24,7 @@ The last attempt/success times, latest version tag, error state, and last notifi
 
 | Permission | Purpose |
 | --- | --- |
-| `storage` | Keep permanent settings and exceptions locally, and temporary pauses in session memory |
+| `storage` | Keep settings, exceptions, and update status locally, and temporary pauses in session memory |
 | `declarativeNetRequest` | Apply blocking and exception rules through the browser |
 | `activeTab` | Read the current site's hostname when the popup is opened |
 | `webNavigation` | Detect page changes and expire one-time pauses without keeping browsing history |

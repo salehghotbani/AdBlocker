@@ -2,11 +2,12 @@
 
 [فارسی](CHANGELOG.md) | **English**
 
-## Unreleased
+## 1.3.0 — 2026-10-28
 
 - Manual update check and a browser alarm every three days, restored after browser restart.
 - One notification per newer version and a download link restricted to this repository's releases; public metadata requests omit cookies, credentials, and page data.
 - Handle offline/rate-limit failures, concurrent checks, numeric version ordering, and invalid metadata; test message authorization and the narrow CSP connection exception.
+- Synchronize the exact-URL browser fixture with allowed script execution, retaining failure diagnostics and checks for blocking on other paths.
 
 ## 1.2.0 — 2026-10-27
 

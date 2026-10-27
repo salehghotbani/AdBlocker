@@ -63,4 +63,4 @@ Browser folders are generated in `dist/chrome`, `dist/edge`, and `dist/firefox`;
 
 [Privacy](PRIVACY.en.md) · [Changelog](CHANGELOG.en.md) · [Security](SECURITY.en.md)
 
-[Version 1.2.0 security review scope and results](docs/SECURITY-REVIEW.md)
+[Version 1.3.0 security review scope and results](docs/SECURITY-REVIEW.md)

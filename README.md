@@ -63,4 +63,4 @@ npm run package
 
 [حریم خصوصی](PRIVACY.md) · [تغییرات](CHANGELOG.md) · [گزارش امنیتی](SECURITY.md)
 
-[دامنه و نتایج بررسی امنیتی نسخهٔ ۱.۲.۰](docs/SECURITY-REVIEW.md)
+[دامنه و نتایج بررسی امنیتی نسخهٔ ۱.۳.۰](docs/SECURITY-REVIEW.md)
