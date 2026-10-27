@@ -85,6 +85,30 @@ $('reload').addEventListener('click', async () => {
   catch (error) { $('message').textContent = error.message; }
 });
 
+function renderUpdate(update) {
+  const href = update.available && AdBlockUpdates.releaseUrl(update.latestTag);
+  $('updateLink').hidden = !href;
+  if (href) $('updateLink').href = href;
+  else $('updateLink').removeAttribute('href');
+  const checked = update.lastChecked ? ` آخرین بررسی موفق: ${new Date(update.lastChecked).toLocaleString('fa-IR')}` : '';
+  const cached = update.cached ? 'نتیجهٔ آخرین بررسی: ' : '';
+  $('updateStatus').textContent = update.error ?
+    (href ? `بررسی تازه انجام نشد؛ نسخهٔ ${update.latestVersion} قبلاً پیدا شده است.` :
+      update.error === 'rate_limit' ? 'GitHub موقتاً درخواست را نپذیرفت؛ بعداً دوباره بررسی کنید.' :
+        update.error === 'response' ? 'پاسخ معتبر برای به‌روزرسانی دریافت نشد؛ بعداً دوباره بررسی کنید.' : 'بررسی انجام نشد؛ اتصال اینترنت را بررسی کنید.') + checked :
+    href ? cached + `نسخهٔ ${update.latestVersion} آمادهٔ دریافت است.` + checked :
+      update.lastChecked ? cached + 'نسخهٔ شما به‌روز است.' + checked : 'بررسی خودکار هر ۳ روز انجام می‌شود؛ می‌توانید همین حالا هم بررسی کنید.';
+}
+
+async function checkUpdates() {
+  $('checkUpdates').disabled = true;
+  $('updateStatus').textContent = 'در حال بررسی نسخهٔ جدید…';
+  try { renderUpdate((await send({ type: 'checkForUpdates' })).update); }
+  catch { $('updateStatus').textContent = 'بررسی به‌روزرسانی انجام نشد؛ دوباره تلاش کنید.'; }
+  finally { $('checkUpdates').disabled = false; }
+}
+$('checkUpdates').addEventListener('click', checkUpdates);
+
 (async () => {
   try {
     $('version').textContent = `v${api.runtime.getManifest().version}`;
@@ -98,5 +122,7 @@ $('reload').addEventListener('click', async () => {
     settings = AdBlockSettings.normalize(result.settings);
     paused = result.paused === true;
     render();
+    try { renderUpdate((await send({ type: 'getUpdateStatus' })).update); }
+    catch { $('updateStatus').textContent = 'برای بررسی نسخه، دکمهٔ بررسی به‌روزرسانی را بزنید.'; }
   } catch (error) { $('message').textContent = error.message; }
 })();

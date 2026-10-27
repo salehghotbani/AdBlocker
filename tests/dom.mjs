@@ -101,13 +101,14 @@ try {
   await popup.emulateMedia({ colorScheme: 'light' });
   await popup.route('https://popup.example/**', async route => {
     const file = new URL(route.request().url()).pathname.slice(1) || 'popup.html';
-    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js', 'theme.js'].includes(file) &&
+    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js', 'updates.js', 'theme.js'].includes(file) &&
         !/^icons\/(16|32|48|128)\.png$/.test(file)) return route.abort();
     await route.fulfill({ body: await readFile(new URL(`extension/${file}`, root)),
       contentType: file.endsWith('.png') ? 'image/png' : file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'application/javascript' });
   });
   await popup.addInitScript(({ version }) => {
     window.popupReloads = [];
+    window.mockUpdate = { currentVersion: version, latestTag: null, available: false, lastChecked: 0, error: null };
     window.fixtureTabUrl = 'https://example.com/story';
     let settings = JSON.parse(localStorage.getItem('fixture-settings') ||
       '{"enabled":true,"allowedSites":[],"allowedUrls":[]}');
@@ -121,6 +122,7 @@ try {
         }
       } },
       runtime: { getManifest() { return { version }; }, async sendMessage(message) {
+        if (message.type === 'getUpdateStatus' || message.type === 'checkForUpdates') return { update: window.mockUpdate };
         if (message.type === 'setEnabled') settings.enabled = message.enabled;
         if (message.type === 'setSite') settings.allowedSites = message.allowed ? [message.host] : [];
         if (message.type === 'clearSites') settings.allowedSites = [];
@@ -256,6 +258,20 @@ try {
   await popup.waitForFunction(() => document.getElementById('message').textContent.includes('رنگ‌بندی'));
   assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light', 'failed save restores prior theme');
   assert.equal(await popup.evaluate(() => localStorage.getItem('theme')), 'light');
+  await popup.evaluate(() => { window.mockUpdate = { latestTag: 'v9.0.0', latestVersion: '9.0.0', available: true,
+    releaseUrl: 'javascript:alert(1)', lastChecked: Date.now(), error: null }; });
+  await popup.locator('#checkUpdates').click();
+  await popup.waitForFunction(() => document.getElementById('updateStatus').textContent.includes('9.0.0'));
+  assert.equal(await popup.locator('#updateLink').getAttribute('href'), 'https://github.com/salehghotbani/AdBlocker/releases/tag/v9.0.0');
+  assert.equal(await popup.locator('#updateLink').getAttribute('rel'), 'noopener noreferrer');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 0, 'update checks do not reload a website');
+  await popup.evaluate(() => { window.mockUpdate = { available: false, lastChecked: Date.now(), error: null }; });
+  await popup.locator('#checkUpdates').click();
+  await popup.waitForFunction(() => document.getElementById('updateStatus').textContent.includes('به‌روز'));
+  assert.equal(await popup.locator('#updateLink').isVisible(), false);
+  await popup.evaluate(() => { window.mockUpdate = { available: false, error: 'network' }; });
+  await popup.locator('#checkUpdates').click();
+  await popup.waitForFunction(() => document.getElementById('updateStatus').textContent.includes('اینترنت'));
   await popup.evaluate(() => { window.fixtureTabUrl = 'https://other.example/changed'; });
   await popup.locator('#enabled').uncheck();
   await assertProtection('off');
@@ -265,6 +281,7 @@ try {
   console.log('PASS: system theme, keyboard selection, day/night persistence, save-failure recovery and layout');
   console.log('PASS: logo loads with transparency; disabled site, URL, pause and global states are gray in both themes; reopening preserves preference and re-enabling restores color');
   console.log('PASS: protection changes reload once automatically; pause does not double reload; stale popup does not reload another page');
+  console.log('PASS: manual update states and safe download link render without touching site protection or reloading a page');
 } finally {
   await context.close();
   await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });

@@ -44,8 +44,14 @@
     <button id="reload" class="primary" disabled><svg aria-hidden="true"><use href="#refresh"/></svg>بارگذاری مجدد صفحه</button>
     <p id="message" role="status" aria-live="polite"></p>
     <details class="exceptions" id="exceptions"><summary><span>مدیریت استثناها</span><span class="count-chip" id="totalCount">۰</span><svg aria-hidden="true"><use href="#chevron"/></svg></summary><div class="exception-actions"><button id="clear" disabled>پاک‌کردن استثناهای سایت <span id="count">(۰)</span></button><button id="clearUrls" disabled>پاک‌کردن استثناهای URL <span id="urlCount">(۰)</span></button></div></details>
+    <section class="updates" aria-labelledby="updatesHeading">
+      <div class="section-heading"><h2 id="updatesHeading">به‌روزرسانی افزونه</h2><span>خودکار هر ۳ روز</span></div>
+      <button id="checkUpdates" class="pause-button" type="button"><svg aria-hidden="true"><use href="#refresh"/></svg>بررسی به‌روزرسانی</button>
+      <p id="updateStatus" role="status" aria-live="polite">در حال خواندن وضعیت…</p>
+      <a id="updateLink" target="_blank" rel="noopener noreferrer" hidden>مشاهده و دریافت نسخهٔ جدید</a>
+    </section>
   </main>
   <footer><svg aria-hidden="true"><use href="#lock"/></svg><span>بدون ردیابی؛ تنظیمات روی دستگاه شما.</span><span id="version" class="version" dir="ltr"></span></footer>
-  <script src="settings.js"></script><script src="popup.js"></script>
+  <script src="settings.js"></script><script src="updates.js"></script><script src="popup.js"></script>
 </body>
 </html>

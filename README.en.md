@@ -4,7 +4,7 @@
 
 [فارسی](README.md) | **English**
 
-An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interface and no collection of browsing data.
+An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interface and no collection of browsing history or page content.
 
 ## Features
 
@@ -13,6 +13,7 @@ An ad and tracker blocker for Chrome, Edge, and Firefox, with a Persian interfac
 - Global toggle, site and exact-URL exceptions, one-time page pauses, and light/dark themes.
 - Grayscale interface when protection is off for the site or page, preserving the light/dark preference.
 - Automatically reloads the current page after a protection change, without another confirmation.
+- Manual update button and automatic checks every three days, with a new-version notification and GitHub Releases download link. No automatic installation.
 
 | Light | Dark |
 | --- | --- |

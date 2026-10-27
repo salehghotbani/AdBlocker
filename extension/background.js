@@ -1,9 +1,10 @@
 /* Chromium service worker / Firefox background script. */
-if (typeof importScripts === 'function') importScripts('settings.js');
+if (typeof importScripts === 'function') importScripts('settings.js', 'updates.js');
 const api = globalThis.browser || chrome;
 const { normalize, hostname, isAllowed, allowRules, pageUrl, urlRule } = AdBlockSettings;
 let pending = Promise.resolve();
 let pausedTabs = {};
+const updates = AdBlockUpdates.create(api);
 
 async function readSettings() {
   return normalize((await api.storage.local.get('settings')).settings);
@@ -147,16 +148,24 @@ async function handle(message, sender) {
 }
 
 api.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (!message || !['getSettings', 'setEnabled', 'setSite', 'clearSites', 'setUrl', 'clearUrls', 'setPause'].includes(message.type)) return;
+  if (!message || !['getSettings', 'setEnabled', 'setSite', 'clearSites', 'setUrl', 'clearUrls', 'setPause',
+    'getUpdateStatus', 'checkForUpdates'].includes(message.type)) return;
   // Content scripts may read settings, but only extension pages may change them.
   const extensionPage = sender.url?.startsWith(api.runtime.getURL(''));
   if (sender.id !== api.runtime.id || (message.type !== 'getSettings' && !extensionPage)) {
     sendResponse({ error: 'دسترسی مجاز نیست.' });
     return false;
   }
-  enqueue(() => handle(message, sender)).then(sendResponse, error => sendResponse({ error: error.message }));
+  const operation = message.type === 'getUpdateStatus' ? updates.getStatus().then(update => ({ update })) :
+    message.type === 'checkForUpdates' ? updates.check().then(update => ({ update })) : enqueue(() => handle(message, sender));
+  operation.then(sendResponse, error => sendResponse({ error: error.message }));
   return true;
 });
+
+api.alarms.onAlarm.addListener(alarm => {
+  if (alarm.name === AdBlockUpdates.ALARM) updates.check().catch(() => {});
+});
+api.notifications.onClicked.addListener(id => { updates.openUpdate(id).catch(() => {}); });
 
 // Navigation expiry is queued with commands, so a worker restart cannot lose a pause.
 async function expire(details, committed = false) {
@@ -199,4 +208,5 @@ enqueue(async () => {
   }
   await syncSession();
   await sync(await readSettings());
+  await updates.initialize();
 });

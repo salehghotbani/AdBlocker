@@ -1,6 +1,14 @@
-# Version 1.2.0 validation report
+# Validation report
 
 [فارسی](TESTING.md) | **English**
+
+## Unreleased update checks — 2026-10-28
+
+- 25 unit tests, four distribution/ZIP tests, DOM checks, and actual Edge extension tests passed. The existing 149 blocked-domain and 20 allowed-host fixtures still pass.
+- The manual button, native three-day alarm, alarm restoration after restart, numeric version comparison, concurrent-request deduplication, and notification deduplication were checked. Opening the popup reads cached status without a network request.
+- The real anonymous GitHub metadata request succeeded and returned `v1.2.0`. A simulated newer release exercised the notification API and safe download link; operating-system toast delivery was not tested.
+- Offline responses, rate limits, drafts, prereleases, invalid version tags, oversized metadata, unauthorized page messages, and untrusted release URLs were tested. Update requests do not delay protection changes, and CSP still rejects unrelated connections.
+- Syntax/documentation checks, packaging, `npm audit`, and Firefox validation passed. This section records local checks; CI for the pushed commit is available in [GitHub Actions](https://github.com/salehghotbani/AdBlocker/actions).
 
 ## Version 1.2.0 validation — 2026-10-27
 

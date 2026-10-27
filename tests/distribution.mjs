@@ -15,10 +15,14 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     assert.equal(manifest.version, (await json('package.json')).version);
     assert.equal(manifest.permissions.includes('declarativeNetRequest'), true);
     const policy = manifest.content_security_policy.extension_pages;
-    for (const directive of ["script-src 'self'", "object-src 'none'", "base-uri 'none'", "connect-src 'none'"]) {
+    for (const directive of ["script-src 'self'", "object-src 'none'", "base-uri 'none'"]) {
       assert.ok(policy.includes(directive), directive);
     }
-    assert.equal(/unsafe-eval|unsafe-inline|https?:/.test(policy), false);
+    assert.equal(/unsafe-eval|unsafe-inline/.test(policy), false);
+    assert.deepEqual(policy.match(/https?:\/\/[^\s;]+/g),
+      ['https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest']);
+    assert.ok(manifest.permissions.includes('alarms'));
+    assert.ok(manifest.permissions.includes('notifications'));
     const paths = [manifest.action.default_popup, ...Object.values(manifest.icons),
       ...manifest.content_scripts.flatMap(script => script.js),
       ...manifest.declarative_net_request.rule_resources.map(rule => rule.path),
@@ -26,7 +30,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     for (const file of paths) assert.ok((await read(base + file)).length > 0, file);
     if (browser === 'firefox') assert.equal(manifest.background.service_worker, undefined);
     else assert.equal(manifest.background.service_worker, 'background.js');
-    for (const file of ['settings.js', 'background.js', 'content.js', 'popup.js', 'popup.css', 'popup.html', 'theme.js']) {
+    for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.js', 'popup.css', 'popup.html', 'theme.js']) {
       assert.deepEqual(await read(base + file), await read('extension/' + file));
     }
     assert.deepEqual(await read(base + 'LICENSE.txt'), await read('LICENSE'));

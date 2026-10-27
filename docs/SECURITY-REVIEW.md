@@ -1,5 +1,7 @@
 # Version 1.2.0 security and coverage review
 
+Development update-check addition: the current source adds `alarms` and `notifications`, and permits connections only to this repository's fixed GitHub latest-release API endpoint. Metadata is size-limited, version tags are validated, redirects/cookies/credentials are denied, and download links are rebuilt locally. No remote code or automatic installation is introduced. The original released-version review below predates this explicitly documented network exception.
+
 Reviewed on 2026-10-27. This is a source review with automated regression and browser checks, not an independent penetration test or a guarantee that no vulnerabilities exist. The extension has no runtime dependencies or remote executable code.
 
 ## Security controls checked

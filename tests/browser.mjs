@@ -51,12 +51,26 @@ try {
   await context.route('https://*/adblocker-probe', route => route.fulfill({
     contentType: 'text/plain', body: 'Local network fixture'
   }));
+  let updateRequests = 0;
+  await context.route('https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest', route => {
+    updateRequests++;
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+      tag_name: 'v9.0.0', draft: false, prerelease: false, html_url: 'https://foreign.example/'
+    }) });
+  });
   let worker = context.serviceWorkers()[0];
   if (!worker) {
     try { worker = await context.waitForEvent('serviceworker'); }
     catch { throw new Error('Extension did not start. Check browser extension errors and managed policies: this test requires unpacked extensions to be permitted. No DNR validation completed.'); }
   }
   const extensionId = new URL(worker.url()).host;
+  // Capture notification API calls without showing synthetic v9.0.0 OS toasts.
+  await worker.evaluate(() => {
+    globalThis.updateNotificationCalls = [];
+    chrome.notifications.create = async (id, options) => {
+      globalThis.updateNotificationCalls.push({ id, options }); return id;
+    };
+  });
   const popup = await context.newPage();
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
@@ -79,6 +93,31 @@ try {
     if (result.error) throw new Error(result.error);
     return result;
   }, message);
+  const alarm = await popup.evaluate(() => chrome.alarms.get('adblocker-update-check'));
+  assert.equal(alarm.periodInMinutes, 4320, 'native alarm is scheduled every three days');
+  assert.equal(updateRequests, 0, 'initial popup status reads cached data without a network request');
+  await popup.locator('#checkUpdates').click();
+  await popup.waitForFunction(() => document.getElementById('updateStatus').textContent.includes('9.0.0'));
+  assert.equal(await popup.locator('#updateLink').getAttribute('href'),
+    'https://github.com/salehghotbani/AdBlocker/releases/tag/v9.0.0');
+  await popup.locator('#checkUpdates').click();
+  await popup.waitForFunction(() => !document.getElementById('checkUpdates').disabled);
+  assert.equal(updateRequests, 1, 'rapid manual checks share cached release data');
+  assert.equal(await worker.evaluate(() => globalThis.updateNotificationCalls.length), 1,
+    'one notification request is made for the newer version');
+  assert.equal((await command({ type: 'getUpdateStatus' })).update.available, true);
+  assert.equal(await popup.evaluate(async () => {
+    try { await fetch('https://foreign.example/data'); return true; } catch { return false; }
+  }), false, 'CSP allows the release endpoint but blocks unrelated network connections');
+  console.log('PASS: native three-day update alarm, real metadata fetch, cached checks and safe update UI');
+  if (process.env.ADBLOCK_LIVE_UPDATES === '1') {
+    await context.unroute('https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest');
+    await popup.evaluate(() => chrome.storage.local.remove('updateState'));
+    const liveUpdate = (await command({ type: 'checkForUpdates' })).update;
+    assert.equal(liveUpdate.error, null, 'live anonymous GitHub metadata check must succeed');
+    assert.ok(liveUpdate.lastChecked > 0 && liveUpdate.latestTag);
+    console.log(`PASS: live anonymous GitHub update metadata: ${liveUpdate.latestTag}`);
+  }
   const page = await context.newPage();
   const failures = [];
   page.on('requestfailed', req => failures.push({ url: req.url(), error: req.failure()?.errorText }));

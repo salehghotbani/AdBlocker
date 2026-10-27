@@ -21,6 +21,8 @@ async function harness(saved, savedSession = {}) {
   let storageAccess;
   const broadcasts = [];
   const errors = [];
+  const updateCalls = [];
+  let updateGate = Promise.resolve({});
   const api = {
     storage: {
       local: { async get() { return { settings: storage }; },
@@ -40,6 +42,8 @@ async function harness(saved, savedSession = {}) {
       }
     },
     action: { async setBadgeText() {}, async setBadgeBackgroundColor() {} },
+    alarms: { onAlarm: event('alarm') },
+    notifications: { onClicked: event('notification') },
     tabs: {
       async query() { return tabs; },
       async get(id) { const tab = tabs.find(tab => tab.id === id); if (!tab) throw new Error('No tab'); return tab; },
@@ -51,7 +55,12 @@ async function harness(saved, savedSession = {}) {
     runtime: { id: 'fixture', getURL: path => `chrome-extension://fixture/${path}`,
       onMessage: { addListener(fn) { listener = fn; } } }
   };
-  const context = vm.createContext({ chrome: api, URL, console: {
+  const context = vm.createContext({ chrome: api, URL, AdBlockUpdates: {
+    ALARM: 'adblocker-update-check', create() { return {
+      async initialize() {}, async getStatus() { updateCalls.push('status'); return {}; },
+      async check() { updateCalls.push('check'); return updateGate; }, async openUpdate(id) { updateCalls.push(id); }
+    }; }
+  }, console: {
     ...console, error: (...args) => errors.push(args)
   } });
   vm.runInContext(settingsCode, context);
@@ -59,7 +68,8 @@ async function harness(saved, savedSession = {}) {
   const send = (message, sender = { id: 'fixture', url: 'chrome-extension://fixture/popup.html' }) =>
     new Promise(resolve => listener(message, sender, resolve));
   await send({ type: 'getSettings' }); // awaits startup reconciliation
-  return { send, broadcasts, errors, tabs, reloads,
+  return { send, broadcasts, errors, tabs, reloads, updateCalls,
+    blockUpdates() { let finish; updateGate = new Promise(resolve => { finish = resolve; }); return finish; },
     async emit(name, details) { handlers[name](details); await send({ type: 'getSettings' }); },
     get session() { return session; }, get sessionRules() { return sessionRules; },
     get stored() { return storage; }, get dynamic() { return dynamic; },
@@ -197,4 +207,33 @@ test('a foreign extension or forged page URL cannot issue privileged commands', 
     { id: 'fixture', url: 'https://site.example/?next=chrome-extension://fixture/popup.html' }
   ]) assert.ok((await h.send({ type: 'setEnabled', enabled: false }, sender)).error);
   assert.equal(h.stored, undefined);
+});
+
+test('only extension pages may trigger update checks or read update metadata', async () => {
+  const h = await harness();
+  for (const type of ['checkForUpdates', 'getUpdateStatus']) {
+    const result = await h.send({ type }, { id: 'fixture', url: 'https://site.example', tab: h.tabs[0] });
+    assert.ok(result.error);
+  }
+  assert.equal(h.updateCalls.length, 0);
+  await h.send({ type: 'checkForUpdates' });
+  await h.send({ type: 'getUpdateStatus' });
+  assert.deepEqual(h.updateCalls, ['check', 'status']);
+  await h.emit('alarm', { name: 'unrelated' });
+  assert.deepEqual(h.updateCalls, ['check', 'status']);
+  await h.emit('alarm', { name: 'adblocker-update-check' });
+  assert.deepEqual(h.updateCalls, ['check', 'status', 'check']);
+});
+
+test('an in-flight update request does not block a protection command', async () => {
+  const h = await harness();
+  const finish = h.blockUpdates();
+  const update = h.send({ type: 'checkForUpdates' });
+  try {
+    const change = await Promise.race([
+      h.send({ type: 'setEnabled', enabled: false }),
+      new Promise((_, reject) => { const timer = setTimeout(() => reject(new Error('Update blocked protection')), 1000); timer.unref(); })
+    ]);
+    assert.equal(change.settings.enabled, false);
+  } finally { finish({}); await update; }
 });

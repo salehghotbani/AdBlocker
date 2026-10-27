@@ -38,9 +38,9 @@ const common = {
   name: 'AdBlocker — مرور بدون تبلیغ',
   version,
   description: 'مسدودسازی محافظه‌کارانهٔ تبلیغات، با امکان استثناکردن سایت‌ها و بدون ردیابی.',
-  permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation'],
+  permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation', 'alarms', 'notifications'],
   content_security_policy: { extension_pages:
-    "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; connect-src 'none'; frame-src 'none'; form-action 'none'; frame-ancestors 'none'" },
+    "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; connect-src https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest; frame-src 'none'; form-action 'none'; frame-ancestors 'none'" },
   host_permissions: ['http://*/*', 'https://*/*'],
   action: { default_popup: 'popup.html', default_title: 'AdBlocker', default_icon: {
     16: 'icons/16.png', 32: 'icons/32.png', 48: 'icons/48.png', 128: 'icons/128.png'
@@ -56,7 +56,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
   await rm(dest, { recursive: true, force: true });
   await mkdir(path.join(dest, 'rules'), { recursive: true });
   await cp(path.join(source, 'icons'), path.join(dest, 'icons'), { recursive: true });
-  for (const file of ['settings.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js', 'theme.js']) {
+  for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js', 'theme.js']) {
     await cp(path.join(source, file), path.join(dest, file));
   }
   await cp(path.join(root, 'LICENSE'), path.join(dest, 'LICENSE.txt'));
@@ -65,7 +65,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
   }
   const manifest = { ...common };
   if (browser === 'firefox') {
-    manifest.background = { scripts: ['settings.js', 'background.js'] };
+    manifest.background = { scripts: ['settings.js', 'updates.js', 'background.js'] };
     manifest.browser_specific_settings = { gecko: {
       id: 'adblocker@salehghotbani.local', strict_min_version: '140.0',
       data_collection_permissions: { required: ['none'] }
