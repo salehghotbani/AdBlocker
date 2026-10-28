@@ -1,4 +1,10 @@
-# Version 1.3.1 security and coverage review
+# Version 1.3.2 security and coverage review
+
+## Version 1.3.2 requested host restrictions — 2026-10-28
+
+At the user's request, `careers.hotjar.com`, `api.bugsnag.com`, `app.bugsnag.com`, `app.getsentry.com`, `business-api.tiktok.com` and `grs.hicloud.com` now use the existing third-party-only blocking policy. These hosts are not all ad-delivery endpoints: [Bugsnag documents its dashboard/data API](https://developer.smartbear.com/bugsnag/docs/data-access-base-server-url), and [TikTok documents its business API](https://business-api.tiktok.com/portal). Cross-site integrations to these hosts are intentionally restricted and can be permitted using site exceptions. Direct navigation is excluded from domain block rules; actual-browser fixtures also verify first-party scripts/fetches and same-site Bugsnag dashboard-to-API requests. These are request-policy fixtures, not full authenticated-service tests.
+
+No permissions, dependencies, executable code or remote endpoints were added. The live benchmark explicitly client-blocked all six hosts. Its 100% score includes one unrelated timeout; see the [measured results and limits](TESTING.en.md).
 
 ## Version 1.3.1 Soft98 rule review — 2026-10-28
 

@@ -336,5 +336,8 @@ try {
   console.log('PASS: manual update states and safe download link render without touching site protection or reloading a page');
 } finally {
   await context.close();
-  await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }).catch(error => {
+    if (process.platform !== 'win32' || !['EPERM', 'EBUSY'].includes(error.code)) throw error;
+    console.warn(`Windows retained a lock on the isolated DOM test profile: ${profile}`);
+  });
 }

@@ -2,6 +2,13 @@
 
 [فارسی](CHANGELOG.md) | **English**
 
+## 1.3.2 — 2026-10-28
+
+- Restrict third-party requests to the six requested Hotjar, Bugsnag, Sentry, TikTok and Huawei hosts. Direct navigation and same-site requests remain permitted; cross-site business/API integrations can use a site exception.
+- Add actual-browser checks for each host's first-party scripts/fetches, Bugsnag dashboard-to-API requests, and explicit blocking of all six in the live benchmark.
+- Record the new Turtlecute result: 100% (132/132) as scored by the site, with 129 explicit client-blocked requests, two cosmetic checks and one host timeout. No permissions or dependencies added.
+- Keep Windows-only temporary-profile cleanup locks from masking completed DOM test results; other cleanup and test errors still fail.
+
 ## 1.3.1 — 2026-10-28
 
 - Block the observed Kaprila ad host and collapse Soft98's direct banners, related-ad grid, side-ad section, and hosting promotion using selectors restricted to the main site.

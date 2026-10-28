@@ -2,6 +2,13 @@
 
 [فارسی](TESTING.md) | **English**
 
+## Version 1.3.2 host restrictions — 2026-10-28
+
+- The six hosts in the reported screenshots are now restricted for third-party requests. Browser fixtures explicitly block all 156 listed hosts and allow 21 other useful hosts. Direct navigation, first-party scripts/fetches on all six new hosts, and same-site Bugsnag dashboard-to-API requests pass. These local responses exercise browser policy, not full authenticated dashboards; cross-site integrations may need a site exception.
+- Live Turtlecute in Edge: **100% as scored by the site, 132/132**. Browser events recorded **129 distinct requests explicitly blocked by the client**, including every newly added host; both cosmetic checks passed. The remaining `extmaps-api.yandex.net` check timed out and was counted as blocked by the site. It remains allowed by the extension; a timeout is not evidence of blocking. [Recorded screenshot](images/turtlecute-1.3.2.png).
+- 25 unit tests, four distribution/ZIP tests, syntax/documentation checks, real extension/network tests and Firefox validation passed locally. No permissions or dependencies were added. Firefox runtime and OS toast display were not tested.
+- Final CI for the versioned release commit and package checksums are recorded in the [v1.3.2 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.2). The live check stays opt-in; CI uses deterministic fixtures, including direct-navigation/first-party safeguards and Soft98 coverage.
+
 ## Version 1.3.1 Soft98 fix — 2026-10-28
 
 - 25 unit tests, four distribution/ZIP tests, DOM checks, and actual Edge extension tests passed. All 150 advertising/tracking domains were explicitly blocked; 27 useful-host fixtures remained reachable, including Soft98, its forum/image/file hosts, Faradars and the main Kaprila website.

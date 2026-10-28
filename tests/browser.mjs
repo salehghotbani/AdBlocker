@@ -139,11 +139,13 @@ try {
   const domains = JSON.parse(await readFile(path.join(root, 'extension/ad-domains.json'), 'utf8'));
   const trackerHosts = [...domains, 'stats.g.doubleclick.net', 'cdn.mouseflow.com',
     'config.unityads.unity3d.com', 'data.mistat.india.xiaomi.com', 'data.mistat.rus.xiaomi.com'];
+  const restrictedHosts = ['careers.hotjar.com', 'api.bugsnag.com', 'app.bugsnag.com',
+    'app.getsentry.com', 'business-api.tiktok.com', 'grs.hicloud.com'];
+  for (const host of restrictedHosts) assert.ok(domains.includes(host), host);
   const allowedHosts = ['www.google.com', 'accounts.google.com', 's3.amazonaws.com',
     'useful-bucket.s3.amazonaws.com', 'www.youtube.com', 'www.facebook.com', 'www.linkedin.com',
-    'www.reddit.com', 'www.tiktok.com', 'grs.hicloud.com', 'extmaps-api.yandex.net',
-    'careers.hotjar.com', 'app.bugsnag.com', 'api.bugsnag.com', 'app.getsentry.com',
-    'business-api.tiktok.com', 'google-analytics.com.example.org', 'www.bing.com',
+    'www.reddit.com', 'www.tiktok.com', 'extmaps-api.yandex.net',
+    'google-analytics.com.example.org', 'www.bing.com',
     'www.hotjar.com', 'www.segment.com', 'kaprila.com', 'faradars.org',
     'soft98.ir', 'forum.soft98.ir', 'img.soft98.ir', 'file3.soft98.ir', 'cdn.hostdl.com'];
   const probe = hosts => page.evaluate(hosts => Promise.all(hosts.map(async host => {
@@ -155,8 +157,28 @@ try {
     assert.ok(failures.some(failure => failure.url === `https://${host}/adblocker-probe` &&
       failure.error.includes('BLOCKED')), `Browser must report client blocking for ${host}`);
   }
-  assert.ok((await probe(allowedHosts)).every(blocked => !blocked), 'shared services, dashboards and lookalike domains remain usable');
+  assert.ok((await probe(allowedHosts)).every(blocked => !blocked), 'shared services and lookalike domains remain usable');
   console.log(`PASS: ${domains.length} domains blocked by the browser; ${allowedHosts.length} useful hosts allowed; first-party ad scripts blocked; benign script queries and fetches allowed`);
+  // These requested hosts also provide functional services. Exercise direct
+  // navigation and same-site resources as well as the third-party block above.
+  await context.route('https://*/adblocker-first-party', route => route.fulfill({
+    contentType: 'text/html', body: '<!doctype html><main><h1>Provider page</h1></main><script src="/adblocker-first-party.js"></script>'
+  }));
+  await context.route('https://*/adblocker-first-party.js', route => route.fulfill({
+    contentType: 'application/javascript', body: 'window.firstPartyLoaded = true;'
+  }));
+  const providerPage = await context.newPage();
+  for (const host of restrictedHosts) {
+    await providerPage.goto(`https://${host}/adblocker-first-party`);
+    await providerPage.waitForFunction(() => window.firstPartyLoaded === true);
+    assert.equal(await providerPage.locator('h1').textContent(), 'Provider page', host);
+    assert.equal(await providerPage.evaluate(() => fetch('/adblocker-probe', { method: 'HEAD' }).then(response => response.ok)), true, host);
+  }
+  await providerPage.goto('https://app.bugsnag.com/adblocker-first-party');
+  assert.equal(await providerPage.evaluate(() => fetch('https://api.bugsnag.com/adblocker-probe', { mode: 'no-cors' }).then(() => true)), true,
+    'same-site dashboard-to-API requests remain allowed');
+  await providerPage.close();
+  console.log('PASS: six newly restricted hosts still allow direct navigation, first-party scripts/fetches and same-site API use');
   for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe-frame']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `${id} must be preserved`);
   }
@@ -334,6 +356,10 @@ try {
       log: document.querySelector('#test_log').innerText
     }));
     report.blockedByClient = blockedRequests;
+    for (const host of restrictedHosts) {
+      assert.ok(blockedRequests.some(url => new URL(url).hostname === host),
+        `Live check must explicitly client-block ${host}, not rely on a timeout`);
+    }
     await writeFile(path.join(root, 'artifacts/turtlecute-result.json'), JSON.stringify(report, null, 2) + '\n');
     await live.screenshot({ path: path.join(root, 'artifacts/turtlecute-result.png') });
     console.log(`LIVE Turtlecute: ${report.score}; ${report.totals}; ${blockedRequests.length} requests explicitly blocked by client`);
