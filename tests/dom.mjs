@@ -20,6 +20,8 @@ try {
     <div id="ordinary" class="banner sponsored">Useful banner</div>
     <div id="foreign-abdd" class="abdd">Unrelated content on another host</div>
     <div id="kaprila_soft98_ir_side">Unrelated ID on another host</div>
+    <div id="right"><div class="sidesection" id="foreign-promo"><a id="upperfeatureshowcaselink">Useful link on another host</a></div>
+    <div id="vidpos"><video controls></video></div></div>
     <ins id="ad" class="adsbygoogle" style="display:inline-block!important">Advertisement</ins>
     <div id="static-ad" class="adbox banner_ads adsbox" style="display:block!important">Ad</div>
     <div id="text-content" class="textads">Useful text with a single ambiguous class</div>
@@ -39,7 +41,7 @@ try {
   await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
   await page.waitForFunction(() => document.getElementById('static-ad').offsetHeight === 0);
   for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe', 'text-content', 'compound-protected',
-    'foreign-abdd', 'kaprila_soft98_ir_side']) {
+    'foreign-abdd', 'kaprila_soft98_ir_side', 'foreign-promo', 'vidpos']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `${id} must be preserved`);
   }
   console.log('PASS: ad hidden; main article, player, form, banner, safe iframe retained');
@@ -146,6 +148,48 @@ try {
   }
   await soft98.close();
   console.log('PASS: Soft98 direct, Kaprila and hosting slots collapse; dynamic ads, protected content and exact style restoration work; selectors stay off other hosts');
+
+  const w3 = await context.newPage();
+  const w3Fixture = await readFile(new URL('tests/fixtures/w3schools.html', root), 'utf8');
+  await w3.route('https://www.w3schools.com/**', route => route.fulfill({ contentType: 'text/html', body: w3Fixture }));
+  await w3.goto('https://www.w3schools.com/html/default.asp');
+  await w3.evaluate(() => { window.chrome = { runtime: {
+    onMessage: { addListener(listener) { window.contentListener = listener; } },
+    async sendMessage() { return { settings: { enabled: true } }; }
+  } }; });
+  await w3.addScriptTag({ content: settingsScript });
+  await w3.addScriptTag({ content: contentScript });
+  const w3Ads = ['sale-slot', 'footer-skyscraper', 'vidpos', 'stickypos', 'mainLeaderboard', 'midcontentadcontainer', 'bottomads'];
+  await w3.waitForFunction(ids => ids.every(id => getComputedStyle(document.getElementById(id)).display === 'none'), w3Ads);
+  for (const id of ['topnav', 'lesson', 'code-sample', 'tryitform', 'iframeResult', 'lesson-video', 'lesson-audio', 'yt_container', 'social-links', 'useful-sidebar']) {
+    assert.equal(await w3.locator(`#${id}`).isVisible(), true, id);
+  }
+  await w3.locator('#editor').fill('Still editable');
+  await w3.locator('#run').click();
+  assert.equal(await w3.locator('#preview').textContent(), 'Still editable');
+  await w3.evaluate(() => {
+    document.getElementById('vidpos').remove();
+    const slot = document.createElement('div'); slot.id = 'vidpos';
+    slot.innerHTML = '<video controls></video>'; document.getElementById('right').append(slot);
+  });
+  await w3.waitForFunction(() => getComputedStyle(document.getElementById('vidpos')).display === 'none');
+  await w3.evaluate(() => {
+    const article = document.createElement('article'); article.id = 'slot-article'; article.textContent = 'Real lesson';
+    document.getElementById('stickypos').append(article);
+  });
+  await w3.waitForFunction(() => getComputedStyle(document.getElementById('stickypos')).display !== 'none');
+  await w3.evaluate(() => document.getElementById('slot-article').remove());
+  await w3.waitForFunction(() => getComputedStyle(document.getElementById('stickypos')).display === 'none');
+  for (const settings of [{ enabled: false }, { enabled: true, allowedSites: ['w3schools.com'] },
+    { enabled: true, allowedUrls: ['https://www.w3schools.com/html/default.asp'] }]) {
+    await w3.evaluate(settings => window.contentListener({ type: 'settingsChanged', settings }), settings);
+    for (const id of w3Ads) assert.equal(await w3.locator(`#${id}`).isVisible(), true, id);
+    assert.deepEqual(await w3.locator('#sale-slot').evaluate(el => [el.style.display, el.style.getPropertyPriority('display')]), ['flex', 'important']);
+    await w3.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: { enabled: true } }));
+    await w3.waitForFunction(ids => ids.every(id => getComputedStyle(document.getElementById(id)).display === 'none'), w3Ads);
+  }
+  await w3.close();
+  console.log('PASS: W3Schools promotion/ad-media slots collapse, lessons/editor/preview/tutorial media and social links remain usable, dynamic slots and exceptions work');
 
   // Render the real popup using a mock transport only; logic and styles are real.
   const popup = await context.newPage();

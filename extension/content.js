@@ -8,6 +8,14 @@
     '.abdd', '.abdds', '#sbds', '[id^="kaprila_soft98_ir_"]',
     '.cbdd:has(> .cbddb.abdd)'
   ] : [];
+  const w3Schools = ['w3schools.com', 'www.w3schools.com'].includes(location.hostname);
+  // First-party course promotions and named ad slots share the site's host.
+  if (w3Schools) siteSelectors.push(
+    '#right .sidesection:has(> #upperfeatureshowcaselink)',
+    '#right #footer-skyscraper', '#right #stickypos', '#right #vidpos',
+    '#mainLeaderboard', '#midcontentadcontainer', '#bottomads',
+    '#tryitLeaderboard', '#exercise_main_leaderboard', '#sqlstickyadcontainer', '#bottomad'
+  );
   const selector = [
     'ins.adsbygoogle',
     '.adbox.banner_ads.adsbox',
@@ -33,8 +41,13 @@
   });
 
   function safeMatch(element) {
-    if (!element.matches(selector) || element.matches(protectedContent) ||
-        element.querySelector(protectedContent)) return false;
+    // Only these verified sidebar ad slots may contain advertising media.
+    // Tutorial players, editors and semantic main/article/form content stay protected.
+    const sidebarAd = w3Schools && element.matches('#right #vidpos, #right #stickypos, #right #footer-skyscraper') &&
+      !element.closest('main,article,[role="main"],#main,#container');
+    const protectedSelector = sidebarAd ? 'main,article,[role="main"],h1,form' : protectedContent;
+    if (!element.matches(selector) || element.matches(protectedSelector) ||
+        element.querySelector(protectedSelector)) return false;
     if (element.tagName === 'IFRAME') {
       // Match the actual destination, never an ad URL inside a benign query string.
       try {
@@ -42,7 +55,7 @@
         if (!isAllowed(host, ['doubleclick.net', 'googlesyndication.com'])) return false;
       } catch { return false; }
     }
-    // Never hide a container that wraps the main document or player.
+    // Never hide document roots.
     return !['HTML', 'BODY'].includes(element.tagName);
   }
 

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><title>Local tutorial fixture</title><style>
+.ad-slot { min-height:50px; padding:8px; }
+video,audio { display:block; width:200px; height:40px; }
+iframe { width:220px; height:60px; }
+</style></head><body>
+<nav id="topnav"><a href="/html/">Tutorial navigation</a></nav>
+<div id="main"><main><h1>Learn HTML</h1><article id="lesson"><p id="lesson-text">A document contains elements.</p>
+<pre id="code-sample">&lt;p&gt;Example&lt;/p&gt;</pre></article>
+<form id="tryitform"><textarea id="editor">Editable example</textarea><button type="button" id="run">Run</button></form>
+<pre id="preview"></pre><iframe id="iframeResult" title="Code preview" srcdoc="<p>Preview</p>"></iframe>
+<video id="lesson-video" controls></video><audio id="lesson-audio" controls></audio>
+<div id="yt_container"><a href="https://youtu.be/example">Tutorial video</a></div>
+</main></div>
+<div id="mainLeaderboard" class="ad-slot">Top advertising</div>
+<div id="midcontentadcontainer" class="ad-slot">Inline advertising</div>
+<aside id="right">
+<div class="sidesection ad-slot" id="sale-slot" style="display:flex!important"><a id="upperfeatureshowcaselink" href="https://campus.w3schools.com/products/example">Sale promotion</a></div>
+<div class="sidesection" id="social-links"><a href="https://www.youtube.com/@w3schools">Community</a></div>
+<div id="footer-skyscraper" class="ad-slot">Sidebar advertising</div>
+<div id="vidpos" class="ad-slot"><video controls></video></div>
+<div id="stickypos" class="ad-slot"><div id="stickyadcontainer"><audio controls></audio><a href="https://order.w3schools.com/plans">Remove ads</a></div></div>
+<div id="useful-sidebar">Reference links</div>
+</aside>
+<div id="bottomads" class="ad-slot">Footer advertising</div>
+<script>document.getElementById('run').addEventListener('click', () => {
+  document.getElementById('preview').textContent = document.getElementById('editor').value;
+});</script>
+</body></html>

@@ -2,6 +2,12 @@
 
 **English** | [فارسی](CHANGELOG.fa.md)
 
+## 1.4.1 — 2026-10-28
+
+- Collapse W3Schools sidebar course promotions, known sidebar ad-media slots, and named leaderboard/inline/footer ad containers on the main site.
+- Preserve tutorial video/audio, lesson text, code examples, editor/preview controls, social navigation and site/URL exceptions. Media exceptions are limited to verified sidebar ad containers outside main/editor content.
+- Add deterministic DOM/extension fixtures and an opt-in live check that compares tutorial examples and runs the real Try it Yourself editor. No permissions or third-party domain rules changed.
+
 ## 1.4.0 — 2026-10-28
 
 - Make the popup, notifications, validation messages and browser listing metadata English by default, with left-to-right layout and English number/date formatting.

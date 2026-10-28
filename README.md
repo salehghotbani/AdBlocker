@@ -8,7 +8,7 @@ An ad and tracker blocker for Chrome, Edge and Firefox. The interface and primar
 
 ## Features
 
-- Filters third-party requests to 156 listed hosts, specific ad-script paths and Soft98 banner placements.
+- Filters third-party requests to 156 listed hosts, specific ad-script paths and Soft98/W3Schools ad placements.
 - Global, site and exact-URL controls, plus a one-time pause. Protection changes reload the current page automatically.
 - Light/dark themes and a gray appearance while protection is paused.
 - Manual update checks and automatic checks every three days, with a notification and release link. No automatic installation; manual checks remain usable if optional APIs are unavailable.

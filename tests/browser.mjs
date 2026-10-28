@@ -152,7 +152,8 @@ try {
     'www.reddit.com', 'www.tiktok.com', 'extmaps-api.yandex.net',
     'google-analytics.com.example.org', 'www.bing.com',
     'www.hotjar.com', 'www.segment.com', 'kaprila.com', 'faradars.org',
-    'soft98.ir', 'forum.soft98.ir', 'img.soft98.ir', 'file3.soft98.ir', 'cdn.hostdl.com'];
+    'soft98.ir', 'forum.soft98.ir', 'img.soft98.ir', 'file3.soft98.ir', 'cdn.hostdl.com',
+    'www.w3schools.com', 'campus.w3schools.com', 'order.w3schools.com', 'profile.w3schools.com'];
   const probe = hosts => page.evaluate(hosts => Promise.all(hosts.map(async host => {
     try { await fetch(`https://${host}/adblocker-probe`, { method: 'HEAD', mode: 'no-cors' }); return false; }
     catch { return true; }
@@ -311,7 +312,66 @@ try {
   await soft98.waitForFunction(() => getComputedStyle(document.getElementById('abdds')).display === 'none');
   await soft98.close();
   console.log('PASS: actual extension collapses Soft98 ad slots, preserves downloads/search/sidebar, and respects site exceptions');
+  const w3 = await context.newPage();
+  await context.route('https://www.w3schools.com/adblocker-fixture', async route => route.fulfill({
+    contentType: 'text/html', body: await readFile(path.join(root, 'tests/fixtures/w3schools.html'))
+  }));
+  await w3.goto('https://www.w3schools.com/adblocker-fixture');
+  await w3.waitForFunction(() => ['sale-slot', 'vidpos', 'stickypos', 'mainLeaderboard'].every(id =>
+    getComputedStyle(document.getElementById(id)).display === 'none'));
+  for (const id of ['lesson', 'lesson-video', 'lesson-audio', 'iframeResult', 'social-links']) assert.equal(await w3.locator(`#${id}`).isVisible(), true, id);
+  await w3.locator('#editor').fill('Working example');
+  await w3.locator('#run').click();
+  assert.equal(await w3.locator('#preview').textContent(), 'Working example');
+  await command({ type: 'setSite', host: 'w3schools.com', allowed: true });
+  await w3.waitForFunction(() => getComputedStyle(document.getElementById('sale-slot')).display === 'flex');
+  await command({ type: 'setSite', host: 'w3schools.com', allowed: false });
+  await w3.waitForFunction(() => getComputedStyle(document.getElementById('sale-slot')).display === 'none');
+  await w3.close();
+  console.log('PASS: actual extension filters W3Schools ad slots while preserving tutorial media, the working editor and site exceptions');
   await checkMissingUpdatePermissions();
+
+  if (process.env.ADBLOCK_LIVE_W3SCHOOLS === '1') {
+    const live = await context.newPage();
+    await live.setViewportSize({ width: 1365, height: 1000 });
+    await command({ type: 'setSite', host: 'w3schools.com', allowed: true });
+    await live.goto('https://www.w3schools.com/html/default.asp', { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await live.locator('#upperfeatureshowcaselink').waitFor({ state: 'visible' });
+    const heading = await live.locator('#main h1').textContent();
+    const examples = await live.locator('#main .w3-code').allTextContents();
+    assert.ok(examples.length > 0, 'record real tutorial code examples before filtering');
+    await live.screenshot({ path: path.join(root, 'artifacts/w3schools-before.png') });
+    await command({ type: 'setSite', host: 'w3schools.com', allowed: false });
+    await live.reload({ waitUntil: 'domcontentloaded', timeout: 45000 });
+    const slots = ['#right .sidesection:has(> #upperfeatureshowcaselink)', '#right #vidpos', '#right #stickypos', '#mainLeaderboard', '#midcontentadcontainer', '#bottomads'];
+    await live.waitForFunction(selectors => selectors.every(selector => {
+      const element = document.querySelector(selector);
+      return !element || getComputedStyle(element).display === 'none';
+    }), slots);
+    assert.equal(await live.locator('#main h1').textContent(), heading);
+    assert.deepEqual(await live.locator('#main .w3-code').allTextContents(), examples, 'real tutorial examples are unchanged');
+    assert.equal(await live.locator('#yt_container').isVisible(), true, 'the tutorial video link is preserved');
+    assert.equal(await live.locator('#right .sharethis').isVisible(), true, 'social navigation is preserved');
+    const tryLink = await live.locator('a[href*="tryit.asp?filename=tryhtml_default"]').first().getAttribute('href');
+    assert.ok(tryLink, 'the real Try it Yourself link remains available');
+    await live.screenshot({ path: path.join(root, 'artifacts/w3schools-after.png') });
+    const report = await live.evaluate(selectors => ({
+      url: location.href, heading: document.querySelector('#main h1').textContent,
+      exampleCount: document.querySelectorAll('#main .w3-code').length,
+      placements: selectors.map(selector => ({ selector, displays: [...document.querySelectorAll(selector)].map(element => getComputedStyle(element).display) })),
+      sidebarVideoCount: document.querySelectorAll('#right #vidpos video, #right #stickypos video').length
+    }), slots);
+    const editor = await context.newPage();
+    await editor.goto(new URL(tryLink, live.url()).href, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await editor.locator('#runbtn').waitFor({ state: 'visible' });
+    await editor.locator('#runbtn').click();
+    await editor.frameLocator('#iframeResult').locator('h1').waitFor({ state: 'visible' });
+    report.editorHeading = await editor.frameLocator('#iframeResult').locator('h1').textContent();
+    await writeFile(path.join(root, 'artifacts/w3schools-result.json'), JSON.stringify(report, null, 2) + '\n');
+    await editor.close();
+    await live.close();
+    console.log('LIVE W3Schools: sidebar promotion/ad slots hidden, code examples and tutorial video preserved; real Try it editor runs');
+  }
 
   if (process.env.ADBLOCK_LIVE_SOFT98 === '1') {
     const live = await context.newPage();

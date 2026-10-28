@@ -2,6 +2,14 @@
 
 **English** | [فارسی](TESTING.fa.md)
 
+## Version 1.4.1 W3Schools placements — 2026-10-28
+
+- DOM and actual-extension fixtures collapse the first-party sidebar promotion, sidebar ad video/audio containers and named leaderboard/inline/footer ad slots. Lesson text, code examples, tutorial video/audio, social links and the working editor/preview remain visible and usable. Dynamic ad insertion, protected-content recovery and exact style restoration after global/site/URL exceptions are checked. Matching IDs on unrelated sites remain unaffected.
+- A live Edge check on the [HTML tutorial](https://www.w3schools.com/html/default.asp) verified six target containers hidden, the title and code example unchanged, the tutorial video link/social navigation preserved, and the real Try it Yourself Run button rendering its result. The sidebar ad player was not served in that live session; media-bearing ad slots are covered by deterministic fixtures.
+- Opt-in reproduction: set `CHROMIUM_PATH` and `$env:ADBLOCK_LIVE_W3SCHOOLS='1'`, then run `npm run test:browser`. It saves `artifacts/w3schools-before.png`, `artifacts/w3schools-after.png` and `artifacts/w3schools-result.json` in an isolated test profile. This live check stays outside CI; the fixtures run in CI.
+- Validation includes 28 unit tests, four distribution/ZIP tests, 156 restricted-host and 25 allowed-host fixtures, English/LTR UI, optional update APIs, Soft98 and CSP checks. No new permissions, domain rules or dependencies were added. The previous Turtlecute score is historical; it was not rerun for this cosmetic fix.
+- Final CI for the release commit is linked from the [v1.4.1 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.4.1). Firefox runtime and OS toast display remain untested.
+
 ## Version 1.4.0 English defaults — 2026-10-28
 
 - English popup text, accessible theme labels, worker validation errors, release notifications and manifest metadata are checked. The popup declares `lang="en"` and `dir="ltr"`; numbers and dates use English formatting. DOM and actual-extension tests use a Persian browser locale to verify the English default.

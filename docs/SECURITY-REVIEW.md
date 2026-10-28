@@ -1,4 +1,8 @@
-# Version 1.4.0 security and coverage review
+# Version 1.4.1 security and coverage review
+
+## Version 1.4.1 W3Schools cosmetic scope — 2026-10-28
+
+The [tutorial markup](https://www.w3schools.com/html/default.asp) and its public [provider integration](https://www.w3schools.com/lib/uic_prov.js?v=1.5.3) identify the sidebar promotion and ad slots. Selectors apply only on `w3schools.com` and `www.w3schools.com`. The normal media safeguard is relaxed only inside the named right-sidebar ad slots, outside semantic main/article and main/editor containers; forms, headings and articles remain protected. Tutorial media, examples and editor fixtures are explicitly tested. Provider/account scripts, cookies, account status and general-purpose W3Schools hosts are unchanged; no new network/permission scope is introduced. In the live test, the sidebar ad player was not served, while the sidebar promotion and real editor checks were verified. See the [test report](TESTING.md).
 
 ## Version 1.4.0 language and documentation defaults — 2026-10-28
 
