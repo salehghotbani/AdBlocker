@@ -2,7 +2,7 @@
 
 [فارسی](PRIVACY.md) | **English**
 
-This policy describes version 1.3.2 of the AdBlocker extension.
+This policy describes version 1.3.3 of the AdBlocker extension.
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
 - The enabled/disabled setting, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
@@ -15,6 +15,8 @@ This policy describes version 1.3.2 of the AdBlocker extension.
 - Protection changes automatically reload the current page. The tab's URL is checked first so a different page is not reloaded.
 
 ## Update checks
+
+If the browser does not expose scheduling or notification APIs, protection and manual checks remain available. The popup reports the limitation; the extension does not request extra permissions or substitute a background timer.
 
 The button and three-day browser alarm contact only `https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest`. The first automatic check is scheduled about one minute after startup; closed browsers or sleeping devices may delay checks until the browser opens or the device wakes. GitHub sees the IP address and normal connection headers, as any Internet service does. Requests omit cookies and credentials and contain no browsing history, current site, exceptions, or installed version. Version comparison happens locally.
 

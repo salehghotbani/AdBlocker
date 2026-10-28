@@ -2,6 +2,14 @@
 
 [فارسی](TESTING.md) | **English**
 
+## Version 1.3.3 optional-API startup fix — 2026-10-28
+
+- 28 unit tests pass, covering missing and partial alarms/notifications namespaces, an alarm API throwing `Internal error`, and rejected or stalled scheduler initialization. Settings, ruleset restoration, command authorization and temporary-pause expiry continue functioning.
+- A second actual-browser installation removes both `alarms` and `notifications` permissions from a copied manifest. The real worker and popup still perform a manual update check, show a safe release link and manual-only status, toggle network protection and expire a pause on the next reload. This reproduces API absence without relying on a mock namespace. The normal installation still schedules its three-day alarm.
+- DOM/UI tests and four distribution/ZIP tests pass. All 156 restricted-host and 21 allowed-host fixtures, same-site safeguards, Soft98 checks and CSP tests remain included. No new permissions, dependencies or remote endpoints were added; the previous live benchmark is historical and was not rerun for this startup fix.
+- The screenshot identifies an undefined API; it does not establish why that installation lacked it. Distributed manifests declare both permissions. A stale/partial installation is a possible cause, rather than a confirmed diagnosis. Install the complete ZIP and reload the extension to apply its manifest. Core DNR errors are still returned to callers.
+- Final CI for the versioned release commit is recorded in the [v1.3.3 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.3). Firefox runtime and OS toast delivery were not tested.
+
 ## Version 1.3.2 host restrictions — 2026-10-28
 
 - The six hosts in the reported screenshots are now restricted for third-party requests. Browser fixtures explicitly block all 156 listed hosts and allow 21 other useful hosts. Direct navigation, first-party scripts/fetches on all six new hosts, and same-site Bugsnag dashboard-to-API requests pass. These local responses exercise browser policy, not full authenticated dashboards; cross-site integrations may need a site exception.

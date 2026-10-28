@@ -162,10 +162,14 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-api.alarms.onAlarm.addListener(alarm => {
-  if (alarm.name === AdBlockUpdates.ALARM) updates.check().catch(() => {});
-});
-api.notifications.onClicked.addListener(id => { updates.openUpdate(id).catch(() => {}); });
+if (typeof api.alarms?.onAlarm?.addListener === 'function') {
+  api.alarms.onAlarm.addListener(alarm => {
+    if (alarm.name === AdBlockUpdates.ALARM) updates.check().catch(() => {});
+  });
+}
+if (typeof api.notifications?.onClicked?.addListener === 'function') {
+  api.notifications.onClicked.addListener(id => { updates.openUpdate(id).catch(() => {}); });
+}
 
 // Navigation expiry is queued with commands, so a worker restart cannot lose a pause.
 async function expire(details, committed = false) {
@@ -208,5 +212,6 @@ enqueue(async () => {
   }
   await syncSession();
   await sync(await readSettings());
-  await updates.initialize();
+  // Optional update scheduling must not hold up settings or pause restoration.
+  updates.initialize().catch(() => {});
 });

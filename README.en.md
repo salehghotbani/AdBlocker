@@ -44,6 +44,8 @@ Download your browser's ZIP from the [latest release](https://github.com/salehgh
 
 Packages are unsigned. Firefox installation is temporary and ends when the browser closes. Reload existing pages after installation or an update.
 
+For updates, replace the complete ZIP contents, including `manifest.json`, then **Reload the extension** at `chrome://extensions` or `edge://extensions` so the browser applies its permissions. If scheduling or notification APIs are unavailable, protection and manual update checks continue working and the popup explains the limitation.
+
 Some ads, especially ads embedded in video, may remain. Use a site or page exception if a website stops working. [Test results and limitations](docs/TESTING.en.md)
 
 ## Build from source
@@ -63,4 +65,4 @@ Browser folders are generated in `dist/chrome`, `dist/edge`, and `dist/firefox`;
 
 [Privacy](PRIVACY.en.md) · [Changelog](CHANGELOG.en.md) · [Security](SECURITY.en.md)
 
-[Version 1.3.2 security review scope and results](docs/SECURITY-REVIEW.md)
+[Version 1.3.3 security review scope and results](docs/SECURITY-REVIEW.md)

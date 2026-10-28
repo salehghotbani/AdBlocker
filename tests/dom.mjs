@@ -324,6 +324,11 @@ try {
   await popup.evaluate(() => { window.mockUpdate = { available: false, error: 'network' }; });
   await popup.locator('#checkUpdates').click();
   await popup.waitForFunction(() => document.getElementById('updateStatus').textContent.includes('اینترنت'));
+  await popup.evaluate(() => { window.mockUpdate = { available: false, automaticChecks: false, notificationsAvailable: false }; });
+  await popup.locator('#checkUpdates').click();
+  await popup.waitForFunction(() => document.getElementById('updateSchedule').textContent === 'بررسی دستی');
+  assert.ok((await popup.locator('#updateStatus').textContent()).includes('Reload'));
+  assert.equal(await popup.locator('#enabled').isEnabled(), true, 'optional update API failures leave protection controls usable');
   await popup.evaluate(() => { window.fixtureTabUrl = 'https://other.example/changed'; });
   await popup.locator('#enabled').uncheck();
   await assertProtection('off');

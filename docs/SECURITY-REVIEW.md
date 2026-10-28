@@ -1,4 +1,8 @@
-# Version 1.3.2 security and coverage review
+# Version 1.3.3 security and coverage review
+
+## Version 1.3.3 optional API isolation — 2026-10-28
+
+Optional alarm/notification listeners are feature-detected before registration. Scheduler initialization runs outside the protection-command dependency chain; missing APIs and scheduling failures are reported through capability status, while manual checks remain available. Notification deduplication is recorded only after successful notification creation. No permission prompts, timer-based worker keepalive, new permissions or wider CSP connections were introduced. Existing core policy errors remain surfaced, not suppressed. Real-browser coverage removes both update permissions and verifies manual checks, network controls and temporary-pause expiry. [Chrome requires the alarms manifest permission](https://developer.chrome.com/docs/extensions/reference/api/alarms); an undefined API alone does not establish the state of the user's installed manifest.
 
 ## Version 1.3.2 requested host restrictions — 2026-10-28
 

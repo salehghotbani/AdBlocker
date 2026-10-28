@@ -86,6 +86,7 @@ $('reload').addEventListener('click', async () => {
 });
 
 function renderUpdate(update) {
+  $('updateSchedule').textContent = update.automaticChecks === false ? 'بررسی دستی' : 'خودکار هر ۳ روز';
   const href = update.available && AdBlockUpdates.releaseUrl(update.latestTag);
   $('updateLink').hidden = !href;
   if (href) $('updateLink').href = href;
@@ -97,7 +98,12 @@ function renderUpdate(update) {
       update.error === 'rate_limit' ? 'GitHub موقتاً درخواست را نپذیرفت؛ بعداً دوباره بررسی کنید.' :
         update.error === 'response' ? 'پاسخ معتبر برای به‌روزرسانی دریافت نشد؛ بعداً دوباره بررسی کنید.' : 'بررسی انجام نشد؛ اتصال اینترنت را بررسی کنید.') + checked :
     href ? cached + `نسخهٔ ${update.latestVersion} آمادهٔ دریافت است.` + checked :
-      update.lastChecked ? cached + 'نسخهٔ شما به‌روز است.' + checked : 'بررسی خودکار هر ۳ روز انجام می‌شود؛ می‌توانید همین حالا هم بررسی کنید.';
+      update.lastChecked ? cached + 'نسخهٔ شما به‌روز است.' + checked :
+        update.automaticChecks === false ? 'با دکمهٔ بررسی به‌روزرسانی، نسخهٔ جدید را بررسی کنید.' :
+          'بررسی خودکار هر ۳ روز انجام می‌شود؛ می‌توانید همین حالا هم بررسی کنید.';
+  if (update.automaticChecks === false || update.notificationsAvailable === false) {
+    $('updateStatus').textContent += ' زمان‌بندی یا اعلان در این نصب در دسترس نیست؛ بررسی دستی فعال است. بستهٔ کامل افزونه را جایگزین و خود افزونه را Reload کنید.';
+  }
 }
 
 async function checkUpdates() {

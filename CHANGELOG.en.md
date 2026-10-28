@@ -2,6 +2,13 @@
 
 [فارسی](CHANGELOG.md) | **English**
 
+## 1.3.3 — 2026-10-28
+
+- Prevent missing alarms/notifications APIs from crashing worker registration or blocking settings and temporary-pause restoration.
+- Isolate optional scheduling errors and delays from protection commands; retain manual update checks and safe release links when optional APIs are missing.
+- Show manual-only status and complete-package/reload guidance instead of claiming automatic checks are available.
+- Add unit tests for absent/partial/rejected/stalled APIs and a real-browser installation without the two update permissions, including pause expiry and network controls.
+
 ## 1.3.2 — 2026-10-28
 
 - Restrict third-party requests to the six requested Hotjar, Bugsnag, Sentry, TikTok and Huawei hosts. Direct navigation and same-site requests remain permitted; cross-site business/API integrations can use a site exception.

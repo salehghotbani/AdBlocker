@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { mkdtemp, rm, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, readFile, writeFile, cp } from 'node:fs/promises';
 import http from 'node:http';
 import assert from 'node:assert/strict';
 
@@ -93,6 +93,7 @@ try {
     if (result.error) throw new Error(result.error);
     return result;
   }, message);
+  await popup.waitForFunction(async () => (await chrome.alarms.get('adblocker-update-check'))?.periodInMinutes === 4320);
   const alarm = await popup.evaluate(() => chrome.alarms.get('adblocker-update-check'));
   assert.equal(alarm.periodInMinutes, 4320, 'native alarm is scheduled every three days');
   assert.equal(updateRequests, 0, 'initial popup status reads cached data without a network request');
@@ -301,6 +302,7 @@ try {
   await soft98.waitForFunction(() => getComputedStyle(document.getElementById('abdds')).display === 'none');
   await soft98.close();
   console.log('PASS: actual extension collapses Soft98 ad slots, preserves downloads/search/sidebar, and respects site exceptions');
+  await checkMissingUpdatePermissions();
 
   if (process.env.ADBLOCK_LIVE_SOFT98 === '1') {
     const live = await context.newPage();
@@ -373,4 +375,77 @@ try {
     if (process.platform !== 'win32' || !['EPERM', 'EBUSY'].includes(error.code)) throw error;
     console.warn(`Windows retained a lock on the isolated test profile: ${profile}`);
   });
+}
+
+// Reproduce a stale/partial unpacked installation with both optional update
+// permissions absent, using the real packaged worker, popup and DNR APIs.
+async function checkMissingUpdatePermissions() {
+  const compatRoot = path.join(root, '.cache', 'compat-extensions');
+  await mkdir(compatRoot, { recursive: true });
+  const compatExtension = await mkdtemp(path.join(compatRoot, 'missing-updates-'));
+  const compatProfile = await mkdtemp(path.join(profileRoot, 'missing-updates-'));
+  let compatContext;
+  try {
+    await cp(extension, compatExtension, { recursive: true,
+      filter: source => !source.split(path.sep).includes('_metadata') });
+    const manifestPath = path.join(compatExtension, 'manifest.json');
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    manifest.permissions = manifest.permissions.filter(permission => !['alarms', 'notifications'].includes(permission));
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    compatContext = await chromium.launchPersistentContext(compatProfile, {
+      executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true,
+      ignoreDefaultArgs: ['--disable-extensions'],
+      args: ['--no-sandbox', `--disable-extensions-except=${compatExtension}`, `--load-extension=${compatExtension}`]
+    });
+    compatContext.setDefaultTimeout(15000);
+    await compatContext.route('https://ads.doubleclick.net/**', route => route.fulfill({
+      contentType: 'application/javascript', body: 'window.adScriptLoaded = true;'
+    }));
+    await compatContext.route('https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest', route => route.fulfill({
+      contentType: 'application/json', body: JSON.stringify({ tag_name: 'v9.0.0', draft: false, prerelease: false })
+    }));
+    const worker = compatContext.serviceWorkers()[0] || await compatContext.waitForEvent('serviceworker');
+    const panel = await compatContext.newPage();
+    await panel.goto(`chrome-extension://${new URL(worker.url()).host}/popup.html`);
+    await panel.waitForFunction(() => !document.getElementById('enabled').disabled);
+    assert.equal(await panel.evaluate(() => typeof chrome.alarms?.onAlarm), 'undefined');
+    assert.equal(await panel.evaluate(() => typeof chrome.notifications?.onClicked), 'undefined');
+    const command = message => panel.evaluate(async message => {
+      const response = await chrome.runtime.sendMessage(message);
+      if (response.error) throw new Error(response.error);
+      return response;
+    }, message);
+    await panel.locator('#checkUpdates').click();
+    await panel.waitForFunction(() => document.getElementById('updateStatus').textContent.includes('9.0.0'));
+    const update = (await command({ type: 'getUpdateStatus' })).update;
+    assert.equal(update.available, true);
+    assert.equal(update.automaticChecks, false);
+    assert.equal(update.notificationsAvailable, false);
+    assert.equal(await panel.locator('#updateSchedule').textContent(), 'بررسی دستی');
+    assert.ok((await panel.locator('#updateStatus').textContent()).includes('Reload'));
+    const page = await compatContext.newPage();
+    await page.goto(`http://127.0.0.1:${server.address().port}/missing-updates`);
+    await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    await command({ type: 'setEnabled', enabled: false });
+    await page.reload();
+    await page.waitForFunction(() => window.adScriptLoaded === true);
+    await command({ type: 'setEnabled', enabled: true });
+    await page.reload();
+    await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    const tabId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, page.url());
+    await command({ type: 'setPause', tabId, url: page.url(), paused: true });
+    await page.waitForFunction(() => window.adScriptLoaded === true);
+    await page.reload();
+    await page.waitForFunction(() => window.adScriptLoaded === undefined && getComputedStyle(document.getElementById('ad')).display === 'none');
+    console.log('PASS: missing alarms/notifications permissions preserve manual update checks, network controls and pause expiry in the actual browser');
+  } finally {
+    await compatContext?.close();
+    for (const [directory, base] of [[compatProfile, profileRoot], [compatExtension, compatRoot]]) {
+      if (path.dirname(path.resolve(directory)) !== path.resolve(base)) throw new Error('Unexpected compatibility test directory');
+      await rm(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }).catch(error => {
+        if (process.platform !== 'win32' || !['EPERM', 'EBUSY'].includes(error.code)) throw error;
+        console.warn(`Windows retained a lock on the isolated compatibility test directory: ${directory}`);
+      });
+    }
+  }
 }

@@ -5,7 +5,7 @@ import '../extension/updates.js';
 const { create, compareVersions, releaseUrl, ENDPOINT, ALARM, NOTIFICATION, PERIOD_MINUTES } = globalThis.AdBlockUpdates;
 const release = (tag = 'v1.3.0', extra = {}) => ({ tag_name: tag, draft: false, prerelease: false, ...extra });
 
-function harness(initial = {}) {
+function harness(initial = {}, options = {}) {
   let saved = structuredClone(initial), time = 1000000000, alarm;
   let response = () => new Response(JSON.stringify(release()));
   let denyNotification = false;
@@ -16,15 +16,20 @@ function harness(initial = {}) {
       async get(key) { return { [key]: structuredClone(saved) }; },
       async set(value) { saved = structuredClone(value.updateState); }
     } },
-    alarms: { async get() { return alarm; }, async create(name, options) {
-      schedules.push({ name, ...options }); alarm = { ...options };
+    alarms: { onAlarm: { addListener() {} }, async get() {
+      if (options.alarmError) throw new Error('Internal error'); return alarm;
+    }, async create(name, alarmOptions) {
+      if (options.alarmCreateError) throw new Error('Internal error');
+      schedules.push({ name, ...alarmOptions }); alarm = { ...alarmOptions };
     } },
-    notifications: { async create(id, options) {
+    notifications: { onClicked: { addListener() {} }, async create(id, options) {
       if (denyNotification) throw new Error('OS notifications disabled');
       notifications.push({ id, ...options });
     }, async clear(id) { cleared.push(id); } },
     tabs: { async create(value) { opened.push(value); } }
   };
+  if (options.missingApis) { delete api.alarms; delete api.notifications; }
+  if (options.partialApis) { api.alarms = {}; api.notifications = {}; }
   const make = () => create(api, { now: () => time, fetch: async (...args) => {
     requests.push(args); return response();
   } });
@@ -40,6 +45,23 @@ test('versions are compared numerically and release links cannot escape the proj
   for (const tag of ['v1.3.0-beta', 'v1.3.0/../../evil', 'javascript:alert(1)', 'v1.3.0?x=1',
     'v01.2.0', '65536.0.0', null, {}]) assert.equal(releaseUrl(tag), null);
   assert.equal(releaseUrl('v1.3.0'), 'https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.0');
+});
+
+test('missing or partial optional APIs preserve manual checks without false automatic status', async () => {
+  for (const options of [{ missingApis: true }, { partialApis: true }, { alarmError: true }, { alarmCreateError: true }]) {
+    const h = harness({}, options), updater = h.make();
+    await updater.initialize();
+    const status = await updater.check();
+    assert.equal(status.available, true);
+    assert.equal(status.automaticChecks, false);
+    const notificationsAvailable = !options.missingApis && !options.partialApis;
+    assert.equal(status.notificationsAvailable, notificationsAvailable);
+    assert.equal(h.requests.length, 1);
+    assert.equal(h.notifications.length, notificationsAvailable ? 1 : 0);
+    assert.equal(h.saved.notifiedTag, notificationsAvailable ? 'v1.3.0' : null);
+    await updater.openUpdate(NOTIFICATION);
+    assert.deepEqual(h.opened, [{ url: releaseUrl('v1.3.0') }]);
+  }
 });
 
 test('three-day alarm is restored after restart without postponing an existing alarm', async () => {

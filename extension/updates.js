@@ -38,6 +38,11 @@
 
   function create(api, { fetch: fetchRelease = globalThis.fetch, now = Date.now } = {}) {
     let inFlight = null;
+    let scheduleFailed = false;
+    const hasAlarms = () => typeof api.alarms?.get === 'function' && typeof api.alarms?.create === 'function' &&
+      typeof api.alarms?.onAlarm?.addListener === 'function';
+    const hasNotifications = () => typeof api.notifications?.create === 'function' &&
+      typeof api.notifications?.onClicked?.addListener === 'function';
     const read = async () => normalize((await api.storage.local.get(KEY))[KEY]);
     const write = state => api.storage.local.set({ [KEY]: state });
     function status(state) {
@@ -46,20 +51,25 @@
       return { currentVersion, latestTag: state.latestTag,
         latestVersion: state.latestTag?.replace(/^v/, '') || null,
         available, releaseUrl: available ? releaseUrl(state.latestTag) : null,
-        lastChecked: state.lastChecked, error: state.error, retryAfter: state.retryAfter };
+        lastChecked: state.lastChecked, error: state.error, retryAfter: state.retryAfter,
+        automaticChecks: hasAlarms() && !scheduleFailed, notificationsAvailable: hasNotifications() };
     }
 
     async function initialize() {
-      const alarm = await api.alarms.get(ALARM);
-      if (alarm?.periodInMinutes === PERIOD_MINUTES) return;
-      const state = await read();
-      const due = state.lastAttempt ? state.lastAttempt + PERIOD_MINUTES * 60000 : 0;
-      // Delay the first check for one minute; browser startup and policy sync
-      // never wait on a network request. Recreate missing alarms after restart.
-      await api.alarms.create(ALARM, {
-        when: Math.max(now() + MIN_INTERVAL, Math.min(due, now() + PERIOD_MINUTES * 60000)),
-        periodInMinutes: PERIOD_MINUTES
-      });
+      if (!hasAlarms()) return;
+      try {
+        const alarm = await api.alarms.get(ALARM);
+        if (alarm?.periodInMinutes !== PERIOD_MINUTES) {
+          const state = await read();
+          const due = state.lastAttempt ? state.lastAttempt + PERIOD_MINUTES * 60000 : 0;
+          // Recreate missing alarms without depending on a live worker timer.
+          await api.alarms.create(ALARM, {
+            when: Math.max(now() + MIN_INTERVAL, Math.min(due, now() + PERIOD_MINUTES * 60000)),
+            periodInMinutes: PERIOD_MINUTES
+          });
+        }
+        scheduleFailed = false;
+      } catch { scheduleFailed = true; }
     }
 
     function check() {
@@ -105,7 +115,7 @@
           state.error = ['response', 'rate_limit'].includes(error.message) ? error.message : 'network';
         }
         await write(state);
-        if (!state.error && status(state).available &&
+        if (hasNotifications() && !state.error && status(state).available &&
             (!state.notifiedTag || compareVersions(state.latestTag, state.notifiedTag) > 0)) {
           try {
             await api.notifications.create(NOTIFICATION, {
@@ -126,7 +136,7 @@
       if (notificationId !== NOTIFICATION) return;
       const update = status(await read());
       if (update.available) await api.tabs.create({ url: update.releaseUrl });
-      await api.notifications.clear(NOTIFICATION);
+      if (typeof api.notifications?.clear === 'function') await api.notifications.clear(NOTIFICATION);
     }
 
     return { initialize, check, getStatus: async () => status(await read()), openUpdate };

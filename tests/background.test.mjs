@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 
 const settingsCode = await readFile(new URL('../extension/settings.js', import.meta.url), 'utf8');
 const backgroundCode = await readFile(new URL('../extension/background.js', import.meta.url), 'utf8');
-async function harness(saved, savedSession = {}) {
+async function harness(saved, savedSession = {}, options = {}) {
   let listener;
   let storage = saved;
   let dynamic = [];
@@ -55,9 +55,11 @@ async function harness(saved, savedSession = {}) {
     runtime: { id: 'fixture', getURL: path => `chrome-extension://fixture/${path}`,
       onMessage: { addListener(fn) { listener = fn; } } }
   };
+  if (options.missingApis) { delete api.alarms; delete api.notifications; }
+  if (options.partialApis) { api.alarms = {}; api.notifications = {}; }
   const context = vm.createContext({ chrome: api, URL, AdBlockUpdates: {
     ALARM: 'adblocker-update-check', create() { return {
-      async initialize() {}, async getStatus() { updateCalls.push('status'); return {}; },
+      async initialize() { await options.initialize?.(); }, async getStatus() { updateCalls.push('status'); return {}; },
       async check() { updateCalls.push('check'); return updateGate; }, async openUpdate(id) { updateCalls.push(id); }
     }; }
   }, console: {
@@ -82,6 +84,31 @@ test('worker startup restores persisted disabled ruleset and site exceptions', a
   assert.deepEqual(Array.from(h.enabled), []);
   assert.equal(h.dynamic.length, 2);
   assert.equal(h.dynamic[0].condition.requestDomains[0], 'allowed.example');
+});
+
+test('missing optional APIs do not prevent startup, settings, pause expiry or manual update commands', async () => {
+  for (const options of [{ missingApis: true }, { partialApis: true }]) {
+    const h = await harness({ enabled: false, allowedSites: ['allowed.example'] }, {}, options);
+    assert.deepEqual(Array.from(h.enabled), []);
+    assert.equal(h.dynamic.length, 2);
+    assert.equal(h.errors.length, 0);
+    assert.equal((await h.send({ type: 'setEnabled', enabled: true })).settings.enabled, true);
+    await h.send({ type: 'checkForUpdates' });
+    assert.deepEqual(h.updateCalls, ['check']);
+    await h.send({ type: 'setPause', tabId: 2, url: h.tabs[1].url, paused: true });
+    await h.emit('committed', { tabId: 2, frameId: 0, url: h.tabs[1].url });
+    await h.emit('before', { tabId: 2, frameId: 0, url: h.tabs[1].url });
+    assert.equal(h.sessionRules.length, 0);
+  }
+});
+
+test('stalled or rejected update scheduling cannot delay core startup and settings', async () => {
+  for (const initialize of [() => new Promise(() => {}), async () => { throw new Error('Internal error'); }]) {
+    const h = await harness({ enabled: false }, {}, { initialize });
+    assert.deepEqual(Array.from(h.enabled), []);
+    assert.equal((await h.send({ type: 'setEnabled', enabled: true })).settings.enabled, true);
+    assert.equal(h.errors.length, 0);
+  }
 });
 test('site changes persist, broadcast and apply to nested frames of excluded top-level site', async () => {
   const h = await harness();
