@@ -221,32 +221,37 @@ try {
   await command({ type: 'setEnabled', enabled: true });
   const saved = await command({ type: 'getSettings' });
   assert.equal(saved.settings.enabled, true);
+  // Isolate URL exceptions from the frame used for global ruleset toggles.
+  // The same allowed/blocked requests are exercised in a fresh top-level tab.
+  const urlPage = await context.newPage();
+  urlPage.on('requestfailed', request => failures.push({ url: request.url(), error: request.failure()?.errorText }));
   await command({ type: 'setUrl', url: url + '/exact?campaign=one#section', allowed: true });
-  await page.goto(url + '/exact?campaign=one');
+  await urlPage.goto(url + '/exact?campaign=one');
   try {
     // Wait for the observable result of the routed script, rather than racing
     // its execution with an immediate evaluation after navigation.
-    await page.waitForFunction(() => window.adScriptLoaded === true);
+    await urlPage.waitForFunction(() => window.adScriptLoaded === true && window.pageAdLoaded === true && window.widgetAdLoaded === true);
   } catch (error) {
     const diagnostic = await popup.evaluate(async () => ({
       rules: await chrome.declarativeNetRequest.getDynamicRules(),
       settings: (await chrome.storage.local.get('settings')).settings
     }));
-    const documentState = await page.evaluate(() => ({
+    const documentState = await urlPage.evaluate(() => ({
       readyState: document.readyState, pageAdLoaded: window.pageAdLoaded,
       widgetAdLoaded: window.widgetAdLoaded, readerLoaded: window.readerLoaded,
       scripts: [...document.scripts].map(script => script.src)
     }));
-    throw new Error(`Exact-URL fixture did not load: ${JSON.stringify({ url: page.url(),
+    throw new Error(`Exact-URL fixture did not load: ${JSON.stringify({ url: urlPage.url(),
       failures: failures.slice(-8), documentState, ...diagnostic })}`, { cause: error });
   }
-  assert.equal(await page.locator('#ad').isVisible(), true);
+  assert.equal(await urlPage.locator('#ad').isVisible(), true);
   for (const path of ['/other', '/exact?campaign=two']) {
-    await page.goto(url + path);
-    await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
-    assert.equal(await page.evaluate(() => window.adScriptLoaded), undefined);
+    await urlPage.goto(url + path);
+    await urlPage.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    assert.equal(await urlPage.evaluate(() => window.adScriptLoaded), undefined);
   }
   await command({ type: 'clearUrls' });
+  await urlPage.close();
   await page.goto(url + '/paused');
   const tabId = await popup.evaluate(async target => {
     const tabs = await chrome.tabs.query({});

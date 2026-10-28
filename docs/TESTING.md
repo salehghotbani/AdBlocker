@@ -6,6 +6,7 @@
 
 - English popup text, accessible theme labels, worker validation errors, release notifications and manifest metadata are checked. The popup declares `lang="en"` and `dir="ltr"`; numbers and dates use English formatting. DOM and actual-extension tests use a Persian browser locale to verify the English default.
 - Unsuffixed guides are now English, paired with `.fa.md` translations. Existing `.en.md` paths remain compatibility links. Package tests verify both English and Persian policy files; local Markdown links are checked.
+- The first release-candidate CI run passed the English checks but failed the existing exact-URL fixture after global ruleset toggles. That scenario now uses a fresh tab and requires all three allowed scripts to execute, retaining the different-path/query blocking assertions and failure diagnostics. A browser-level root cause was not independently established.
 - The 28 unit tests, four distribution/ZIP tests, DOM/theme/gray-state controls, network and same-site fixtures, Soft98 and missing-update-permission installation tests remain the validation scope. Filtering rules and permissions are unchanged; no new live blocking percentage is claimed.
 - Final CI for the release commit is linked from the [v1.4.0 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.4.0). Firefox runtime and native OS toast display are outside this validation.
 
