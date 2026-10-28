@@ -1,43 +1,43 @@
-# حریم خصوصی
+# Privacy policy
 
-**فارسی** | [English](PRIVACY.en.md)
+**English** | [فارسی](PRIVACY.fa.md)
 
-این توضیحات مربوط به نسخهٔ ۱.۳.۳ افزونهٔ AdBlocker است.
+This policy describes version 1.4.0 of the AdBlocker extension.
 
-- افزونه تاریخچه، متن صفحات، اطلاعات ورود یا محتوای فرم‌ها را جمع‌آوری یا ارسال نمی‌کند. نشانی‌های بازدیدشده خودکار ذخیره نمی‌شوند؛ فقط URLهایی که خودتان صریحاً استثنای دائمی می‌کنید ذخیره می‌شوند.
-- وضعیت روشن/خاموش، رنگ‌بندی روز/شب، نام سایت‌های استثنا و URLهای انتخاب‌شدهٔ شما با مسیر و query در `storage.local` همان مرورگر ذخیره می‌شوند. این تنظیمات به فضای ابری همگام‌سازی نمی‌شوند؛ URL انتخاب‌شده ممکن است پارامتر حساس داشته باشد.
-- برای توقف یک‌باره، شناسهٔ تب و URL آن در `storage.session` موقت نگه داشته می‌شوند؛ بارگذاری بعدی پس از reload خودکار، رفتن به صفحهٔ دیگر، بستن تب یا مرورگر آن را پاک می‌کند. تعلیق و شروع دوبارهٔ worker به‌تنهایی توقف را پاک نمی‌کند.
-- نام میزبان تب فعال برای نمایش در پنجرهٔ افزونه خوانده می‌شود و به سروری ارسال نمی‌شود.
-- اسکریپت محلی افزونه عناصر دارای نشانه‌های مشخص تبلیغاتی را بررسی می‌کند تا همان عناصر را پنهان کند. این بررسی داخل مرورگر انجام می‌شود؛ محتوای صفحه جمع‌آوری نمی‌شود.
-- قواعد شبکهٔ محلی با API مرورگر اعمال می‌شوند. فهرست قواعد از سرور خارجی دریافت نمی‌شود و هیچ کد اجرایی از راه دور بارگیری نمی‌شود.
-- هیچ تحلیل‌گر، تله‌متری یا SDK تبلیغاتی در افزونه وجود ندارد. وابستگی Playwright فقط ابزار تست توسعه است و در بسته‌های نصب قرار نمی‌گیرد.
-- پیام‌های ارسالی به اسکریپت صفحات فقط وضعیت مؤثر محافظت همان تب را دارند؛ فهرست سایت‌ها و URLهای مستثنا در این پیام‌ها ارسال نمی‌شود. در Chromium، دسترسی مستقیم اسکریپت صفحات به `storage.local` نیز محدود می‌شود.
-- تغییر وضعیت محافظت، همان صفحهٔ جاری را خودکار بازخوانی می‌کند؛ پیش از بازخوانی، نشانی تب بررسی می‌شود تا صفحهٔ دیگری بازخوانی نشود.
+- The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
+- The enabled/disabled setting, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
+- For a one-time pause, the tab ID and URL are temporarily held in `storage.session`. The next reload after the automatic reload, navigation to another page, tab closure, or browser shutdown clears the pause. Worker suspension and restart alone do not clear it.
+- The active tab's hostname is read for display in the popup and is not sent to a server.
+- A local content script examines elements with specific advertising markers to hide those elements. Processing takes place inside the browser; page content is not collected.
+- Local network rules are applied through the browser API. The filter list is not downloaded from an external server, and no remote executable code is loaded.
+- The extension contains no analytics, telemetry, or advertising SDK. Playwright is a development test tool and is not included in installation packages.
+- Messages sent to content scripts contain only that tab's effective protection state, not the saved site or URL exceptions. Chromium also restricts direct content-script access to `storage.local`.
+- Protection changes automatically reload the current page. The tab's URL is checked first so a different page is not reloaded.
 
-## بررسی به‌روزرسانی
+## Update checks
 
-اگر مرورگر API زمان‌بندی یا اعلان را ارائه نکند، محافظت و بررسی دستی در دسترس می‌مانند. محدودیت در پنجرهٔ افزونه نمایش داده می‌شود؛ مجوز اضافه درخواست نمی‌شود و تایمر پس‌زمینه جایگزین نمی‌شود.
+If the browser does not expose scheduling or notification APIs, protection and manual checks remain available. The popup reports the limitation; the extension does not request extra permissions or substitute a background timer.
 
-دکمهٔ بررسی و زمان‌بندی خودکار هر ۳ روز فقط به `https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest` درخواست می‌فرستند. اولین بررسی خودکار حدود یک دقیقه پس از شروع انجام می‌شود؛ در صورت بسته‌بودن مرورگر یا خواب دستگاه، بررسی ممکن است تا بازشدن مرورگر یا بیدارشدن دستگاه عقب بیفتد. GitHub مانند هر سرویس اینترنتی، IP و سرآیندهای معمول اتصال را می‌بیند؛ افزونه کوکی یا اطلاعات ورود نمی‌فرستد و تاریخچه، سایت جاری، استثناها و نسخهٔ نصب‌شده را در درخواست قرار نمی‌دهد. مقایسهٔ نسخه روی دستگاه انجام می‌شود.
+The button and three-day browser alarm contact only `https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest`. The first automatic check is scheduled about one minute after startup; closed browsers or sleeping devices may delay checks until the browser opens or the device wakes. GitHub sees the IP address and normal connection headers, as any Internet service does. Requests omit cookies and credentials and contain no browsing history, current site, exceptions, or installed version. Version comparison happens locally.
 
-زمان آخرین تلاش و بررسی موفق، برچسب آخرین نسخه، وضعیت خطا و نسخه‌ای که برایش اعلان نمایش داده شده در `storage.local` ذخیره می‌شوند. اعلان برای هر نسخهٔ جدید یک بار ساخته می‌شود؛ نمایش آن به تنظیمات اعلان مرورگر و سیستم‌عامل وابسته است. خطای بررسی، به معنی به‌روزبودن گزارش نمی‌شود. لینک دریافت از برچسب نسخهٔ معتبر و نشانی ثابت همین مخزن ساخته می‌شود؛ کد، فیلتر یا فایل نصب از راه دور خودکار دانلود یا اجرا نمی‌شود.
+The last attempt/success times, latest version tag, error state, and last notified version are stored in `storage.local`. A notification is created once per newer version; visibility depends on browser and operating-system notification settings. Failed checks are not reported as up-to-date. Download links are constructed from a validated version tag and this repository's fixed release URL. No remote code, filter list, or installation file is automatically downloaded or executed.
 
-## مجوزها
+## Permissions
 
-| مجوز | کاربرد |
+| Permission | Purpose |
 | --- | --- |
-| `storage` | نگهداری تنظیمات، استثناها و وضعیت به‌روزرسانی به‌صورت محلی و توقف‌ها در حافظهٔ نشست |
-| `declarativeNetRequest` | اعمال قواعد مسدودسازی و استثناها توسط مرورگر |
-| `activeTab` | خواندن نام سایت فعلی پس از بازکردن پنجرهٔ افزونه |
-| `webNavigation` | تشخیص جابه‌جایی صفحه و انقضای توقف یک‌باره، بدون نگهداری تاریخچه |
-| `alarms` | بررسی خودکار نسخه هر ۳ روز و بازیابی زمان‌بندی |
-| `notifications` | اطلاع از نسخهٔ جدید و بازکردن Release با کلیک کاربر |
-| دسترسی به صفحه‌های HTTP/HTTPS | اجرای اسکریپت پنهان‌سازی و قواعد شبکه در وب‌سایت‌ها |
+| `storage` | Keep settings, exceptions, and update status locally, and temporary pauses in session memory |
+| `declarativeNetRequest` | Apply blocking and exception rules through the browser |
+| `activeTab` | Read the current site's hostname when the popup is opened |
+| `webNavigation` | Detect page changes and expire one-time pauses without keeping browsing history |
+| `alarms` | Check for updates every three days and restore scheduling |
+| `notifications` | Notify about new versions and open a release after the user clicks |
+| HTTP/HTTPS page access | Run cosmetic filtering and network rules on websites |
 
-## حذف داده‌ها
+## Deleting data
 
-«پاک‌کردن استثناهای سایت‌ها» نام سایت‌ها و «پاک‌کردن استثناهای URL» نشانی‌های ذخیره‌شده را پاک می‌کند. توقف موقت را می‌توان با گزینهٔ ادامه پایان داد. حذف افزونه از مرورگر، تنظیمات محلی آن را نیز حذف می‌کند. افزونه سرور یا حساب کاربری ندارد که داده‌ای در آن باقی بماند.
+“Clear site exceptions” deletes saved site names; “Clear URL exceptions” deletes saved URL exceptions. The resume control ends a temporary pause. Uninstalling the extension also removes its local settings. There is no backend or account where data could remain.
 
-## گزارش مشکل
+## Reporting an issue
 
-برای مشکل عمومی از Issues مخزن استفاده کنید. نام سایت خصوصی، تاریخچه، تصویر حاوی اطلاعات شخصی یا اطلاعات ورود را در گزارش عمومی قرار ندهید. برای گزارش آسیب‌پذیری، [SECURITY.md](SECURITY.md) را ببینید.
+Use repository Issues for general problems. Do not include private site names, browsing history, screenshots containing personal information, or sign-in details in public reports. For vulnerabilities, see [security reporting](SECURITY.md).

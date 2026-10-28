@@ -1,12 +1,12 @@
-# مشارکت
+# Contributing
 
-**فارسی** | [English](CONTRIBUTING.en.md)
+**English** | [فارسی](CONTRIBUTING.fa.md)
 
-توسعهٔ این مخزن فقط روی شاخهٔ `main` انجام می‌شود؛ شاخهٔ دیگری نسازید. پس از بررسی و تست تغییرات، commit و push را روی `main` انجام دهید.
+Work only on the `main` branch; do not create additional branches. Review and test changes, then commit and push them to `main`.
 
-## آماده‌سازی
+## Setup
 
-Node.js ۲۰ یا بالاتر، Python 3 برای ZIP و یک Chromium مجاز برای تست لازم است.
+Requires Node.js 20 or later, Python 3 for ZIP packaging, and a Chromium browser that permits the required tests.
 
 ```sh
 npm ci --ignore-scripts --no-audit --no-fund
@@ -19,18 +19,20 @@ npm run test:browser
 npm run lint:firefox
 ```
 
-روی سیستم‌هایی که مسیر مرورگر متفاوت است، `CHROMIUM_PATH` را تنظیم کنید. تست کامل به مجازبودن نصب افزونهٔ unpacked نیاز دارد. شکست تست یا محدودیت محیط را گزارش کنید؛ تست را حذف نکنید و سیاست مدیریتی مرورگر را تغییر ندهید. CI یک Chromium مخصوص تست در GitHub Actions آماده می‌کند.
+Set `CHROMIUM_PATH` if your browser is installed elsewhere. Full integration testing requires permission to install unpacked extensions. Report failures and environment limitations; do not remove tests or alter managed browser policies. CI prepares a Chromium test browser in GitHub Actions.
 
-## قواعد جدید
+## New rules
 
-درخواست تغییر را با دامنهٔ دقیق تبلیغ، دلیل و نمونهٔ عمومی قابل بازتولید همراه کنید. کوکی، توکن، نشانی خصوصی یا دادهٔ شخصی نفرستید. دامنهٔ سرویس عمومی، CDN مشترک یا میزبان اصلی ویدیو را بدون بررسی مسدود نکنید.
+Include the exact advertising domain, your rationale, and a reproducible public example in your proposed change. Do not submit cookies, tokens, private URLs, or personal data. Do not block a general-purpose service, shared CDN, or primary video host without investigating its role.
 
-برای قواعد ظاهری، حفظ مقاله، فرم ورود، ویدیو، iframe سالم و نمایش موبایل را بررسی کنید. از انتخابگرهای بسیار عمومی مثل `[class*="ad"]` و حذف عناصر صرفاً بر اساس متن پرهیز کنید. خاموش‌کردن افزونه باید استایل قبلی عنصر را بازیابی کند.
+For cosmetic rules, check that articles, sign-in forms, video, safe iframes, and mobile layouts remain usable. Avoid broad selectors such as `[class*="ad"]` and removing elements based only on their text. Disabling the extension must restore the previous element style.
 
-## مستندات و خروجی
+## Documentation and generated output
 
-برای تغییر توقف صفحه، انقضا در reload بعدی، جابه‌جایی معمولی و SPA، بستن تب و بازیابی worker را بررسی کنید. استثنای URL نباید مسیر یا query دیگری را مستثنا کند؛ توقف یک تب هم نباید به تب دیگر نشت کند. URL تست‌ها باید ساختگی و بدون دادهٔ حساس باشد.
+When changing page pauses, check expiry on the next reload, ordinary and SPA navigation, tab closure, and worker restoration. URL exceptions must not cover another path or query, and a paused tab must not affect another tab. Use synthetic test URLs without sensitive data.
 
-فایل‌های `dist/`، `node_modules/` و خروجی تست‌ها تولیدی‌اند و commit نمی‌شوند. تصاویر مستندات در `docs/images/popup.png`، `docs/images/popup-light.png` و `docs/images/popup-dark.png` نگهداری می‌شوند. برای به‌روزرسانی، `npm run test:dom` را اجرا و سه فایل هم‌نام در `artifacts/` را کپی کنید؛ تصاویر با دادهٔ آزمایشی ساخته می‌شوند. تغییرات رابط را در هر دو رنگ‌بندی، با صفحه‌کلید و انتخاب ذخیره‌شده بررسی کنید.
+`dist/`, `node_modules/`, and test outputs are generated and are not committed. Documentation screenshots are stored in `docs/images/popup.png`, `docs/images/popup-light.png`, and `docs/images/popup-dark.png`. To update them, run `npm run test:dom` and copy the three matching files from `artifacts/`; screenshots use test data. Check interface changes in both themes, with keyboard navigation and a saved preference.
 
-تغییر قابلیت‌ها، محدودیت‌ها و حریم خصوصی را در README، CHANGELOG و در صورت نیاز PRIVACY ثبت کنید. نسخه‌های فارسی و انگلیسی را همگام نگه دارید و هر نسخه را به همتای زبانی آن لینک کنید. کدهای ارسالی تحت لایسنس MIT پروژه مشارکت داده می‌شوند.
+Document feature, limitation, and privacy changes in README, CHANGELOG, and PRIVACY where relevant. Keep the Persian and English versions synchronized and link each version to its counterpart. Submitted contributions are licensed under the project's MIT License.
+
+Unsuffixed guides are canonical English documents; Persian translations use `.fa.md`. Keep `.en.md` files as compatibility links. The application defaults to English even when the browser locale is Persian; include accessibility labels, notifications, validation errors, numbers and dates when changing interface text.

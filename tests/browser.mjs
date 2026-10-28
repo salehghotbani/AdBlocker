@@ -40,6 +40,7 @@ try {
   context = await chromium.launchPersistentContext(profile, {
     executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium',
     headless: true,
+    locale: 'fa-IR',
     ignoreDefaultArgs: ['--disable-extensions'],
     args: ['--no-sandbox', `--disable-extensions-except=${extension}`, `--load-extension=${extension}`]
   });
@@ -74,6 +75,9 @@ try {
   const popup = await context.newPage();
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
+  assert.equal(await popup.locator('html').getAttribute('lang'), 'en');
+  assert.equal(await popup.locator('html').getAttribute('dir'), 'ltr');
+  assert.equal(await popup.locator('#checkUpdates').textContent(), 'Check for updates');
   await popup.evaluate(() => {
     window.policyViolations = [];
     document.addEventListener('securitypolicyviolation', event => window.policyViolations.push(event.violatedDirective));
@@ -421,8 +425,8 @@ async function checkMissingUpdatePermissions() {
     assert.equal(update.available, true);
     assert.equal(update.automaticChecks, false);
     assert.equal(update.notificationsAvailable, false);
-    assert.equal(await panel.locator('#updateSchedule').textContent(), 'بررسی دستی');
-    assert.ok((await panel.locator('#updateStatus').textContent()).includes('Reload'));
+    assert.equal(await panel.locator('#updateSchedule').textContent(), 'Manual checks');
+    assert.match(await panel.locator('#updateStatus').textContent(), /reload the extension/i);
     const page = await compatContext.newPage();
     await page.goto(`http://127.0.0.1:${server.address().port}/missing-updates`);
     await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');

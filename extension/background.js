@@ -44,12 +44,12 @@ async function syncSession() {
 }
 
 async function validateUrl(url) {
-  if (!url || url.length > 1500) throw new Error('URL باید HTTP/HTTPS، بدون نام کاربری و حداکثر ۱۵۰۰ نویسه باشد.');
+  if (!url || url.length > 1500) throw new Error('The URL must use HTTP/HTTPS, contain no credentials, and be at most 1,500 characters.');
   const rule = urlRule(url, 1);
   const result = await api.declarativeNetRequest.isRegexSupported({
     regex: rule.condition.regexFilter, isCaseSensitive: true
   });
-  if (!result.isSupported) throw new Error('این URL برای قانون دقیق مرورگر پشتیبانی نمی‌شود.');
+  if (!result.isSupported) throw new Error('This URL is not supported by the browser exact-match rules.');
 }
 
 function enqueue(task) {
@@ -90,7 +90,7 @@ async function handle(message, sender) {
   if (message.type === 'setPause' && Number.isInteger(message.tabId) && typeof message.paused === 'boolean') {
     const tab = await api.tabs.get(message.tabId);
     const url = pageUrl(tab.url);
-    if (!url || url !== pageUrl(message.url)) throw new Error('صفحه عوض شده است؛ پنجرهٔ افزونه را دوباره باز کنید.');
+    if (!url || url !== pageUrl(message.url)) throw new Error('The page has changed. Reopen the extension popup.');
     await validateUrl(url);
     const previous = { ...pausedTabs };
     if (message.paused) pausedTabs[tab.id] = { url, awaitingReload: true };
@@ -114,7 +114,7 @@ async function handle(message, sender) {
   } else if (message.type === 'setSite' && typeof message.host === 'string'
       && typeof message.allowed === 'boolean') {
     const host = hostname(message.host);
-    if (!host) throw new Error('نشانی سایت معتبر نیست.');
+    if (!host) throw new Error('The site address is invalid.');
     // Re-enabling a child of an excluded parent removes that parent exception.
     const sites = message.allowed ? [...settings.allowedSites, host] :
       settings.allowedSites.filter(site => !isAllowed(host, [site]));
@@ -124,14 +124,14 @@ async function handle(message, sender) {
     await validateUrl(url);
     const urls = settings.allowedUrls.filter(value => value !== url);
     if (message.allowed) urls.push(url);
-    if (urls.length > 200) throw new Error('حداکثر ۲۰۰ استثنای URL مجاز است.');
+    if (urls.length > 200) throw new Error('You can save up to 200 URL exceptions.');
     next = normalize({ ...settings, allowedUrls: urls });
   } else if (message.type === 'clearUrls') {
     next = { ...settings, allowedUrls: [] };
   } else if (message.type === 'clearSites') {
     next = { ...settings, allowedSites: [] };
   } else {
-    throw new Error('درخواست نامعتبر است.');
+    throw new Error('Invalid request.');
   }
   // Apply network policy first; a failed API call must be visible to the UI.
   try {
@@ -153,7 +153,7 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Content scripts may read settings, but only extension pages may change them.
   const extensionPage = sender.url?.startsWith(api.runtime.getURL(''));
   if (sender.id !== api.runtime.id || (message.type !== 'getSettings' && !extensionPage)) {
-    sendResponse({ error: 'دسترسی مجاز نیست.' });
+    sendResponse({ error: 'Access denied.' });
     return false;
   }
   const operation = message.type === 'getUpdateStatus' ? updates.getStatus().then(update => ({ update })) :

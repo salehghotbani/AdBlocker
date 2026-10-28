@@ -1,11 +1,11 @@
-# گزارش امنیتی
+# Security reporting
 
-**فارسی** | [English](SECURITY.en.md)
+**English** | [فارسی](SECURITY.fa.md)
 
-نسخهٔ فعلی مورد پشتیبانی: سری ۱.۳.x. دامنه و نتایج بررسی نسخهٔ ۱.۳.۳ در [گزارش بررسی امنیتی](https://github.com/salehghotbani/AdBlocker/blob/main/docs/SECURITY-REVIEW.md) آمده است؛ موفقیت تست‌ها تضمین نبود تمام آسیب‌پذیری‌ها نیست.
+Currently supported version: the 1.4.x series. See the [version 1.4.0 security review](https://github.com/salehghotbani/AdBlocker/blob/main/docs/SECURITY-REVIEW.md) for scope and results; passing tests does not guarantee the absence of all vulnerabilities.
 
-برای آسیب‌پذیری، در صورت فعال‌بودن قابلیت گزارش خصوصی GitHub، از بخش **Security → Report a vulnerability** همین مخزن استفاده کنید. جزئیات بهره‌برداری، کلید، توکن یا اطلاعات خصوصی را در Issue عمومی منتشر نکنید.
+If GitHub private vulnerability reporting is enabled for this repository, use **Security → Report a vulnerability**. Do not publish exploit details, keys, tokens, or private information in a public issue.
 
-اگر گزارش خصوصی در دسترس نیست، یک Issue عمومی بدون جزئیات حساس باز کنید و درخواست راه ارتباطی خصوصی بدهید. زمان پاسخ مشخصی تضمین نمی‌شود.
+If private reporting is unavailable, open a public issue without sensitive details and ask for a private contact method. No response time is guaranteed.
 
-مشکل نمایش سایت و تبلیغ مسدودنشده معمولاً باگ عادی است؛ نمونهٔ عمومی و مراحل بازتولید آن را در Issues بنویسید.
+Broken page layouts and unblocked ads are generally ordinary bugs. Report them in Issues with a public example and reproduction steps.

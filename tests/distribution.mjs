@@ -13,6 +13,10 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     const manifest = await json(`${base}manifest.json`);
     assert.equal(manifest.manifest_version, 3);
     assert.equal(manifest.version, (await json('package.json')).version);
+    assert.equal(manifest.name, 'AdBlocker — Browse without ads');
+    assert.equal(/[\u0600-\u06ff]/u.test(manifest.description), false, 'browser listing metadata defaults to English');
+    const popup = (await read(base + 'popup.html')).toString();
+    assert.ok(popup.includes('lang="en" dir="ltr"'));
     assert.equal(manifest.permissions.includes('declarativeNetRequest'), true);
     const policy = manifest.content_security_policy.extension_pages;
     for (const directive of ["script-src 'self'", "object-src 'none'", "base-uri 'none'"]) {
@@ -34,9 +38,12 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
       assert.deepEqual(await read(base + file), await read('extension/' + file));
     }
     assert.deepEqual(await read(base + 'LICENSE.txt'), await read('LICENSE'));
-    for (const file of ['PRIVACY.md', 'PRIVACY.en.md', 'SECURITY.md', 'SECURITY.en.md']) {
+    for (const file of ['PRIVACY.md', 'PRIVACY.fa.md', 'PRIVACY.en.md', 'SECURITY.md', 'SECURITY.fa.md', 'SECURITY.en.md']) {
       assert.deepEqual(await read(base + file), await read(file));
     }
+    assert.match((await read(base + 'PRIVACY.md')).toString(), /^# Privacy policy/);
+    assert.match((await read(base + 'SECURITY.md')).toString(), /^# Security reporting/);
+    assert.match((await read(base + 'PRIVACY.fa.md')).toString(), /\p{Script=Arabic}/u);
     const rules = await json(base + 'rules/ads.json');
     const domains = await json('extension/ad-domains.json');
     const domainRules = rules.filter(rule => rule.condition.requestDomains);

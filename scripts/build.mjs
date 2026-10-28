@@ -35,9 +35,9 @@ rules.push({
 
 const common = {
   manifest_version: 3,
-  name: 'AdBlocker — مرور بدون تبلیغ',
+  name: 'AdBlocker — Browse without ads',
   version,
-  description: 'مسدودسازی محافظه‌کارانهٔ تبلیغات، با امکان استثناکردن سایت‌ها و بدون ردیابی.',
+  description: 'Block ads and tracking requests with site exceptions and no browsing-data collection.',
   permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation', 'alarms', 'notifications'],
   content_security_policy: { extension_pages:
     "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; connect-src https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest; frame-src 'none'; form-action 'none'; frame-ancestors 'none'" },
@@ -60,7 +60,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     await cp(path.join(source, file), path.join(dest, file));
   }
   await cp(path.join(root, 'LICENSE'), path.join(dest, 'LICENSE.txt'));
-  for (const file of ['PRIVACY.md', 'PRIVACY.en.md', 'SECURITY.md', 'SECURITY.en.md']) {
+  for (const file of ['PRIVACY.md', 'PRIVACY.fa.md', 'PRIVACY.en.md', 'SECURITY.md', 'SECURITY.fa.md', 'SECURITY.en.md']) {
     await cp(path.join(root, file), path.join(dest, file));
   }
   const manifest = { ...common };

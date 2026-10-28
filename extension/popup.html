@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -20,38 +20,38 @@
     <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></symbol>
   </svg>
   <header>
-    <div class="brand"><span class="brand-mark"><img class="brand-logo" src="icons/128.png" width="40" height="40" alt=""></span><div><h1 dir="ltr">AdBlocker<span>.</span></h1><p>فضای بیشتر برای محتوای واقعی</p></div></div>
-    <div class="theme-picker" role="group" aria-label="رنگ‌بندی رابط">
-      <button type="button" data-theme-choice="light" aria-label="حالت روز" title="حالت روز" aria-pressed="false" disabled><svg aria-hidden="true"><use href="#sun"/></svg></button>
-      <button type="button" data-theme-choice="dark" aria-label="حالت شب" title="حالت شب" aria-pressed="false" disabled><svg aria-hidden="true"><use href="#moon"/></svg></button>
+    <div class="brand"><span class="brand-mark"><img class="brand-logo" src="icons/128.png" width="40" height="40" alt=""></span><div><h1 dir="ltr">AdBlocker<span>.</span></h1><p>More room for real content</p></div></div>
+    <div class="theme-picker" role="group" aria-label="Interface theme">
+      <button type="button" data-theme-choice="light" aria-label="Light theme" title="Light theme" aria-pressed="false" disabled><svg aria-hidden="true"><use href="#sun"/></svg></button>
+      <button type="button" data-theme-choice="dark" aria-label="Dark theme" title="Dark theme" aria-pressed="false" disabled><svg aria-hidden="true"><use href="#moon"/></svg></button>
     </div>
     <span id="themeStatus" class="sr-only" role="status"></span>
   </header>
   <main>
     <section class="protection" id="protection" data-state="loading" aria-labelledby="status">
       <span class="protection-icon"><img class="brand-logo" src="icons/128.png" width="30" height="30" alt=""></span>
-      <div class="protection-copy"><span class="eyebrow"><i id="dot"></i>وضعیت محافظت</span><strong id="status">در حال بررسی…</strong><p id="statusHint">در حال اتصال به افزونه</p></div>
-      <input id="enabled" type="checkbox" role="switch" aria-label="مسدودسازی تبلیغات در همهٔ سایت‌ها" disabled>
+      <div class="protection-copy"><span class="eyebrow"><i id="dot"></i>Protection status</span><strong id="status">Checking…</strong><p id="statusHint">Connecting to the extension</p></div>
+      <input id="enabled" type="checkbox" role="switch" aria-label="Block ads on all sites" disabled>
     </section>
-    <div class="section-heading"><h2>کنترل این صفحه</h2><span>به انتخاب شما</span></div>
-    <section class="scope-card" aria-label="کنترل سایت و URL">
-      <label class="scope-row" for="siteEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#globe"/></svg></span><span class="scope-copy"><span class="scope-title">فعال برای این سایت</span><b id="host" dir="ltr">—</b></span><input id="siteEnabled" type="checkbox" role="switch" disabled></label>
+    <div class="section-heading"><h2>This page</h2><span>Your choice</span></div>
+    <section class="scope-card" aria-label="Site and URL controls">
+      <label class="scope-row" for="siteEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#globe"/></svg></span><span class="scope-copy"><span class="scope-title">Enabled for this site</span><b id="host" dir="ltr">—</b></span><input id="siteEnabled" type="checkbox" role="switch" disabled></label>
       <div class="divider"></div>
-      <label class="scope-row" for="urlEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#link"/></svg></span><span class="scope-copy"><span class="scope-title">فعال برای همین URL</span><b id="url" class="url" dir="ltr">—</b></span><input id="urlEnabled" type="checkbox" role="switch" disabled></label>
-      <div class="page-actions"><button id="pause" class="pause-button" disabled><svg aria-hidden="true"><use href="#pause-icon"/></svg><span id="pauseLabel">توقف این بار و بارگذاری مجدد</span></button><p>فقط برای همین تب؛ با بارگذاری بعدی تمام می‌شود.</p></div>
+      <label class="scope-row" for="urlEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#link"/></svg></span><span class="scope-copy"><span class="scope-title">Enabled for this URL</span><b id="url" class="url" dir="ltr">—</b></span><input id="urlEnabled" type="checkbox" role="switch" disabled></label>
+      <div class="page-actions"><button id="pause" class="pause-button" disabled><svg aria-hidden="true"><use href="#pause-icon"/></svg><span id="pauseLabel">Pause once and reload</span></button><p>This tab only; ends on the next reload.</p></div>
     </section>
-    <p class="hint">خاموش‌کردن کلید URL، همان نشانی را دائماً مستثنا می‌کند. تغییر وضعیت محافظت، همین صفحه را خودکار بازخوانی می‌کند.</p>
-    <button id="reload" class="primary" disabled><svg aria-hidden="true"><use href="#refresh"/></svg>بارگذاری مجدد صفحه</button>
+    <p class="hint">Turning off the URL switch saves an exception for this address. Protection changes reload this page automatically.</p>
+    <button id="reload" class="primary" disabled><svg aria-hidden="true"><use href="#refresh"/></svg>Reload page</button>
     <p id="message" role="status" aria-live="polite"></p>
-    <details class="exceptions" id="exceptions"><summary><span>مدیریت استثناها</span><span class="count-chip" id="totalCount">۰</span><svg aria-hidden="true"><use href="#chevron"/></svg></summary><div class="exception-actions"><button id="clear" disabled>پاک‌کردن استثناهای سایت <span id="count">(۰)</span></button><button id="clearUrls" disabled>پاک‌کردن استثناهای URL <span id="urlCount">(۰)</span></button></div></details>
+    <details class="exceptions" id="exceptions"><summary><span>Manage exceptions</span><span class="count-chip" id="totalCount">0</span><svg aria-hidden="true"><use href="#chevron"/></svg></summary><div class="exception-actions"><button id="clear" disabled>Clear site exceptions <span id="count">(0)</span></button><button id="clearUrls" disabled>Clear URL exceptions <span id="urlCount">(0)</span></button></div></details>
     <section class="updates" aria-labelledby="updatesHeading">
-      <div class="section-heading"><h2 id="updatesHeading">به‌روزرسانی افزونه</h2><span id="updateSchedule">خودکار هر ۳ روز</span></div>
-      <button id="checkUpdates" class="pause-button" type="button"><svg aria-hidden="true"><use href="#refresh"/></svg>بررسی به‌روزرسانی</button>
-      <p id="updateStatus" role="status" aria-live="polite">در حال خواندن وضعیت…</p>
-      <a id="updateLink" target="_blank" rel="noopener noreferrer" hidden>مشاهده و دریافت نسخهٔ جدید</a>
+      <div class="section-heading"><h2 id="updatesHeading">Extension updates</h2><span id="updateSchedule">Every 3 days</span></div>
+      <button id="checkUpdates" class="pause-button" type="button"><svg aria-hidden="true"><use href="#refresh"/></svg>Check for updates</button>
+      <p id="updateStatus" role="status" aria-live="polite">Reading update status…</p>
+      <a id="updateLink" target="_blank" rel="noopener noreferrer" hidden>View and download the update</a>
     </section>
   </main>
-  <footer><svg aria-hidden="true"><use href="#lock"/></svg><span>بدون ردیابی؛ تنظیمات روی دستگاه شما.</span><span id="version" class="version" dir="ltr"></span></footer>
+  <footer><svg aria-hidden="true"><use href="#lock"/></svg><span>No tracking. Settings stay on your device.</span><span id="version" class="version" dir="ltr"></span></footer>
   <script src="settings.js"></script><script src="updates.js"></script><script src="popup.js"></script>
 </body>
 </html>

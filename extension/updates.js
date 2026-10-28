@@ -120,8 +120,8 @@
           try {
             await api.notifications.create(NOTIFICATION, {
               type: 'basic', iconUrl: api.runtime.getURL('icons/128.png'),
-              title: 'به‌روزرسانی AdBlocker',
-              message: `نسخهٔ ${state.latestTag.replace(/^v/, '')} آماده است. برای دریافت کلیک کنید.`
+              title: 'AdBlocker update available',
+              message: `Version ${state.latestTag.replace(/^v/, '')} is available. Click to download.`
             });
             state.notifiedTag = state.latestTag;
             await write(state);

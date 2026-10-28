@@ -34,11 +34,11 @@
         apply(theme);
         try {
           await api.storage.local.set({ theme });
-          document.getElementById('themeStatus').textContent = theme === 'dark' ? 'حالت شب ذخیره شد.' : 'حالت روز ذخیره شد.';
+          document.getElementById('themeStatus').textContent = theme === 'dark' ? 'Dark theme saved.' : 'Light theme saved.';
         } catch {
           explicit = wasExplicit;
           apply(previous);
-          document.getElementById('message').textContent = 'ذخیرهٔ رنگ‌بندی ممکن نشد؛ دوباره تلاش کنید.';
+          document.getElementById('message').textContent = 'Could not save the theme. Try again.';
         } finally { saving = false; }
       });
     }

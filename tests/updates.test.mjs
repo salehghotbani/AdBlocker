@@ -96,6 +96,8 @@ test('only fixed anonymous metadata is fetched; notification and cached link ign
   assert.ok(options.signal instanceof AbortSignal);
   assert.equal(h.notifications.length, 1);
   assert.equal(h.notifications[0].id, NOTIFICATION);
+  assert.equal(h.notifications[0].title, 'AdBlocker update available');
+  assert.equal(h.notifications[0].message, 'Version 1.3.0 is available. Click to download.');
   assert.equal(h.saved.notifiedTag, 'v1.3.0');
   await updater.openUpdate('another-notification');
   assert.equal(h.opened.length, 0);

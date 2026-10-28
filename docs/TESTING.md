@@ -1,81 +1,88 @@
-# گزارش بررسی
+# Validation report
 
-**فارسی** | [English](TESTING.en.md)
+**English** | [فارسی](TESTING.fa.md)
 
-## اصلاح شروع با API اختیاری در نسخهٔ ۱.۳.۳ — ۲۰۲۶/۱۰/۲۸
+## Version 1.4.0 English defaults — 2026-10-28
 
-- ۲۸ تست واحد موفق‌اند؛ شامل نبود یا ناقص‌بودن API زمان‌بندی/اعلان، خطای `Internal error` از API زمان‌بندی و رد یا معطل‌ماندن آماده‌سازی آن. تنظیمات، بازیابی قواعد، مجوز پیام‌ها و انقضای توقف موقت به کار ادامه می‌دهند.
-- در نصب آزمایشی دومِ مرورگر، مجوزهای `alarms` و `notifications` از manifest کپی‌شده حذف شدند. worker و پنجرهٔ واقعی همچنان بررسی دستی، لینک امن Release و وضعیت بررسی دستی را ارائه کردند؛ تغییر حفاظت شبکه و انقضای توقف پس از بازخوانی بعدی نیز موفق بودند. نبود API واقعاً در مرورگر بازتولید شد، نه فقط با mock. نصب عادی همچنان زمان‌بندی سه‌روزه را ایجاد می‌کند.
-- تست DOM/رابط و چهار تست خروجی/ZIP موفق‌اند. تست ۱۵۶ میزبان محدود، ۲۱ میزبان باز، حفاظت هم‌سایت، Soft98 و CSP حفظ شده‌اند. مجوز، وابستگی یا مقصد شبکهٔ جدیدی اضافه نشد؛ نتیجهٔ آنلاین قبلی تاریخی است و برای این اصلاح شروع دوباره اندازه‌گیری نشده است.
-- تصویر، نبود API را نشان می‌دهد ولی علت نبود آن در نصب را ثابت نمی‌کند. manifest بسته‌های منتشرشده هر دو مجوز را دارد. نصب ناقص/قدیمی یک علت احتمالی است، نه تشخیص قطعی. بستهٔ کامل باید جایگزین و خود افزونه Reload شود تا manifest اعمال شود. خطاهای واقعی قواعد شبکه همچنان به فراخواننده گزارش می‌شوند.
-- نتیجهٔ نهایی CI مربوط به commit نسخه‌دار در [توضیحات Release نسخهٔ ۱.۳.۳](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.3) ثبت می‌شود. اجرای واقعی Firefox و نمایش اعلان سیستم‌عامل تست نشده‌اند.
+- English popup text, accessible theme labels, worker validation errors, release notifications and manifest metadata are checked. The popup declares `lang="en"` and `dir="ltr"`; numbers and dates use English formatting. DOM and actual-extension tests use a Persian browser locale to verify the English default.
+- Unsuffixed guides are now English, paired with `.fa.md` translations. Existing `.en.md` paths remain compatibility links. Package tests verify both English and Persian policy files; local Markdown links are checked.
+- The 28 unit tests, four distribution/ZIP tests, DOM/theme/gray-state controls, network and same-site fixtures, Soft98 and missing-update-permission installation tests remain the validation scope. Filtering rules and permissions are unchanged; no new live blocking percentage is claimed.
+- Final CI for the release commit is linked from the [v1.4.0 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.4.0). Firefox runtime and native OS toast display are outside this validation.
 
-## محدودسازی میزبان‌ها در نسخهٔ ۱.۳.۲ — ۲۰۲۶/۱۰/۲۸
+## Version 1.3.3 optional-API startup fix — 2026-10-28
 
-- شش میزبان تصاویر گزارش‌شده برای درخواست شخص‌ثالث محدود شدند. تست مرورگر، مسدودسازی صریح هر ۱۵۶ میزبان فهرست و بازماندن ۲۱ میزبان کاربردی دیگر را تأیید کرد. بازکردن مستقیم، اسکریپت و fetch داخلی هر شش میزبان و ارتباط هم‌سایت پنل Bugsnag با API پاس شدند. پاسخ‌ها نمونهٔ محلی برای آزمون سیاست مرورگرند، نه تست کامل پنل احراز هویت‌شده؛ ادغام بین سایت‌های متفاوت ممکن است به استثنای سایت نیاز داشته باشد.
-- آزمون آنلاین Turtlecute با Edge: **امتیاز سایت ۱۰۰٪، ۱۳۲ از ۱۳۲**. رخدادهای مرورگر **۱۲۹ درخواست مجزا و صریحاً مسدودشده توسط کلاینت** ثبت کردند؛ شامل هر شش میزبان جدید. دو تست پنهان‌سازی نیز پاس شدند. مورد باقی‌ماندهٔ `extmaps-api.yandex.net` دچار timeout شد و سایت آن را مسدود شمرد؛ افزونه این میزبان را باز می‌گذارد و timeout مدرک مسدودسازی نیست. [تصویر ثبت‌شده](images/turtlecute-1.3.2.png).
-- ۲۵ تست واحد، چهار تست خروجی/ZIP، بررسی نحو و لینک‌ها، تست واقعی افزونه/شبکه و اعتبارسنجی Firefox در محیط محلی موفق بودند. هیچ مجوز یا وابستگی جدیدی اضافه نشد. اجرای واقعی Firefox و نمایش اعلان سیستم‌عامل تست نشده‌اند.
-- نتیجهٔ نهایی CI مربوط به commit نسخه‌دار و checksum بسته‌ها در [توضیحات Release نسخهٔ ۱.۳.۲](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.2) ثبت می‌شود. تست آنلاین اختیاری است؛ CI از نمونه‌های ثابت شامل حفاظت از بازکردن مستقیم/درخواست داخلی و پوشش Soft98 استفاده می‌کند.
+- 28 unit tests pass, covering missing and partial alarms/notifications namespaces, an alarm API throwing `Internal error`, and rejected or stalled scheduler initialization. Settings, ruleset restoration, command authorization and temporary-pause expiry continue functioning.
+- A second actual-browser installation removes both `alarms` and `notifications` permissions from a copied manifest. The real worker and popup still perform a manual update check, show a safe release link and manual-only status, toggle network protection and expire a pause on the next reload. This reproduces API absence without relying on a mock namespace. The normal installation still schedules its three-day alarm.
+- DOM/UI tests and four distribution/ZIP tests pass. All 156 restricted-host and 21 allowed-host fixtures, same-site safeguards, Soft98 checks and CSP tests remain included. No new permissions, dependencies or remote endpoints were added; the previous live benchmark is historical and was not rerun for this startup fix.
+- The screenshot identifies an undefined API; it does not establish why that installation lacked it. Distributed manifests declare both permissions. A stale/partial installation is a possible cause, rather than a confirmed diagnosis. Install the complete ZIP and reload the extension to apply its manifest. Core DNR errors are still returned to callers.
+- Final CI for the versioned release commit is recorded in the [v1.3.3 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.3). Firefox runtime and OS toast delivery were not tested.
 
-## اصلاح Soft98 در نسخهٔ ۱.۳.۱ — ۲۰۲۶/۱۰/۲۸
+## Version 1.3.2 host restrictions — 2026-10-28
 
-- ۲۵ تست واحد، چهار تست خروجی/ZIP، تست DOM و اجرای واقعی افزونه در Edge موفق بودند. هر ۱۵۰ دامنهٔ تبلیغاتی/ردیابی با خطای صریح مرورگر مسدود شدند؛ ۲۷ میزبان کاربردی باز ماندند، از جمله Soft98، انجمن و سرورهای تصویر و فایل آن، فرادرس و سایت اصلی Kaprila.
-- قواعد اختصاصی سایت، بنر مستقیم، شبکهٔ تبلیغات، ستون تبلیغات و کارت میزبانی را جمع می‌کنند. تست‌ها شامل درج پویا، حفظ مقاله و کنترل‌های جست‌وجو/دانلود، بازگردانی پس از استثنای سایت/URL و خاموش‌کردن کلی، و اجرا‌نشدن این قواعد روی میزبان‌های دیگر هستند.
-- تست آنلاین [Soft98](https://soft98.ir/) با افزونهٔ واقعی، پنهان‌شدن هر چهار جایگاه را تأیید کرد. متن هر شش مطلب قابل مشاهده قبل و بعد از فیلتر یکسان ماند و `beta.kaprila.com/a/loader.js` با خطای صریح `ERR_BLOCKED_BY_CLIENT` مسدود شد. تصاویر نیز بازبینی شدند؛ خطای عادی شبکه به‌عنوان مسدودسازی محسوب نشد.
-- بازتولید اختیاری در PowerShell: مقدار `CHROMIUM_PATH` را روی مرورگر مبتنی بر Chromium بگذارید، `$env:ADBLOCK_LIVE_SOFT98='1'` را تنظیم و `npm run test:browser` را اجرا کنید. پروفایل تست مجزا است و تصاویر قبل/بعد و گزارش در `artifacts/soft98-before.png`، `artifacts/soft98-after.png` و `artifacts/soft98-result.json` ذخیره می‌شوند. تست آنلاین خارج از CI است؛ نمونه‌های ثابت Soft98 در CI اجرا می‌شوند.
-- اصلاح فیلتر در [اجرای CI شمارهٔ 40585173675](https://github.com/salehghotbani/AdBlocker/actions/runs/40585173675) برای commit `10747d1410687c8edf7e2c9a909c97a2891068aa` پاس شد؛ شامل اجرای واقعی Chromium و اعتبارسنجی Firefox. نتیجهٔ نهایی CI مربوط به commit نسخه‌دار و checksum بسته‌ها در [توضیحات Release نسخهٔ ۱.۳.۱](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.1) ثبت می‌شود.
-- درصد تاریخی Turtlecute در بخش‌های بعد برای این اصلاح دوباره اندازه‌گیری نشده است. تست محلی مرورگر با Edge بود؛ اجرای واقعی Firefox و نمایش اعلان سیستم‌عامل تست نشده‌اند. هیچ مجوز یا وابستگی جدیدی اضافه نشد.
+- The six hosts in the reported screenshots are now restricted for third-party requests. Browser fixtures explicitly block all 156 listed hosts and allow 21 other useful hosts. Direct navigation, first-party scripts/fetches on all six new hosts, and same-site Bugsnag dashboard-to-API requests pass. These local responses exercise browser policy, not full authenticated dashboards; cross-site integrations may need a site exception.
+- Live Turtlecute in Edge: **100% as scored by the site, 132/132**. Browser events recorded **129 distinct requests explicitly blocked by the client**, including every newly added host; both cosmetic checks passed. The remaining `extmaps-api.yandex.net` check timed out and was counted as blocked by the site. It remains allowed by the extension; a timeout is not evidence of blocking. [Recorded screenshot](images/turtlecute-1.3.2.png).
+- 25 unit tests, four distribution/ZIP tests, syntax/documentation checks, real extension/network tests and Firefox validation passed locally. No permissions or dependencies were added. Firefox runtime and OS toast display were not tested.
+- Final CI for the versioned release commit and package checksums are recorded in the [v1.3.2 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.2). The live check stays opt-in; CI uses deterministic fixtures, including direct-navigation/first-party safeguards and Soft98 coverage.
 
-## بررسی به‌روزرسانی نسخهٔ ۱.۳.۰ — ۲۰۲۶/۱۰/۲۸
+## Version 1.3.1 Soft98 fix — 2026-10-28
 
-- ۲۵ تست واحد، چهار تست خروجی/ZIP، تست DOM و اجرای واقعی افزونه در Edge موفق بودند. تست‌های قبلی مسدودسازی ۱۴۹ دامنه و بازماندن ۲۰ میزبان کاربردی نیز پاس شدند.
-- دکمهٔ دستی، زمان‌بندی سه‌روزهٔ مرورگر، بازیابی زمان‌بندی پس از راه‌اندازی مجدد، مقایسهٔ عددی نسخه‌ها، ادغام درخواست‌های هم‌زمان و جلوگیری از اعلان تکراری بررسی شدند. بازکردن پنجرهٔ افزونه فقط وضعیت ذخیره‌شده را می‌خواند و درخواست شبکه ندارد.
-- درخواست واقعی و بدون احراز هویت به GitHub موفق بود و `v1.2.0` را برگرداند. نسخهٔ جدید شبیه‌سازی‌شده، فراخوانی API اعلان و لینک امن دریافت را بررسی کرد؛ نمایش اعلان در خود سیستم‌عامل تست نشده است.
-- قطع اینترنت، محدودیت درخواست، draft، prerelease، نسخهٔ نامعتبر، پاسخ بیش‌ازحد بزرگ، پیام غیرمجاز صفحات و لینک نامعتبر Release تست شدند. درخواست به‌روزرسانی مانع تغییر حفاظت نمی‌شود و CSP همچنان اتصال به مقصدهای نامرتبط را رد می‌کند.
-- بررسی نحو و لینک‌ها، بسته‌بندی، `npm audit` و اعتبارسنجی Firefox موفق بودند. اجرای واقعی Firefox و Chrome در تست محلی انجام نشده است.
-- کد قابلیت به‌روزرسانی در [اجرای CI شمارهٔ 40582238496](https://github.com/salehghotbani/AdBlocker/actions/runs/40582238496) برای commit `4ad773a8e46c4f65c5e0e52e513393545b7f200d` پاس شد؛ شامل اجرای واقعی Chromium و اعتبارسنجی Firefox. اجرای قبلی در تست قدیمی استثنای URL خطا داشت؛ تست اکنون منتظر اجرای اسکریپت مجاز می‌ماند و اطلاعات تشخیصی را حفظ می‌کند. علت زیربنایی زمان‌بندی مستقلاً اثبات نشده است.
-- نتیجهٔ نهایی CI مربوط به commit نسخه‌دار و checksum بسته‌ها در [توضیحات Release نسخهٔ ۱.۳.۰](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.0) ثبت می‌شود. نتیجهٔ آنلاین Turtlecute در بخش بعد مربوط به بررسی قبلی است؛ قواعد فیلتر این نسخه تغییر نکرده‌اند و امتیاز آنلاین جدیدی ادعا نمی‌شود.
+- 25 unit tests, four distribution/ZIP tests, DOM checks, and actual Edge extension tests passed. All 150 advertising/tracking domains were explicitly blocked; 27 useful-host fixtures remained reachable, including Soft98, its forum/image/file hosts, Faradars and the main Kaprila website.
+- Site-specific selectors collapse direct banners, related-ad placements, side-ad sections and the hosting card. Fixtures cover dynamic insertions, protection of real articles and search/download controls, restoration after site/URL/global exceptions, and absence of these rules on other hosts.
+- A live [Soft98](https://soft98.ir/) check with the actual extension confirmed all four target containers were hidden. All six visible software descriptions were identical before and after filtering, and `beta.kaprila.com/a/loader.js` failed with explicit `ERR_BLOCKED_BY_CLIENT`. Screenshots were visually reviewed. Network failures alone were not counted as blocking.
+- Opt-in reproduction in PowerShell: set `CHROMIUM_PATH` to a Chromium-based browser, set `$env:ADBLOCK_LIVE_SOFT98='1'`, then run `npm run test:browser`. It saves `artifacts/soft98-before.png`, `artifacts/soft98-after.png` and `artifacts/soft98-result.json` using an isolated test profile. The live check stays outside CI; deterministic Soft98 fixtures run in CI.
+- The filtering fix passed [CI run 40585173675](https://github.com/salehghotbani/AdBlocker/actions/runs/40585173675) for commit `10747d1410687c8edf7e2c9a909c97a2891068aa`, including real Chromium integration and Firefox validation. Final CI for the versioned release commit and package checksums are recorded in the [v1.3.1 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.1).
+- The historical Turtlecute percentage below was not rerun for this fix. Local browser execution used Edge; Firefox runtime and OS toast delivery were not tested. No browser permissions or dependencies were added.
 
-## بررسی نسخهٔ ۱.۲.۰ — ۲۰۲۶/۱۰/۲۷
+## Version 1.3.0 update checks — 2026-10-28
 
-- ۱۶ تست واحد، چهار تست خروجی/ZIP، تست DOM و اجرای واقعی افزونه در Edge موفق بودند؛ ۱۴۹ دامنه مسدود و ۲۰ میزبان کاربردی باز ماندند.
-- بازخوانی خودکار فقط یک بار، حفظ حالت خاکستری، نمایش نسخهٔ واقعی و جلوگیری از بازخوانی صفحهٔ دیگری پس از تغییر نشانی بررسی شد.
-- تست‌های رد پیام غیرمجاز، محدودشدن اطلاعات پیام صفحات، بازگردانی قواعد پس از خطای ذخیره و اجرای واقعی CSP موفق بودند. `npm audit` آسیب‌پذیری شناخته‌شده‌ای گزارش نکرد و اعتبارسنجی Firefox بدون خطا و هشدار بود.
-- آزمون آنلاین دوباره اجرا شد: **۹۵٪؛ ۱۲۶ از ۱۳۲** و ۱۲۳ درخواست با خطای صریح مسدودسازی کلاینت. یک میزبان نیز توسط سایت به‌علت timeout مسدود شمرده شد. چهار میزبان جدید خارج از فهرست این آزمون‌اند؛ افزایش پوشش به معنی افزایش تضمینی درصد همهٔ سایت‌ها نیست.
-- [دامنهٔ بررسی امنیتی و منابع قواعد جدید](SECURITY-REVIEW.md). وضعیت CI commit انتشار در [توضیحات Release](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.2.0) ثبت می‌شود.
+- 25 unit tests, four distribution/ZIP tests, DOM checks, and actual Edge extension tests passed. The existing 149 blocked-domain and 20 allowed-host fixtures still pass.
+- The manual button, native three-day alarm, alarm restoration after restart, numeric version comparison, concurrent-request deduplication, and notification deduplication were checked. Opening the popup reads cached status without a network request.
+- The real anonymous GitHub metadata request succeeded and returned `v1.2.0`. A simulated newer release exercised the notification API and safe download link; operating-system toast delivery was not tested.
+- Offline responses, rate limits, drafts, prereleases, invalid version tags, oversized metadata, unauthorized page messages, and untrusted release URLs were tested. Update requests do not delay protection changes, and CSP still rejects unrelated connections.
+- Syntax/documentation checks, packaging, `npm audit`, and Firefox validation passed. Firefox runtime and Chrome runtime were not tested locally.
+- The updater implementation passed [CI run 40582238496](https://github.com/salehghotbani/AdBlocker/actions/runs/40582238496) at commit `4ad773a8e46c4f65c5e0e52e513393545b7f200d`, including actual Chromium integration and Firefox validation. An earlier run failed the existing exact-URL fixture; the test now waits for allowed script execution and preserves diagnostics. The underlying timing cause was not independently established.
+- Final CI for the versioned release commit and package checksums are recorded in the [v1.3.0 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.3.0). The previous live Turtlecute result below is historical; this release does not change filtering rules or claim a new live score.
 
-## تغییرات رابط پس از نسخهٔ ۱.۱.۰ — ۲۰۲۶/۱۰/۲۷
+## Version 1.2.0 validation — 2026-10-27
 
-- لوگوی PNG جدید در چهار اندازه برای هر سه مرورگر بسته‌بندی می‌شود؛ مطابقت بایتی با فایل‌های منبع و شفافیت لوگوی بارگذاری‌شده بررسی شد.
-- تست DOM روی Edge موفق بود: حالت خاکستری برای استثنای سایت و URL، توقف موقت و خاموش‌کردن کلی؛ حفظ انتخاب روز/شب پس از بازکردن دوباره و بازگشت رنگ‌ها هنگام فعال‌سازی.
-- تست نصب واقعی افزونه و مسدودسازی شبکه، ۱۳ تست واحد و چهار تست خروجی/ZIP موفق بودند. این نتیجهٔ محلی جدا از اجرای CI نسخهٔ منتشرشده در بخش بعد است.
-- تصاویر رابط بررسی شدند: [حالت خاکستری روشن](images/popup-disabled-light.png) و [حالت خاکستری تیره](images/popup-disabled-dark.png).
+- 16 unit tests, four distribution/ZIP tests, DOM checks, and actual Edge extension tests passed: 149 domains blocked and 20 useful hosts allowed.
+- Exactly-once automatic reload, gray-state behavior, the actual version label, and refusal to reload another page after navigation were checked.
+- Unauthorized-message rejection, minimized page messages, rollback after a failed save, and real CSP probes passed. `npm audit` reported no known advisories; Firefox validation reported zero errors or warnings.
+- The live benchmark was rerun: **95%, 126/132**, with 123 explicit client-blocked requests. The site counted one additional host timeout as blocked. The four new hosts are outside this test's host list; broader coverage does not imply a guaranteed higher percentage on every site.
+- See the [security-review scope and rule sources](SECURITY-REVIEW.md). CI status for the release commit is recorded in the [release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.2.0).
 
-## نتیجهٔ CI نسخهٔ ۱.۱.۰ — ۲۰۲۶/۱۰/۲۷
+## Interface changes after version 1.1.0 — 2026-10-27
 
-**هر دو اجرای GitHub Actions موفق‌اند** و commit منتشرشدهٔ `18321f6b87fa455fab06024d52b01ea57bdd2891` را بررسی کرده‌اند: [اجرای 40547121864](https://github.com/salehghotbani/AdBlocker/actions/runs/40547121864) و [اجرای 40548395334](https://github.com/salehghotbani/AdBlocker/actions/runs/40548395334).
+- The new PNG logo is packaged in four sizes for all three browsers. Packaged icons match source bytes, and the loaded logo's transparency was checked.
+- DOM tests passed in Edge for gray site/URL exceptions, one-time pauses, and global-off states; light/dark preference survives reopening and color returns when protection resumes.
+- Actual extension/network integration, 13 unit tests, and four distribution/ZIP tests passed. These local checks are separate from the released-version CI runs below.
+- Appearance was reviewed in [disabled light mode](images/popup-disabled-light.png) and [disabled dark mode](images/popup-disabled-dark.png).
 
-- نصب وابستگی‌ها، بررسی نحو و لینک‌ها، ساخت خروجی هر سه مرورگر و بسته‌بندی ZIP: موفق.
-- ۱۳ تست واحد و چهار تست خروجی و ZIP: موفق.
-- تست DOM و نصب واقعی افزونه و مسدودسازی شبکه در Chromium روی CI: موفق؛ شامل ۱۴۵ دامنه، حفظ دسترسی به ۱۷ میزبان کاربردی و بررسی استثناها.
-- اعتبارسنجی Firefox و بارگذاری فایل‌های خروجی CI: موفق. این اعتبارسنجی به معنی اجرای واقعی مرورگر Firefox نیست.
+## Version 1.1.0 CI result — 2026-10-27
 
-تأخیر قبلی مربوط به نصب مرورگر آزمایشی بود؛ هر دو اجرا اکنون با وضعیت نهایی `success` تمام شده‌اند. نتایج محلی و آنلاین زیر، شواهد تکمیلی جداگانه‌اند.
+**Both GitHub Actions runs passed** for released commit `18321f6b87fa455fab06024d52b01ea57bdd2891`: [run 40547121864](https://github.com/salehghotbani/AdBlocker/actions/runs/40547121864) and [run 40548395334](https://github.com/salehghotbani/AdBlocker/actions/runs/40548395334).
 
-## بررسی اصلاح پوشش — ۲۰۲۶/۱۰/۲۷
+- Dependency installation, syntax and documentation links, all three browser builds, and ZIP packaging: passed.
+- Thirteen unit tests and four distribution/ZIP tests: passed.
+- DOM tests and actual extension installation/network blocking in Chromium on CI: passed, including all 145 domains, allowance of 17 useful hosts, and exception controls.
+- Firefox validation and CI artifact upload: passed. Validation does not establish Firefox runtime testing.
 
-اجرا در Windows با Node.js 24.18.0 و Edge 156.0.4314.42، پروفایل موقت مجزا و نصب واقعی افزونهٔ unpacked انجام شد.
+The earlier delay was in test-browser installation; both runs have now finished with a final `success` status. The local and live results below are separate supporting evidence.
 
-- ۱۳ تست واحد و چهار تست خروجی و ZIP پاس شدند. بررسی نحو و لینک‌های مستندات موفق بود.
-- در بازبینی بعدی، بازنگری‌نشدن جایگاه تبلیغ پس از حذف محتوای محافظت‌شده یا حذف `role="main"` بازتولید و اصلاح شد؛ هر دو سناریو اکنون در تست DOM پاس می‌شوند. اجرای `npm run package` پس از اصلاح انتخاب دستور Python روی Windows موفق بود. حذف کش `_metadata` از ZIP نیز با کش واقعی ایجادشده در تست مرورگر بررسی شد. تست شبکهٔ Edge و اعتبارسنجی Firefox پس از اصلاحات دوباره موفق بودند.
-- تست DOM پاس شد: جایگاه‌های ثابت و پویا، حفظ کلاس مبهم و مقاله، بازگردانی پس از تغییر کلاس و بازیابی دقیق استایل بررسی شدند.
-- تست شبکه برای تمام ۱۴۵ دامنه و زیردامنه‌های نمونه با خطای صریح مسدودسازی مرورگر پاس شد؛ ۱۷ میزبان کاربردی باز ماندند. اسکریپت تبلیغاتی هم‌دامنه مسدود شد ولی query سالم و درخواست غیر اسکریپتی باز ماند. استثناهای سایت/URL، خاموش‌کردن و توقف یک‌باره موفق بودند.
-- اعتبارسنجی Firefox با web-ext 10.8.0: صفر خطا، هشدار و notice. اجرای واقعی Firefox و Chrome در این نوبت انجام نشد.
-- [آزمون آنلاین Turtlecute](https://adblock.turtlecute.org/): **۹۵٪، مسدودشدن ۱۲۶ مورد از ۱۳۲ مورد**؛ هر دو تست پنهان‌سازی و هر دو تست اسکریپت موفق بودند. رخدادهای مرورگر مستقلاً **۱۲۳ درخواست مسدودشده توسط کلاینت** ثبت کردند. سایت، میزبان `extmaps-api.yandex.net` را نیز به‌علت timeout مسدود شمرده است؛ این مورد مدرک مسدودسازی افزونه نیست. دو تست پنهان‌سازی درخواست شبکه ندارند.
+## Coverage fix validation — 2026-10-27
 
-شش مورد عمداً باز ماندند: `careers.hotjar.com`، `api.bugsnag.com`، `app.bugsnag.com`، `app.getsentry.com`، `business-api.tiktok.com` و `grs.hicloud.com`. این میزبان‌های فرصت شغلی، مدیریت، API تجاری و مسیریابی مشمول قاعدهٔ عمومی ردیابی نشده‌اند. دامنه‌های محتوای اصلی و میزبان‌های مشترک نیز باز می‌مانند. هیچ قاعدهٔ دامنه‌ای ناوبری اصلی را مسدود نمی‌کند.
+Executed on Windows with Node.js 24.18.0 and Edge 156.0.4314.42, using an isolated temporary browser profile and the actual unpacked extension.
 
-تست آنلاین اختیاری، گزارش `artifacts/turtlecute-result.json` و تصویر `artifacts/turtlecute-result.png` را ذخیره می‌کند. اجرای PowerShell:
+- Unit tests: 13 passed. Distribution and ZIP checks: 4 passed. Syntax and documentation links: passed.
+- Follow-up review reproduced and fixed missed cosmetic rescans after removal of protected content or its `role="main"`. Both regressions now pass in the DOM suite. `npm run package` was verified on Windows after fixing Python command selection; packaging also excludes Chromium's generated `_metadata`, verified with the actual cache left by the integration run. Edge network tests and Firefox validation passed again after these fixes.
+- DOM suite: passed, including static/dynamic compound ad classes, ambiguous class preservation, protected articles, class-change recovery, and exact style restoration.
+- Network integration: passed for all 145 domain entries and representative subdomains, with explicit browser blocking errors. All 17 useful-host fixtures stayed allowed. First-party ad scripts were blocked; useful scripts containing ad paths in queries and non-script fetches stayed allowed. Site/global/URL exceptions and one-time pauses passed.
+- Firefox web-ext 10.8.0: zero errors, warnings, or notices. Firefox runtime and Chrome runtime were not tested in this session.
+- Live [Turtlecute test](https://adblock.turtlecute.org/): **95%, 126 of 132 blocked**, both cosmetic and both script checks passed. Browser events independently recorded **123 requests blocked by the client**. One additional host (`extmaps-api.yandex.net`) timed out and was counted as blocked by the site; that timeout is not evidence of extension blocking. The two cosmetic checks do not issue network requests.
+
+Six live checks stayed unblocked intentionally: `careers.hotjar.com`, `api.bugsnag.com`, `app.bugsnag.com`, `app.getsentry.com`, `business-api.tiktok.com`, and `grs.hicloud.com`. These careers, management, business API, and routing endpoints are excluded from blanket tracker rules. Shared hosting and primary social/content domains are also kept usable. Actual page navigation remains allowed for every domain rule.
+
+The opt-in live check saves `artifacts/turtlecute-result.json` and `artifacts/turtlecute-result.png`. Run it in PowerShell with:
 
 ```powershell
 $env:CHROMIUM_PATH = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'
@@ -83,36 +90,36 @@ $env:ADBLOCK_LIVE_TEST = '1'
 npm run test:browser
 ```
 
-برای تست قطعی محلی و بدون درخواست خارجی تبلیغاتی، `ADBLOCK_LIVE_TEST` را تنظیم نکنید. نتیجهٔ آنلاین به DNS، timeout، تنظیمات مرورگر و تغییرات آیندهٔ سایت وابسته است و از تست‌های قطعی CI جداست. وضعیت موفق CI با لینک اجراها در بخش بالا ثبت شده است.
+Leave `ADBLOCK_LIVE_TEST` unset for deterministic local fixtures without external advertising requests. Live scores depend on DNS, timeouts, browser settings, and future changes to the site and are separate from the deterministic CI tests. Successful CI runs are explicitly linked above.
 
-## بررسی قبلی در محیط دیگر
+## Previous environment validation
 
-اجرای تاریخی زیر با Node.js 24.19.0 و Chromium 154.0.8037.57 انجام شده بود. محدودیت مرورگر مدیریتی آن محیط مربوط به اجرای موفق Edge بالا نیست.
+The following historical execution used Node.js 24.19.0 and Chromium 154.0.8037.57. Its managed-browser restrictions do not apply to the successful Edge run above.
 
-| بررسی | وضعیت |
+| Check | Result |
 | --- | --- |
-| نصب وابستگی‌ها با lockfile | پاس شد؛ `npm ci` |
-| بررسی نحو ۱۲ فایل JavaScript و لینک‌های محلی ۱۳ فایل Markdown دوزبانه | پاس شد؛ `npm run check` |
-| ساخت خروجی سه مرورگر و ZIP | پاس شد؛ `npm run package` |
-| سیزده تست واحد تنظیمات، worker، URL و توقف یک‌باره | پاس شد؛ `npm test` |
-| چهار تست خروجی، آیکون، قواعد و ZIP | پاس شد؛ `npm run test:dist` |
-| تست حفظ محتوا و رابط فارسی در Chromium | پاس شد؛ `npm run test:dom` |
-| اعتبارسنجی Firefox با web-ext 10.8.0 | پاس شد؛ صفر خطا، صفر هشدار، صفر notice |
-| نصب واقعی افزونه و مسدودسازی شبکه در Chromium | مسدود توسط سیاست مدیریتی؛ دستور اجرا شد و با کد خروج ۱ خاتمه یافت |
-| اجرای واقعی Firefox و Edge | اجرا نشده؛ مرورگرها در این محیط نصب نیستند |
+| Dependency installation using the lockfile | Passed: `npm ci` |
+| Syntax of 12 JavaScript files and local links in 13 bilingual Markdown documents | Passed: `npm run check` |
+| Three browser builds and ZIP packages | Passed: `npm run package` |
+| Thirteen settings, worker, URL, and one-time-pause unit tests | Passed: `npm test` |
+| Four distribution, icon, rule, and ZIP tests | Passed: `npm run test:dist` |
+| Content-preservation and Persian popup tests in Chromium | Passed: `npm run test:dom` |
+| Firefox validation using web-ext 10.8.0 | Passed: zero errors, warnings, or notices |
+| Actual extension installation and network blocking in Chromium | Blocked by managed policy; command ran and exited with code 1 |
+| Actual Firefox and Edge execution | Not run; these browsers are not installed in this environment |
 
-## دامنهٔ تست‌ها
+## Test scope
 
-تست‌های واحد از APIهای شبیه‌سازی‌شده استفاده می‌کنند. تست DOM اسکریپت و رابط واقعی را در صفحهٔ Chromium اجرا می‌کند اما ارتباطات افزونه شبیه‌سازی می‌شود. تست توزیع، تنظیمات Manifest V3، وجود فایل‌های ارجاع‌شده، مطابقت خروجی با سورس، مستندات لایسنس، ساختار PNG، قواعد شبکه و صحت فایل‌های ZIP را بررسی می‌کند.
+Unit tests use mocked browser APIs. The DOM suite runs the actual script and interface in Chromium, but extension messaging is mocked. Distribution tests inspect Manifest V3 configuration, referenced files, source/output consistency, license documentation, PNG structure, network rules, and ZIP integrity.
 
-تست رابط جدید با ارتباطات و ذخیره‌سازی شبیه‌سازی‌شده، پیروی اولیه از رنگ‌بندی سیستم، انتخاب روز/شب با صفحه‌کلید، حفظ انتخاب پس از بازکردن دوباره، تغییرنکردن تنظیمات مسدودسازی، بازیابی حالت قبلی پس از خطای ذخیره و نبود اسکرول افقی در عرض ۳۹۰ پیکسل را بررسی می‌کند. تصاویر روشن و تیره از همین اجرای مرورگر گرفته شده‌اند.
+The redesigned popup tests use mocked messaging and storage to check initial system-theme following, keyboard day/night selection, preference persistence on reopening, unchanged blocking settings, previous-theme restoration after a failed save, and no horizontal overflow at 390 pixels. Both theme screenshots are captured from this browser run.
 
-تست `test:browser` نیاز به اجازهٔ نصب unpacked دارد و در صورت شروع‌نشدن worker با خطا متوقف می‌شود؛ اجرای بدون افزونه را موفق گزارش نمی‌کند. سیاست‌های مدیریتی محیط تغییر داده نمی‌شوند.
+`test:browser` requires unpacked extension installation to be permitted and fails if the worker cannot start. It does not report a successful run without the extension. Managed environment policies are left unchanged.
 
-تست‌های جدید، تفاوت مسیر و query، بازیابی استایل برای URL مستثنا، توقف فقط در یک تب، reload خودکار اول، انقضا در reload بعدی، ناوبری SPA، بسته‌شدن تب، رد پیام غیرمجاز و بازیابی وضعیت پس از شروع دوبارهٔ worker را پوشش می‌دهند. تست کامل نصب نیز برای مسیرهای مختلف و توقف یک‌باره گسترش یافته است؛ اجرای آن در محیط تاریخی زیر محدود بود، اما بعداً در Edge محلی و Chromium روی CI موفق شد.
+New tests cover distinct paths and queries, style restoration for excluded URLs, single-tab pauses, the first automatic reload, expiry on the next reload, SPA navigation, tab closure, unauthorized messages, and state restoration after worker restart. The full installation test also covers distinct URLs and one-time pauses; it was restricted in the historical environment below but subsequently passed in local Edge and Chromium on CI.
 
-پیام مرورگر در آن محیط قبلی: `Loading of unpacked extensions is disabled by the administrator`. بنابراین فقط در همان اجرای تاریخی، مسدودسازی واقعی درخواست‌ها تأیید نشد. در کنار اعتبارسنجی موفق، web-ext برای بررسی خودکار به‌روز بودن خودش پیام نداشتن دسترسی به مسیر تنظیمات کاربر می‌داد؛ این پیام متعلق به updater ابزار بود و شمارندهٔ اعتبارسنجی افزونه صفر خطا و صفر هشدار بود. هنگام آن اجرا، کش npm به مسیر قابل‌نوشتن تنظیم شده بود؛ `.npmrc` نیز برای اجراهای بعدی کش محلیِ ignoreشده تعریف می‌کند.
+In that earlier environment, the browser reported: `Loading of unpacked extensions is disabled by the administrator`. Actual network blocking was therefore unverified only in that historical execution. Alongside successful validation, web-ext reported that its automatic update checker could not access the user configuration directory; that message belonged to the tool's updater, while extension validation reported zero errors and zero warnings. The npm cache was set to a writable directory for that execution; `.npmrc` defines an ignored local cache for subsequent runs.
 
-## اجرای دوباره
+## Rerunning
 
-دستورها در [CONTRIBUTING.md](../CONTRIBUTING.md) هستند. workflow در `.github/workflows/ci.yml` پس از push همین بررسی‌ها، از جمله تست کامل Chromium، را روی GitHub Actions اجرا می‌کند. اجرای موفق نسخهٔ ۱.۱.۰ در بالا لینک شده است؛ نتیجهٔ commitهای بعدی باید از اجرای مربوط به همان commit بررسی شود.
+Commands are listed in the [contribution guide](../CONTRIBUTING.md). After a push, `.github/workflows/ci.yml` runs these checks, including the full Chromium integration test, in GitHub Actions. The successful version 1.1.0 runs are linked above; later commits must be checked against their own runs.

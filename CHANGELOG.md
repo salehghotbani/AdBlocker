@@ -1,71 +1,78 @@
-# تغییرات
+# Changelog
 
-**فارسی** | [English](CHANGELOG.en.md)
+**English** | [فارسی](CHANGELOG.fa.md)
 
-## 1.3.3 — ۲۰۲۶/۱۰/۲۸
+## 1.4.0 — 2026-10-28
 
-- جلوگیری از توقف ثبت worker و اختلال در بازیابی تنظیمات و توقف موقت، هنگام نبود API زمان‌بندی یا اعلان.
-- جداسازی خطا و تأخیر زمان‌بندی اختیاری از فرمان‌های محافظت؛ حفظ بررسی دستی به‌روزرسانی و لینک امن Release.
-- نمایش وضعیت بررسی دستی و راهنمای جایگزینی بستهٔ کامل و Reload خود افزونه، به‌جای نمایش بررسی خودکارِ در دسترس‌نبوده.
-- تست واحد برای API مفقود، ناقص، خطادار و معطل، و نصب واقعی مرورگر بدون دو مجوز به‌روزرسانی؛ شامل انقضای توقف و کنترل شبکه.
+- Make the popup, notifications, validation messages and browser listing metadata English by default, with left-to-right layout and English number/date formatting.
+- Make unsuffixed guides English; preserve Persian translations in `.fa.md` files and keep `.en.md` compatibility links.
+- Refresh the concise README and interface screenshots; package both English and Persian policies.
+- Verify the English default in a Persian browser locale, alongside existing protection, update and missing-API regressions. No permissions or dependencies added; filtering rules unchanged.
 
-## 1.3.2 — ۲۰۲۶/۱۰/۲۸
+## 1.3.3 — 2026-10-28
 
-- محدودکردن درخواست شخص‌ثالث به شش میزبان درخواستی Hotjar، Bugsnag، Sentry، TikTok و Huawei؛ بازکردن مستقیم و درخواست‌های هم‌سایت مجاز می‌مانند. ادغام تجاری/API بین سایت‌های متفاوت با استثنای سایت قابل مجازکردن است.
-- تست واقعی مرورگر برای اسکریپت و fetch داخلی هر میزبان، درخواست پنل Bugsnag به API و مسدودسازی صریح هر شش مورد در آزمون آنلاین.
-- ثبت نتیجهٔ جدید Turtlecute: امتیاز سایت ۱۰۰٪، ۱۳۲ از ۱۳۲؛ شامل ۱۲۹ درخواست صریحاً مسدودشده، دو تست پنهان‌سازی و یک timeout. بدون مجوز یا وابستگی جدید.
-- جلوگیری از شکست تست DOM فقط به‌علت قفل باقی‌ماندهٔ Windows روی پروفایل موقت؛ خطاهای واقعی تست و سایر خطاهای پاک‌سازی همچنان شکست محسوب می‌شوند.
+- Prevent missing alarms/notifications APIs from crashing worker registration or blocking settings and temporary-pause restoration.
+- Isolate optional scheduling errors and delays from protection commands; retain manual update checks and safe release links when optional APIs are missing.
+- Show manual-only status and complete-package/reload guidance instead of claiming automatic checks are available.
+- Add unit tests for absent/partial/rejected/stalled APIs and a real-browser installation without the two update permissions, including pause expiry and network controls.
 
-## 1.3.1 — ۲۰۲۶/۱۰/۲۸
+## 1.3.2 — 2026-10-28
 
-- مسدودسازی میزبان مشاهده‌شدهٔ تبلیغات Kaprila و جمع‌کردن بنر مستقیم، شبکهٔ تبلیغات، ستون تبلیغ و کارت میزبانی Soft98 با قواعد محدود به سایت اصلی.
-- حفظ سرورهای عمومی تصویر و دانلود، متن مطالب، جست‌وجو و محتوای کاربردی ستون کناری؛ تست واقعی و شبیه‌سازی‌شدهٔ استثناها، تبلیغ پویا و بازگردانی دقیق استایل.
+- Restrict third-party requests to the six requested Hotjar, Bugsnag, Sentry, TikTok and Huawei hosts. Direct navigation and same-site requests remain permitted; cross-site business/API integrations can use a site exception.
+- Add actual-browser checks for each host's first-party scripts/fetches, Bugsnag dashboard-to-API requests, and explicit blocking of all six in the live benchmark.
+- Record the new Turtlecute result: 100% (132/132) as scored by the site, with 129 explicit client-blocked requests, two cosmetic checks and one host timeout. No permissions or dependencies added.
+- Keep Windows-only temporary-profile cleanup locks from masking completed DOM test results; other cleanup and test errors still fail.
 
-## 1.3.0 — ۲۰۲۶/۱۰/۲۸
+## 1.3.1 — 2026-10-28
 
-- دکمهٔ بررسی به‌روزرسانی و زمان‌بندی مرورگر هر ۳ روز، با بازسازی زمان‌بندی پس از شروع دوبارهٔ مرورگر.
-- اعلان فقط یک بار برای هر نسخهٔ جدید و لینک محدود به Releaseهای همین مخزن؛ دریافت متادیتای عمومی بدون کوکی، ورود یا اطلاعات صفحات.
-- مدیریت خطای اینترنت، محدودیت درخواست GitHub، هم‌زمانی بررسی‌ها، مقایسهٔ عددی نسخه و پاسخ نامعتبر؛ بررسی مجوزهای پیام و CSP در تست‌ها.
-- همگام‌سازی تست استثنای URL با اجرای اسکریپت مجاز، با حفظ اطلاعات تشخیصی خطا و بررسی مسدودسازی مسیرهای دیگر.
+- Block the observed Kaprila ad host and collapse Soft98's direct banners, related-ad grid, side-ad section, and hosting promotion using selectors restricted to the main site.
+- Preserve shared image/download hosts, software descriptions, search and useful sidebar content; add live and fixture checks for exceptions, dynamic placements and exact style restoration.
 
-## 1.2.0 — ۲۰۲۶/۱۰/۲۷
+## 1.3.0 — 2026-10-28
 
-- لوگوی جدید و یکسان در پنجرهٔ افزونه و آیکون مرورگر، با نسخه‌های PNG شفاف در چهار اندازه.
-- ظاهر خاکستری برای سایت/URL مستثنا، توقف موقت و خاموش‌کردن کلی، در هر دو حالت روز و شب؛ بازگشت رنگ‌ها پس از فعال‌سازی.
-- تست شفافیت و بسته‌بندی لوگو، حفظ انتخاب روز/شب و حالت خاکستری پس از بازکردن دوبارهٔ پنجره.
-- افزایش پوشش از ۱۴۵ به ۱۴۹ میزبان با اضافه‌کردن میزبان‌های مستند Hotjar، Microsoft UET و Segment.
-- بازخوانی خودکار صفحهٔ جاری پس از تغییر محافظت؛ جلوگیری از بازخوانی دوبارهٔ توقف موقت یا صفحه‌ای که نشانی‌اش عوض شده است.
-- محدودکردن پیام اسکریپت صفحات به وضعیت محافظت، محدودیت دسترسی به ذخیره‌سازی در Chromium و بازگردانی قواعد پس از خطای ذخیره.
-- سیاست صریح CSP برای منع اسکریپت درون‌خطی، اتصال شبکه و محتوای فعال در صفحه‌های افزونه؛ بررسی آسیب‌پذیری وابستگی‌ها در CI.
-- نمایش شمارهٔ نسخهٔ واقعی افزونه در پنجره.
+- Manual update check and a browser alarm every three days, restored after browser restart.
+- One notification per newer version and a download link restricted to this repository's releases; public metadata requests omit cookies, credentials, and page data.
+- Handle offline/rate-limit failures, concurrent checks, numeric version ordering, and invalid metadata; test message authorization and the narrow CSP connection exception.
+- Synchronize the exact-URL browser fixture with allowed script execution, retaining failure diagnostics and checks for blocking on other paths.
 
-## 1.1.0 — ۲۰۲۶/۱۰/۲۷
+## 1.2.0 — 2026-10-27
 
-- اعمال دوبارهٔ پنهان‌سازی پس از حذف محتوای محافظت‌شده یا حذف نقش محتوای اصلی از عنصر فرزند.
-- انتخاب دستور Python متناسب با Windows/Linux برای `npm run package` و حذف کش مرورگر `_metadata` از ZIP.
-- افزایش پوشش دامنه‌های تبلیغات و ردیابی شخص ثالث از ۶۰ به ۱۴۵ دامنه، شامل تله‌متری منطقه‌ای.
-- افزودن مسدودسازی مسیر اسکریپت تبلیغاتی هم‌دامنه و جایگاه‌های ثابت و پویا، با حفظ استثناها و محتوای اصلی.
-- بررسی مسدودسازی واقعی تمام دامنه‌ها و بازماندن ۱۷ میزبان کاربردی؛ تست اختیاری Turtlecute با ذخیرهٔ تصویر و گزارش.
-- اصلاح مسیر تصاویر، مقایسهٔ مسیرهای ZIP، انتخاب Python و تلاش مجدد برای پاک‌سازی پروفایل موقت در تست‌های Windows.
-- بازطراحی پنجره با کارت وضعیت، آیکون‌های یکدست و مدیریت جمع‌شوندهٔ استثناها.
-- حالت روشن/تیره با ذخیرهٔ محلی، پیروی اولیه از سیستم، پشتیبانی صفحه‌کلید و کاهش حرکت.
-- تصاویر هر دو رنگ‌بندی و تست ذخیره، بازیابی خطا و جلوگیری از اسکرول افقی.
-- توقف یک‌بارهٔ صفحه در یک تب، با reload خودکار و انقضا در بارگذاری بعدی یا خروج از صفحه.
-- استثناهای دائمی URL با تطبیق دقیق مسیر و query، کنترل حذف و توضیح حریم خصوصی.
-- تست‌های انقضا، جداسازی تب‌ها، بازیابی worker، کنترل‌های رابط و مسیرهای متفاوت.
-- مستندات فارسی و انگلیسی با لینک جابه‌جایی زبان.
-- بررسی لینک‌ها برای همهٔ فایل‌های Markdown ریشهٔ مخزن و پوشهٔ `docs/`.
-- قرارگرفتن هر دو ترجمهٔ حریم خصوصی و امنیت در بسته‌های خروجی افزونه.
-- خلاصه‌سازی README فارسی و انگلیسی با راهنمای نصب و بخش مستقل لایسنس MIT.
-- خواندن نسخهٔ manifest و ZIP از package.json برای هماهنگی فایل‌های انتشار.
+- New shared popup and browser logo with transparent PNG icons in four sizes.
+- Grayscale site/URL exceptions, one-time pauses, and global-off states in both light and dark mode; color returns when protection resumes.
+- Logo transparency/packaging checks and tests for gray state on reopening and preservation of the light/dark preference.
+- Expand coverage from 145 to 149 hosts using documented Hotjar, Microsoft UET, and Segment endpoints.
+- Reload the current page automatically after protection changes; avoid duplicate pause reloads and stale-page reloads.
+- Limit page messages to effective protection state, restrict Chromium local-storage access, and restore network policy after a failed save.
+- Explicit CSP blocks inline scripts, network connections, and active embedded content in extension pages; CI checks dependency advisories.
+- Show the actual manifest version in the popup.
+
+## 1.1.0 — 2026-10-27
+
+- Reapply cosmetic filtering when protected descendants are removed or lose their main-content role.
+- Make `npm run package` select the Python command for Windows/Linux, and exclude browser-generated `_metadata` from ZIPs.
+- Expanded third-party ad/tracker coverage from 60 to 145 locally maintained domains, including regional telemetry endpoints.
+- Added first-party ad-script path blocking and conservative static/dynamic ad-box selectors, preserving exceptions and main content.
+- Browser regression checks require explicit blocking of every domain and preserve 17 useful hosts. Optional live Turtlecute check saves a report and screenshot.
+- Fixed Windows test screenshot paths, ZIP path comparisons, Python selection, and temporary-profile cleanup retries.
+- Redesigned popup with a protection card, consistent icons, and collapsible exception management.
+- Light/dark themes with local persistence, initial system preference, keyboard access, and reduced-motion support.
+- Screenshots of both themes and tests for persistence, storage-failure recovery, and horizontal overflow.
+- One-time page pauses in a single tab, with automatic reload and expiry on the next reload or navigation.
+- Permanent URL exceptions with exact path/query matching, reset controls, and privacy documentation.
+- Tests for expiry, tab isolation, worker restoration, popup controls, and distinct URL paths.
+- Paired Persian and English documentation with language navigation.
+- Documentation link checks cover every Markdown file in the repository root and `docs/`.
+- Both privacy and security policy translations are included in generated extension packages.
+- Concise Persian and English READMEs with installation steps and a dedicated MIT license section.
+- Manifest and ZIP versions now follow package.json to keep release assets consistent.
 
 ## 1.0.0
 
-- خروجی Manifest V3 جداگانه برای Chrome، Edge و Firefox.
-- ۶۰ قاعدهٔ محلی برای دامنه‌های تبلیغات و ردیابی مرتبط.
-- پنهان‌سازی محافظه‌کارانه و پویا با حفاظت از محتوای اصلی.
-- پنجرهٔ فارسی، کنترل عمومی، استثنای سایت‌ها و بازگرداندن استایل‌ها.
-- تست تنظیمات و worker، تست DOM و رابط، تست کامل نصب افزونه و بررسی بسته‌ها.
-- مستندات نصب، تصویر رابط، حریم خصوصی، مشارکت و لایسنس MIT.
+- Separate Manifest V3 outputs for Chrome, Edge, and Firefox.
+- 60 local rules for advertising and related tracking domains.
+- Conservative, dynamic cosmetic filtering with main-content safeguards.
+- Persian popup, global toggle, site exceptions, and style restoration.
+- Settings and worker tests, DOM and popup tests, full extension integration tests, and distribution checks.
+- Installation documentation, interface screenshot, privacy policy, contribution guide, and MIT License.
 
-محدودیت: پوشش تمام تبلیغات تضمین نمی‌شود. اجرای کامل سه مرورگر روی سایت‌های واقعی هنوز تأیید نشده است؛ وضعیت بررسی‌های محیط توسعه در [گزارش تست](docs/TESTING.md) ثبت می‌شود.
+Limitation: complete ad coverage is not guaranteed. Full execution across all three browsers on real websites has not been verified; local validation results are recorded in the [test report](docs/TESTING.md).
