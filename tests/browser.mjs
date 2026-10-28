@@ -254,6 +254,7 @@ try {
   await command({ type: 'clearUrls' });
   await urlPage.close();
   await page.goto(url + '/paused');
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
   const tabId = await popup.evaluate(async target => {
     const tabs = await chrome.tabs.query({});
     return tabs.find(tab => tab.url === target).id;
