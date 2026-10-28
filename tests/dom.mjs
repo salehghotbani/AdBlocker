@@ -32,7 +32,7 @@ try {
   await page.goto('https://fixture.example/');
   await page.evaluate(() => {
     window.chrome = { runtime: {
-      onMessage: { addListener(listener) { window.contentListener = listener; } },
+      id: 'fixture', onMessage: { addListener(listener) { window.contentListener = listener; } },
       async sendMessage() { return { settings: { enabled: true, allowedSites: [] } }; }
     } };
   });
@@ -45,6 +45,31 @@ try {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `${id} must be preserved`);
   }
   console.log('PASS: ad hidden; main article, player, form, banner, safe iframe retained');
+  const readHidden = () => page.evaluate(() => new Promise(resolve => window.contentListener(
+    { type: 'getCosmeticCount' }, { id: 'fixture' }, resolve)));
+  const originalCounter = await readHidden();
+  assert.equal(originalCounter.placements, 2);
+  await page.evaluate(() => {
+    const box = document.createElement('div'); box.id = 'counter-nested'; box.className = 'textads adsbox';
+    box.innerHTML = '<ins class="adsbygoogle">Nested ad</ins>'; document.body.append(box);
+  });
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('counter-nested')).display === 'none');
+  assert.equal((await readHidden()).placements, 3, 'nested hidden containers count as one placement');
+  assert.equal((await readHidden()).placements, 3, 'reading again does not increment the count');
+  await page.evaluate(() => document.getElementById('counter-nested').className = 'ordinary');
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('counter-nested')).display !== 'none');
+  assert.equal((await readHidden()).placements, 3, 'a nested ad remains counted after its wrapper is restored');
+  await page.evaluate(() => document.getElementById('counter-nested').remove());
+  assert.equal((await readHidden()).placements, 2, 'disconnected ads leave the current count');
+  assert.equal(await page.evaluate(() => {
+    let reply = null; window.contentListener({ type: 'getCosmeticCount' }, { id: 'foreign' }, value => { reply = value; }); return reply;
+  }), null);
+  assert.equal(await page.evaluate(() => {
+    let reply = null; window.contentListener({ type: 'getCosmeticCount' }, { id: 'fixture', tab: { id: 1 } }, value => { reply = value; }); return reply;
+  }), null);
+  assert.equal(await page.evaluate(() => new Promise(resolve => window.contentListener({ type: 'getCosmeticCount', document: 'old-document' },
+    { id: 'fixture' }, resolve))).then(value => value.stale), true);
+  console.log('PASS: cosmetic counters deduplicate nested placements, update on removal, reject foreign senders and detect stale documents');
   await page.evaluate(() => {
     const el = document.createElement('ins'); el.className = 'adsbygoogle'; el.id = 'dynamic';
     document.body.append(el);
@@ -84,6 +109,7 @@ try {
   await page.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: { enabled: false, allowedSites: [] } }));
   assert.equal(await page.locator('#ad').isVisible(), true);
   console.log('PASS: site exception and global disable restore original inline styles');
+  assert.equal((await readHidden()).placements, 0, 'disabled protection clears current hidden placements');
   await page.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: {
     enabled: true, allowedSites: [], allowedUrls: ['https://fixture.example/']
   } }));
@@ -218,6 +244,7 @@ try {
         }
       } },
       runtime: { getManifest() { return { version }; }, async sendMessage(message) {
+        if (message.type === 'getCounters') return { counters: window.mockCounters || { requests: 12, placements: 3 } };
         if (message.type === 'getUpdateStatus' || message.type === 'checkForUpdates') return { update: window.mockUpdate };
         if (message.type === 'setEnabled') settings.enabled = message.enabled;
         if (message.type === 'setSite') settings.allowedSites = message.allowed ? [message.host] : [];
@@ -267,6 +294,22 @@ try {
   assert.equal(await popup.locator('#totalCount').textContent(), '0');
   assert.equal(/[\u0600-\u06ff]/u.test(await popup.locator('body').innerText()), false, 'English is the default even in a Persian browser locale');
   assert.equal(await popup.locator('#version').textContent(), `v${version}`);
+  await popup.waitForFunction(() => document.getElementById('requestCount').textContent === '12');
+  assert.equal(await popup.locator('#placementCount').textContent(), '3');
+  await popup.evaluate(() => { window.mockCounters = { requests: 1234, placements: 5 }; });
+  await popup.locator('#refreshCounters').focus();
+  await popup.keyboard.press('Enter');
+  await popup.waitForFunction(() => document.getElementById('requestCount').textContent === '1,234');
+  assert.equal(await popup.locator('#placementCount').textContent(), '5');
+  await popup.evaluate(() => { window.mockCounters = { requests: null, placements: 0 }; });
+  await popup.locator('#refreshCounters').click();
+  await popup.waitForFunction(() => document.getElementById('requestCount').textContent === '—');
+  assert.equal(await popup.locator('#placementCount').textContent(), '0');
+  assert.match(await popup.locator('#counterHint').textContent(), /unavailable/);
+  await popup.evaluate(() => { window.mockCounters = { requests: 12, placements: 3 }; });
+  await popup.waitForFunction(() => document.getElementById('requestCount').textContent === '12');
+  assert.equal(await popup.evaluate(() => window.popupReloads.length), 0, 'counter refresh never reloads a page');
+  console.log('PASS: counters render separately with English digits, poll automatically, refresh by keyboard and show unavailable values honestly');
   await popup.waitForFunction(() => [...document.querySelectorAll('.brand-logo')]
     .every(image => image.complete && image.naturalWidth === 128));
   assert.equal(await popup.locator('.brand-logo').first().evaluate(image => {

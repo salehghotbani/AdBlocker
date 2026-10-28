@@ -2,6 +2,15 @@
 
 **English** | [فارسی](TESTING.fa.md)
 
+## Version 1.5.0 page counters — 2026-10-29
+
+- 32 unit tests cover trusted-message authorization, main-frame scope, unavailable/malformed native counts, stale document snapshots, navigation checks and independence from protection commands. Four distribution tests also require the absence of feedback and request-stream permissions.
+- DOM tests verify separate English-formatted values, keyboard/manual refresh, automatic two-second refresh, unavailable values, nested placement deduplication, removal and restoration. Theme and protection controls retain their existing checks.
+- Actual Edge tests exercise the browser's native count and popup values with two blocked requests/two placements, dynamic additions, repeated reads, same-URL reload resets, tab isolation, site/URL/global exceptions, and absence of persisted counter history. Production manifests exercise the unavailable-count fallback when no toolbar activeTab grant exists. Numeric-count automation uses a separate test-only manifest with feedback permission; this permission is excluded from all release packages.
+- Counters describe requests and currently filtered outermost main-document placements separately. They are not summed into unique ads, do not cover cosmetic placements inside child frames, and do not retain lifetime totals. The browser may limit native count access; unavailable values show a dash. Firefox runtime and OS toast delivery remain untested.
+- Integration reproduced a pre-existing timing limit with the published worker too: very early parser requests on the next reload may start before asynchronous `webNavigation` expiry finishes. The pause regression now waits for expiry and requires its session rule removed, its UI state cleared, cosmetic filtering restored and a fresh request explicitly blocked; paused-document late requests and other-tab isolation remain required. This does not establish synchronous blocking of every early navigation request. Pause implementation is unchanged.
+- Final CI and the release commit are recorded in the [v1.5.0 release notes](https://github.com/salehghotbani/AdBlocker/releases/tag/v1.5.0). Filtering rules are unchanged; the previous Turtlecute result remains historical.
+
 ## Version 1.4.1 W3Schools placements — 2026-10-28
 
 - DOM and actual-extension fixtures collapse the first-party sidebar promotion, sidebar ad video/audio containers and named leaderboard/inline/footer ad slots. Lesson text, code examples, tutorial video/audio, social links and the working editor/preview remain visible and usable. Dynamic ad insertion, protected-content recovery and exact style restoration after global/site/URL exceptions are checked. Matching IDs on unrelated sites remain unaffected.

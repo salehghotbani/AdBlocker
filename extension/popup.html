@@ -33,6 +33,14 @@
       <div class="protection-copy"><span class="eyebrow"><i id="dot"></i>Protection status</span><strong id="status">Checking…</strong><p id="statusHint">Connecting to the extension</p></div>
       <input id="enabled" type="checkbox" role="switch" aria-label="Block ads on all sites" disabled>
     </section>
+    <section class="counters" aria-labelledby="countersHeading">
+      <div class="counter-heading"><h2 id="countersHeading">Blocking activity</h2><button id="refreshCounters" type="button" aria-label="Refresh counters" title="Refresh counters" disabled><svg aria-hidden="true"><use href="#refresh"/></svg></button></div>
+      <div class="counter-values" aria-live="polite" aria-atomic="true">
+        <div><strong id="requestCount">—</strong><span>Requests blocked</span></div>
+        <div><strong id="placementCount">—</strong><span>Hidden ad placements</span></div>
+      </div>
+      <p id="counterHint">Current page. Requests and main-page placements are separate counts.</p>
+    </section>
     <div class="section-heading"><h2>This page</h2><span>Your choice</span></div>
     <section class="scope-card" aria-label="Site and URL controls">
       <label class="scope-row" for="siteEnabled"><span class="scope-icon"><svg aria-hidden="true"><use href="#globe"/></svg></span><span class="scope-copy"><span class="scope-title">Enabled for this site</span><b id="host" dir="ltr">—</b></span><input id="siteEnabled" type="checkbox" role="switch" disabled></label>

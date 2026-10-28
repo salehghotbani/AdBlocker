@@ -53,6 +53,16 @@ main { padding:0 18px 6px; }
 #statusHint { margin:5px 0 0; font-size:10px; color:var(--muted); line-height:1.6; }
 .protection[data-state="off"] { background:var(--surface); border-color:var(--line); }
 .protection[data-state="off"] .protection-icon { background:var(--icon-bg); color:var(--muted); }
+.counters { margin-top:12px; padding:11px 13px; border:1px solid var(--line); border-radius:13px; background:var(--surface); }
+.counter-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.counter-heading button { display:grid; place-items:center; width:25px; height:25px; padding:3px; background:transparent; border:0; border-radius:6px; color:var(--muted); }
+.counter-heading button:hover:enabled { background:var(--icon-bg); }
+.counter-heading svg { width:14px; height:14px; }
+.counter-values { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:5px; }
+.counter-values > div { min-width:0; }
+.counter-values strong { display:block; color:var(--accent); font-size:25px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.counter-values span { display:block; font-size:10px; color:var(--muted); margin-top:3px; }
+#counterHint { margin:9px 0 0; font-size:10px; line-height:1.6; color:var(--muted); }
 .section-heading { display:flex; align-items:center; justify-content:space-between; margin:18px 2px 10px; }
 h2 { margin:0; font-size:12px; font-weight:600; }
 .section-heading > span { font-size:10px; color:var(--muted); }

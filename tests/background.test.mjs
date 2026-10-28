@@ -22,6 +22,7 @@ async function harness(saved, savedSession = {}, options = {}) {
   const broadcasts = [];
   const errors = [];
   const updateCalls = [];
+  const counterReads = [];
   let updateGate = Promise.resolve({});
   const api = {
     storage: {
@@ -31,6 +32,7 @@ async function harness(saved, savedSession = {}, options = {}) {
       session: { async get() { return structuredClone(session); }, async set(value) { session = structuredClone(value); } }
     },
     declarativeNetRequest: {
+      async setExtensionActionOptions() { if (options.counterFailure) throw new Error('Counter API unavailable'); },
       async getDynamicRules() { return dynamic; },
       async getSessionRules() { return sessionRules; },
       async updateSessionRules({ addRules }) { sessionRules = addRules; },
@@ -41,7 +43,7 @@ async function harness(saved, savedSession = {}, options = {}) {
         enabled = enableRulesetIds;
       }
     },
-    action: { async setBadgeText() {}, async setBadgeBackgroundColor() {} },
+    action: { async setBadgeText() {}, async setBadgeBackgroundColor() {}, async getBadgeText() { return options.badgeText ?? '7'; } },
     alarms: { onAlarm: event('alarm') },
     notifications: { onClicked: event('notification') },
     tabs: {
@@ -49,7 +51,13 @@ async function harness(saved, savedSession = {}, options = {}) {
       async get(id) { const tab = tabs.find(tab => tab.id === id); if (!tab) throw new Error('No tab'); return tab; },
       async reload(id) { reloads.push(id); },
       onRemoved: event('removed'),
-      async sendMessage(id, message) { broadcasts.push({ id, message }); }
+      async sendMessage(id, message, sendOptions) {
+        if (message.type === 'getCosmeticCount') {
+          counterReads.push({ id, message, sendOptions });
+          return options.counterReply ? options.counterReply({ id, message }) : { document: 'a'.repeat(32), placements: 4 };
+        }
+        broadcasts.push({ id, message });
+      }
     },
     webNavigation: { onBeforeNavigate: event('before'), onCommitted: event('committed'), onHistoryStateUpdated: event('history') },
     runtime: { id: 'fixture', getURL: path => `chrome-extension://fixture/${path}`,
@@ -57,7 +65,7 @@ async function harness(saved, savedSession = {}, options = {}) {
   };
   if (options.missingApis) { delete api.alarms; delete api.notifications; }
   if (options.partialApis) { api.alarms = {}; api.notifications = {}; }
-  const context = vm.createContext({ chrome: api, URL, AdBlockUpdates: {
+  const context = vm.createContext({ chrome: api, URL, setTimeout, clearTimeout, AdBlockUpdates: {
     ALARM: 'adblocker-update-check', create() { return {
       async initialize() { await options.initialize?.(); }, async getStatus() { updateCalls.push('status'); return {}; },
       async check() { updateCalls.push('check'); return updateGate; }, async openUpdate(id) { updateCalls.push(id); }
@@ -70,7 +78,7 @@ async function harness(saved, savedSession = {}, options = {}) {
   const send = (message, sender = { id: 'fixture', url: 'chrome-extension://fixture/popup.html' }) =>
     new Promise(resolve => listener(message, sender, resolve));
   await send({ type: 'getSettings' }); // awaits startup reconciliation
-  return { send, broadcasts, errors, tabs, reloads, updateCalls,
+  return { send, broadcasts, errors, tabs, reloads, updateCalls, counterReads,
     blockUpdates() { let finish; updateGate = new Promise(resolve => { finish = resolve; }); return finish; },
     async emit(name, details) { handlers[name](details); await send({ type: 'getSettings' }); },
     get session() { return session; }, get sessionRules() { return sessionRules; },
@@ -263,4 +271,73 @@ test('an in-flight update request does not block a protection command', async ()
     ]);
     assert.equal(change.settings.enabled, false);
   } finally { finish({}); await update; }
+});
+
+test('page counters are read-only, main-frame scoped and restricted to trusted extension pages', async () => {
+  const h = await harness();
+  const message = { type: 'getCounters', tabId: 1, url: h.tabs[0].url };
+  const result = await h.send(message);
+  assert.equal(result.counters.requests, 7);
+  assert.equal(result.counters.placements, 4);
+  assert.equal(h.counterReads.length, 2);
+  assert.ok(h.counterReads.every(read => read.id === 1 && read.sendOptions.frameId === 0));
+  assert.equal(h.stored, undefined);
+  assert.deepEqual(Object.keys(h.session), ['pausedTabs']);
+  for (const sender of [
+    { id: 'foreign', url: 'chrome-extension://fixture/popup.html' },
+    { id: 'fixture', url: h.tabs[0].url, tab: h.tabs[0] }
+  ]) assert.ok((await h.send(message, sender)).error);
+  assert.ok((await h.send({ ...message, url: 'https://stale.example/' })).error);
+  assert.ok((await h.send({ ...message, tabId: '1' })).error);
+});
+
+test('unavailable native counters never become fabricated zeroes or break protection', async () => {
+  for (const options of [
+    ...['<<declarativeNetRequestActionCount>>', 'OFF', 'NaN', '-1', '9007199254740992'].map(badgeText => ({ badgeText })),
+    { counterFailure: true }
+  ]) {
+    const h = await harness(undefined, {}, options);
+    const { counters } = await h.send({ type: 'getCounters', tabId: 1, url: h.tabs[0].url });
+    assert.equal(counters.requests, null);
+    assert.equal(counters.placements, 4);
+    assert.equal((await h.send({ type: 'setEnabled', enabled: false })).settings.enabled, false);
+    assert.equal(h.errors.length, 0);
+  }
+  const h = await harness(undefined, {}, { badgeText: '' });
+  assert.equal((await h.send({ type: 'getCounters', tabId: 1, url: h.tabs[0].url })).counters.requests, 0);
+});
+
+test('stale documents, malformed counts and navigation cannot return mixed page counters', async () => {
+  for (const counterReply of [
+    ({ message }) => message.document ? { stale: true } : { document: 'a'.repeat(32), placements: 2 },
+    () => ({ document: 'a'.repeat(32), placements: -1 }),
+    () => ({ document: 'bad', placements: 3 })
+  ]) {
+    const h = await harness(undefined, {}, { counterReply });
+    assert.equal((await h.send({ type: 'getCounters', tabId: 1, url: h.tabs[0].url })).counters.placements, null);
+  }
+  const reloaded = await harness(undefined, {}, { counterReply: ({ message }) => message.document ?
+    { stale: true } : { document: 'a'.repeat(32), placements: 2 } });
+  assert.equal((await reloaded.send({ type: 'getCounters', tabId: 1, url: reloaded.tabs[0].url })).counters.requests, null,
+    'same-URL reload invalidates both parts of a mixed snapshot');
+  let h;
+  h = await harness(undefined, {}, { counterReply() {
+    h.tabs[0].url = 'https://other.example/new';
+    return { document: 'a'.repeat(32), placements: 2 };
+  } });
+  assert.match((await h.send({ type: 'getCounters', tabId: 1, url: 'https://allowed.example' })).error, /page has changed/);
+});
+
+test('a pending counter read cannot delay protection changes', async () => {
+  let finish;
+  const gate = new Promise(resolve => { finish = resolve; });
+  const h = await harness(undefined, {}, { counterReply: () => gate });
+  const count = h.send({ type: 'getCounters', tabId: 1, url: h.tabs[0].url });
+  try {
+    const change = await Promise.race([
+      h.send({ type: 'setEnabled', enabled: false }),
+      new Promise((_, reject) => { const timer = setTimeout(() => reject(new Error('Counter blocked protection')), 1000); timer.unref(); })
+    ]);
+    assert.equal(change.settings.enabled, false);
+  } finally { finish({ document: 'a'.repeat(32), placements: 0 }); await count; }
 });

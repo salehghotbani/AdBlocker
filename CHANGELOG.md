@@ -2,6 +2,13 @@
 
 **English** | [فارسی](CHANGELOG.fa.md)
 
+## 1.5.0 — 2026-10-29
+
+- Add separate live counters for blocked requests and hidden main-document ad placements, a refresh button, and the browser's per-tab request-count badge. The popup refreshes every two seconds while open.
+- Deduplicate nested placements and remove disconnected/restored elements from the current count. Navigation resets the browser's request counter; counts remain isolated by tab.
+- Show unavailable native counts as a dash without requesting debug permissions. Counter messages are restricted to trusted extension contexts, document changes are checked, and no counter history or request URLs are stored.
+- Add unit, DOM and actual-browser regressions for counters alongside existing protection controls. No filtering rules, permissions or dependencies changed.
+
 ## 1.4.1 — 2026-10-28
 
 - Collapse W3Schools sidebar course promotions, known sidebar ad-media slots, and named leaderboard/inline/footer ad containers on the main site.

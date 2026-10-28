@@ -11,6 +11,7 @@ An ad and tracker blocker for Chrome, Edge and Firefox. The interface and primar
 - Filters third-party requests to 156 listed hosts, specific ad-script paths and Soft98/W3Schools ad placements.
 - Global, site and exact-URL controls, plus a one-time pause. Protection changes reload the current page automatically.
 - Light/dark themes and a gray appearance while protection is paused.
+- Live per-page counters for blocked requests and hidden ad placements, plus the browser's request-count badge. Counts are separate: several requests can belong to one ad. Placement counts cover the main document; unavailable values show a dash. No counter history is saved.
 - Manual update checks and automatic checks every three days, with a notification and release link. No automatic installation; manual checks remain usable if optional APIs are unavailable.
 
 | Light | Dark |

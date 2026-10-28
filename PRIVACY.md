@@ -2,7 +2,7 @@
 
 **English** | [فارسی](PRIVACY.fa.md)
 
-This policy describes version 1.4.1 of the AdBlocker extension.
+This policy describes version 1.5.0 of the AdBlocker extension.
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
 - The enabled/disabled setting, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters.
@@ -13,6 +13,7 @@ This policy describes version 1.4.1 of the AdBlocker extension.
 - The extension contains no analytics, telemetry, or advertising SDK. Playwright is a development test tool and is not included in installation packages.
 - Messages sent to content scripts contain only that tab's effective protection state, not the saved site or URL exceptions. Chromium also restricts direct content-script access to `storage.local`.
 - Protection changes automatically reload the current page. The tab's URL is checked first so a different page is not reloaded.
+- The popup reads the browser's native per-tab request count and counts currently filtered main-document ad placements locally. Nested placements count once. These are separate per-page measurements, not a unique-ad total or a lifetime history. Counts, document tokens and request URLs are not saved or transmitted. Missing native counts are shown as unavailable.
 
 ## Update checks
 
@@ -28,7 +29,7 @@ The last attempt/success times, latest version tag, error state, and last notifi
 | --- | --- |
 | `storage` | Keep settings, exceptions, and update status locally, and temporary pauses in session memory |
 | `declarativeNetRequest` | Apply blocking and exception rules through the browser |
-| `activeTab` | Read the current site's hostname when the popup is opened |
+| `activeTab` | Read the current site's hostname and native request-count badge when the popup is opened from the toolbar |
 | `webNavigation` | Detect page changes and expire one-time pauses without keeping browsing history |
 | `alarms` | Check for updates every three days and restore scheduling |
 | `notifications` | Notify about new versions and open a release after the user clicks |

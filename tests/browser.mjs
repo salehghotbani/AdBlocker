@@ -258,9 +258,15 @@ try {
     const tabs = await chrome.tabs.query({});
     return tabs.find(tab => tab.url === target).id;
   }, page.url());
+  const ungrantedCounters = (await command({ type: 'getCounters', tabId, url: page.url() })).counters;
+  assert.equal(ungrantedCounters.requests, null, 'an automated extension URL has no toolbar activeTab grant');
+  assert.equal(ungrantedCounters.placements, 1);
+  console.log('PASS: production permissions show unavailable network count honestly without a toolbar grant; cosmetic count remains usable');
   await command({ type: 'setPause', tabId, url: page.url(), paused: true });
   await page.waitForFunction(() => window.adScriptLoaded === true);
   assert.equal((await popup.evaluate(tabId => chrome.runtime.sendMessage({ type: 'getSettings', tabId }), tabId)).paused, true);
+  assert.equal(await page.evaluate(() => fetch('https://ads.doubleclick.net/late-paused', { mode: 'no-cors' }).then(() => true, () => false)), true,
+    'the committed paused document retains its allowance for late requests');
   const other = await context.newPage();
   await other.goto(url + '/paused');
   await other.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
@@ -268,8 +274,13 @@ try {
   await other.close();
   await page.reload();
   await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
-  assert.equal(await page.evaluate(() => window.adScriptLoaded), undefined);
-  console.log('PASS: permanent URL distinguishes paths/query; one-time pause allows one reload in one tab only');
+  // webNavigation expiry is asynchronous: very early parser requests can race
+  // it. Require protection after expiry, without treating that race as a
+  // synchronous browser guarantee that the API does not provide.
+  assert.equal((await command({ type: 'getSettings', tabId })).paused, false);
+  assert.equal(await popup.evaluate(async () => (await chrome.declarativeNetRequest.getSessionRules()).length), 0);
+  assert.equal(await page.evaluate(() => fetch('https://ads.doubleclick.net/after-pause', { mode: 'no-cors' }).then(() => true, () => false)), false);
+  console.log('PASS: permanent URL distinguishes paths/query; pause is tab-isolated, expires on reload and restores network blocking after expiry');
   await page.bringToFront();
   await popup.reload();
   await popup.waitForFunction(() => !document.getElementById('enabled').disabled);
@@ -330,6 +341,7 @@ try {
   await w3.close();
   console.log('PASS: actual extension filters W3Schools ad slots while preserving tutorial media, the working editor and site exceptions');
   await checkMissingUpdatePermissions();
+  await checkPageCounters();
 
   if (process.env.ADBLOCK_LIVE_W3SCHOOLS === '1') {
     const live = await context.newPage();
@@ -505,7 +517,9 @@ async function checkMissingUpdatePermissions() {
     await command({ type: 'setPause', tabId, url: page.url(), paused: true });
     await page.waitForFunction(() => window.adScriptLoaded === true);
     await page.reload();
-    await page.waitForFunction(() => window.adScriptLoaded === undefined && getComputedStyle(document.getElementById('ad')).display === 'none');
+    await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    assert.equal((await command({ type: 'getSettings', tabId })).paused, false);
+    assert.equal(await page.evaluate(() => fetch('https://ads.doubleclick.net/after-pause', { mode: 'no-cors' }).then(() => true, () => false)), false);
     console.log('PASS: missing alarms/notifications permissions preserve manual update checks, network controls and pause expiry in the actual browser');
   } finally {
     await compatContext?.close();
@@ -514,6 +528,118 @@ async function checkMissingUpdatePermissions() {
       await rm(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }).catch(error => {
         if (process.platform !== 'win32' || !['EPERM', 'EBUSY'].includes(error.code)) throw error;
         console.warn(`Windows retained a lock on the isolated compatibility test directory: ${directory}`);
+      });
+    }
+  }
+}
+
+// Opening an extension URL in automation does not grant activeTab. Only this
+// isolated test copy receives feedback permission to read the native count;
+// the shipped manifests must never include that debugging permission.
+async function checkPageCounters() {
+  const copies = path.join(root, '.cache', 'compat-extensions');
+  await mkdir(copies, { recursive: true });
+  const copy = await mkdtemp(path.join(copies, 'counters-'));
+  const counterProfile = await mkdtemp(path.join(profileRoot, 'counters-'));
+  let browser;
+  try {
+    await cp(extension, copy, { recursive: true, filter: source => !source.split(path.sep).includes('_metadata') });
+    const manifestPath = path.join(copy, 'manifest.json');
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    assert.equal(manifest.permissions.includes('declarativeNetRequestFeedback'), false);
+    manifest.permissions.push('declarativeNetRequestFeedback');
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    browser = await chromium.launchPersistentContext(counterProfile, {
+      executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true,
+      ignoreDefaultArgs: ['--disable-extensions'],
+      args: ['--no-sandbox', `--disable-extensions-except=${copy}`, `--load-extension=${copy}`]
+    });
+    browser.setDefaultTimeout(15000);
+    const origin = `http://127.0.0.1:${server.address().port}`;
+    await browser.route(`${origin}/counter-*`, route => route.fulfill({ contentType: 'text/html',
+      body: route.request().url().endsWith('/counter-blank') ? '<!doctype html><h1>Useful page</h1>' :
+        `<!doctype html><h1>Useful page</h1><ins class="adsbygoogle" id="ad">Ad</ins>
+        <div class="textads adsbox"><ins class="adsbygoogle">Nested ad</ins></div>
+        <script src="https://ads.doubleclick.net/counter.js"></script><script src="/pagead.js"></script>`
+    }));
+    await browser.route('https://ads.doubleclick.net/**', route => route.fulfill({
+      contentType: 'application/javascript', body: 'window.remoteAdLoaded = true;'
+    }));
+    const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
+    const page = await browser.newPage();
+    await page.goto(`${origin}/counter-blank`);
+    const panel = await browser.newPage();
+    const panelUrl = `chrome-extension://${new URL(worker.url()).host}/popup.html`;
+    await panel.goto(panelUrl);
+    const command = message => panel.evaluate(async message => {
+      const result = await chrome.runtime.sendMessage(message);
+      if (result.error) throw new Error(result.error);
+      return result;
+    }, message);
+    await command({ type: 'getSettings' });
+    const tabId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, page.url());
+    const read = (id = tabId, url = page.url()) => command({ type: 'getCounters', tabId: id, url }).then(result => result.counters);
+    await panel.waitForFunction(async ({ tabId, url }) => {
+      const result = await chrome.runtime.sendMessage({ type: 'getCounters', tabId, url });
+      return result.counters?.requests === 0 && result.counters?.placements === 0;
+    }, { tabId, url: page.url() });
+    await page.goto(`${origin}/counter-fixture`);
+    await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    assert.deepEqual(await read(), { requests: 2, placements: 2 });
+    assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'reads never increment counts');
+    await panel.evaluate(() => chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true }));
+    assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'reinitialization does not reset the browser count');
+    await page.bringToFront();
+    await panel.reload();
+    await panel.waitForFunction(() => document.getElementById('requestCount').textContent === '2' &&
+      document.getElementById('placementCount').textContent === '2');
+    await page.evaluate(() => {
+      const wrapper = document.createElement('div'); wrapper.className = 'textads adsbox'; wrapper.id = 'new-ad';
+      wrapper.innerHTML = '<ins class="adsbygoogle">New ad</ins>'; document.body.append(wrapper);
+    });
+    await panel.waitForFunction(() => document.getElementById('placementCount').textContent === '3');
+    await page.evaluate(() => document.getElementById('new-ad').remove());
+    assert.deepEqual(await read(), { requests: 2, placements: 2 });
+    await page.reload();
+    await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'same-URL reload resets native counts');
+    const other = await browser.newPage();
+    await other.goto(`${origin}/counter-other`);
+    await other.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    await other.evaluate(() => fetch('https://ads.doubleclick.net/extra').catch(() => {}));
+    const otherId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, other.url());
+    assert.deepEqual(await read(otherId, other.url()), { requests: 3, placements: 2 });
+    assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'counts are isolated by tab');
+    for (const [type, scope] of [['setSite', { host: '127.0.0.1' }], ['setUrl', { url: page.url() }]]) {
+      await command({ type, ...scope, allowed: true });
+      await page.reload();
+      await page.waitForFunction(() => window.remoteAdLoaded && window.pageAdLoaded);
+      assert.deepEqual(await read(), { requests: 0, placements: 0 }, 'allowed requests do not inflate native count');
+      await command({ type, ...scope, allowed: false });
+      await page.reload();
+      await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+      assert.deepEqual(await read(), { requests: 2, placements: 2 });
+    }
+    await command({ type: 'setEnabled', enabled: false });
+    await page.reload();
+    await page.waitForFunction(() => window.remoteAdLoaded && window.pageAdLoaded);
+    assert.equal((await read()).placements, 0);
+    await command({ type: 'setEnabled', enabled: true });
+    await page.goto(`${origin}/counter-blank`);
+    await panel.waitForFunction(async ({ tabId, url }) => {
+      const result = await chrome.runtime.sendMessage({ type: 'getCounters', tabId, url });
+      return result.counters?.requests === 0 && result.counters?.placements === 0;
+    }, { tabId, url: page.url() });
+    const storage = await panel.evaluate(async () => ({ local: await chrome.storage.local.get(null), session: await chrome.storage.session.get(null) }));
+    assert.equal(/counter|placements|requests/i.test(JSON.stringify(storage)), false, 'no counter history is persisted');
+    console.log('PASS: actual native/UI counters, nested deduplication, dynamic updates, navigation resets, tab isolation, site/URL/global exceptions and no stored counter history');
+  } finally {
+    await browser?.close();
+    for (const [directory, base] of [[counterProfile, profileRoot], [copy, copies]]) {
+      if (path.dirname(path.resolve(directory)) !== path.resolve(base)) throw new Error('Unexpected counter test directory');
+      await rm(directory, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }).catch(error => {
+        if (process.platform !== 'win32' || !['EPERM', 'EBUSY'].includes(error.code)) throw error;
+        console.warn(`Windows retained a lock on the isolated counter test directory: ${directory}`);
       });
     }
   }

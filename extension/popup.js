@@ -6,6 +6,27 @@ let settings;
 let url;
 let paused = false;
 let busy = false;
+let counterPending = false;
+let counterPoll = null;
+
+function renderCounters(counters) {
+  for (const [id, value] of [['requestCount', counters?.requests], ['placementCount', counters?.placements]]) {
+    const text = Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString('en-US') : '—';
+    if ($(id).textContent !== text) $(id).textContent = text;
+  }
+  $('counterHint').textContent = !url ? 'Counters are available on web pages.' :
+    counters?.requests == null ? 'Main-page placements only. The network count is unavailable in this browser or context.' :
+      'Current page. Requests and main-page placements are separate counts.';
+}
+
+async function refreshCounters() {
+  if (counterPending || !url || !Number.isInteger(tab?.id)) return;
+  counterPending = true;
+  $('refreshCounters').disabled = true;
+  try { renderCounters((await send({ type: 'getCounters', tabId: tab.id, url })).counters); }
+  catch { renderCounters(null); }
+  finally { counterPending = false; $('refreshCounters').disabled = !url; }
+}
 
 function protectionOn() {
   return settings.enabled && !(host && AdBlockSettings.isAllowed(host, settings.allowedSites)) &&
@@ -68,7 +89,7 @@ async function change(message) {
       (paused ? 'Paused once. The next reload or navigation ends the pause.' : 'Protection resumed.') :
       reloaded ? 'Saved. This page reloaded automatically.' : 'Settings saved.';
   } catch (error) { $('message').textContent = error.message; }
-  finally { busy = false; render(); }
+  finally { busy = false; render(); refreshCounters(); }
 }
 
 $('enabled').addEventListener('change', () => change({ type: 'setEnabled', enabled: $('enabled').checked }));
@@ -77,6 +98,8 @@ $('clear').addEventListener('click', () => change({ type: 'clearSites' }));
 $('urlEnabled').addEventListener('change', () => change({ type: 'setUrl', url, allowed: !$('urlEnabled').checked }));
 $('clearUrls').addEventListener('click', () => change({ type: 'clearUrls' }));
 $('pause').addEventListener('click', () => change({ type: 'setPause', tabId: tab.id, url, paused: !paused }));
+$('refreshCounters').addEventListener('click', refreshCounters);
+addEventListener('pagehide', () => { if (counterPoll !== null) clearInterval(counterPoll); });
 $('reload').addEventListener('click', async () => {
   try {
     if (await reloadCurrentPage()) window.close();
@@ -128,6 +151,10 @@ $('checkUpdates').addEventListener('click', checkUpdates);
     settings = AdBlockSettings.normalize(result.settings);
     paused = result.paused === true;
     render();
+    $('refreshCounters').disabled = !url;
+    renderCounters(null);
+    refreshCounters();
+    counterPoll = setInterval(refreshCounters, 2000);
     try { renderUpdate((await send({ type: 'getUpdateStatus' })).update); }
     catch { $('updateStatus').textContent = 'Select Check for updates to check your version.'; }
   } catch (error) { $('message').textContent = error.message; }

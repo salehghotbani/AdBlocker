@@ -1,4 +1,12 @@
-# Version 1.4.1 security and coverage review
+# Version 1.5.0 security and coverage review
+
+## Version 1.5.0 local counters — 2026-10-29
+
+The popup reads the browser's native per-tab badge count and locally counts currently filtered outermost placements in the main document. Counts are never added into a unique-ad total, persisted or transmitted. No `webRequest` stream, `getMatchedRules` history, debug feedback permission, new host access or dependencies are introduced. Only this extension's pages can request counters; content replies validate the sender and use a temporary document token to reject snapshots across reloads. Unavailable APIs/permissions return unavailable values, and optional reads have a timeout outside the protection queue.
+
+The [native badge API](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest#method-setExtensionActionOptions) resets counts on navigation. Chromium restricts numeric badge reads to feedback/activeTab grants; the existing toolbar grant is used. Programmatically opening a popup URL does not grant activeTab. Browser tests check production-permission fallback and use a separate, test-only installation with feedback permission to check native numeric counts; packaged manifests explicitly exclude that permission. Firefox runtime remains untested. See [validation results](TESTING.md).
+
+The existing one-time pause expires through asynchronous navigation events. Early parser requests can race rule removal on a fast reload; the published worker reproduced this too. Tests require the pause and session rule to clear, cosmetic filtering to resume and a fresh request to be explicitly blocked after expiry, without claiming synchronous prevention of all early requests. The pause implementation is unchanged. See the [validation limits](TESTING.md) and [Chrome's rule evaluation](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest#rule-evaluation).
 
 ## Version 1.4.1 W3Schools cosmetic scope — 2026-10-28
 

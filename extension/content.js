@@ -29,6 +29,7 @@
   ].join(',');
   const protectedContent = 'main,article,[role="main"],h1,video,audio,form';
   const hidden = new Map();
+  const counterDocument = [...crypto.getRandomValues(new Uint8Array(16))].map(value => value.toString(16).padStart(2, '0')).join('');
   let active = false;
   let frame = null;
   const roots = new Set();
@@ -123,7 +124,23 @@
   }
 
   let revision = 0;
-  api.runtime.onMessage.addListener(message => {
+  api.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.type === 'getCosmeticCount') {
+      if (!api.runtime.id || sender?.id !== api.runtime.id || sender.tab) return;
+      if (message.document && message.document !== counterDocument) { sendResponse({ stale: true }); return; }
+      const counted = new Set([...hidden.keys()].filter(element => element.isConnected && safeMatch(element) &&
+        element.style.getPropertyValue('display') === 'none' && element.style.getPropertyPriority('display') === 'important'));
+      let placements = 0;
+      for (const element of counted) {
+        let nested = false;
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          if (counted.has(parent)) { nested = true; break; }
+        }
+        if (!nested) placements++;
+      }
+      sendResponse({ placements, document: counterDocument });
+      return;
+    }
     if (message?.type === 'settingsChanged') { revision++; apply(message.settings); }
   });
   // Fail open if the extension is updating or the worker is unavailable.

@@ -18,6 +18,8 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     const popup = (await read(base + 'popup.html')).toString();
     assert.ok(popup.includes('lang="en" dir="ltr"'));
     assert.equal(manifest.permissions.includes('declarativeNetRequest'), true);
+    assert.equal(manifest.permissions.includes('declarativeNetRequestFeedback'), false, 'counter needs no debug feedback permission');
+    assert.equal(manifest.permissions.includes('webRequest'), false, 'counter collects no request stream');
     const policy = manifest.content_security_policy.extension_pages;
     for (const directive of ["script-src 'self'", "object-src 'none'", "base-uri 'none'"]) {
       assert.ok(policy.includes(directive), directive);

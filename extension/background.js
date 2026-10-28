@@ -5,6 +5,49 @@ const { normalize, hostname, isAllowed, allowRules, pageUrl, urlRule } = AdBlock
 let pending = Promise.resolve();
 let pausedTabs = {};
 const updates = AdBlockUpdates.create(api);
+let nativeCounterReady = false;
+
+async function initializeCounters() {
+  if (typeof api.declarativeNetRequest.setExtensionActionOptions !== 'function') return;
+  try {
+    await api.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true });
+    nativeCounterReady = true;
+  } catch { nativeCounterReady = false; }
+}
+
+function counterResult(promise) {
+  return new Promise(resolve => {
+    const timer = setTimeout(() => resolve(null), 1500);
+    Promise.resolve(promise).then(value => { clearTimeout(timer); resolve(value); }, () => { clearTimeout(timer); resolve(null); });
+  });
+}
+
+async function readCounters(message) {
+  if (!Number.isInteger(message.tabId) || !pageUrl(message.url)) throw new Error('Invalid page counter request.');
+  const before = await api.tabs.get(message.tabId);
+  const target = pageUrl(message.url);
+  if (pageUrl(before.url) !== target) throw new Error('The page has changed. Reopen the extension popup.');
+  const first = await counterResult((async () => api.tabs.sendMessage(message.tabId,
+    { type: 'getCosmeticCount' }, { frameId: 0 }))());
+  // Read the badge between document snapshots, so a same-URL reload cannot mix
+  // an old request count with placements from the newly loaded document.
+  const badge = await counterResult((async () => nativeCounterReady && typeof api.action.getBadgeText === 'function' ?
+    api.action.getBadgeText({ tabId: message.tabId }) : null)());
+  let placements = null;
+  let documentChanged = false;
+  if (typeof first?.document === 'string' && /^[0-9a-f]{32}$/.test(first.document)) {
+    const confirmed = await counterResult((async () => api.tabs.sendMessage(message.tabId,
+      { type: 'getCosmeticCount', document: first.document }, { frameId: 0 }))());
+    if (confirmed?.document === first.document && Number.isSafeInteger(confirmed.placements) && confirmed.placements >= 0) {
+      placements = confirmed.placements;
+    }
+    documentChanged = confirmed?.document !== first.document;
+  }
+  const after = await api.tabs.get(message.tabId);
+  if (pageUrl(after.url) !== target) throw new Error('The page has changed. Reopen the extension popup.');
+  const requests = !documentChanged && typeof badge === 'string' && /^\d*$/.test(badge) && Number.isSafeInteger(Number(badge)) ? Number(badge) : null;
+  return { counters: { requests, placements } };
+}
 
 async function readSettings() {
   return normalize((await api.storage.local.get('settings')).settings);
@@ -149,14 +192,15 @@ async function handle(message, sender) {
 
 api.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || !['getSettings', 'setEnabled', 'setSite', 'clearSites', 'setUrl', 'clearUrls', 'setPause',
-    'getUpdateStatus', 'checkForUpdates'].includes(message.type)) return;
+    'getUpdateStatus', 'checkForUpdates', 'getCounters'].includes(message.type)) return;
   // Content scripts may read settings, but only extension pages may change them.
   const extensionPage = sender.url?.startsWith(api.runtime.getURL(''));
   if (sender.id !== api.runtime.id || (message.type !== 'getSettings' && !extensionPage)) {
     sendResponse({ error: 'Access denied.' });
     return false;
   }
-  const operation = message.type === 'getUpdateStatus' ? updates.getStatus().then(update => ({ update })) :
+  const operation = message.type === 'getCounters' ? readCounters(message) :
+    message.type === 'getUpdateStatus' ? updates.getStatus().then(update => ({ update })) :
     message.type === 'checkForUpdates' ? updates.check().then(update => ({ update })) : enqueue(() => handle(message, sender));
   operation.then(sendResponse, error => sendResponse({ error: error.message }));
   return true;
@@ -214,4 +258,5 @@ enqueue(async () => {
   await sync(await readSettings());
   // Optional update scheduling must not hold up settings or pause restoration.
   updates.initialize().catch(() => {});
+  initializeCounters().catch(() => {});
 });
