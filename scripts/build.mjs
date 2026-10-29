@@ -52,7 +52,9 @@ const common = {
   } },
   icons: { 16: 'icons/16.png', 32: 'icons/32.png', 48: 'icons/48.png', 128: 'icons/128.png' },
   content_scripts: [{ matches: ['http://*/*', 'https://*/*'],
-    js: ['settings.js', 'content.js'], run_at: 'document_idle', all_frames: true }],
+    js: ['settings.js', 'content.js'], run_at: 'document_idle', all_frames: true },
+    { matches: ['https://www.youtube.com/*','https://www.youtube-nocookie.com/embed/*'],
+      js: ['settings.js','youtube.js'], css: ['youtube.css'], run_at: 'document_start', all_frames: true }],
   declarative_net_request: { rule_resources: [{ id: 'ads', enabled: true, path: 'rules/ads.json' }] }
 };
 
@@ -64,7 +66,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
   await cp(path.join(source, 'icons'), path.join(dest, 'icons'), { recursive: true });
   await cp(path.join(source, 'fonts'), path.join(dest, 'fonts'), { recursive: true });
   await cp(path.join(source, '_locales'), path.join(dest, '_locales'), { recursive: true });
-  for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js', 'theme.js', 'support.html', 'support.css', 'support.js', 'locale-data.js', 'i18n.js', 'fonts.css']) {
+  for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'youtube.js', 'youtube.css', 'popup.html', 'popup.css', 'popup.js', 'theme.js', 'support.html', 'support.css', 'support.js', 'locale-data.js', 'i18n.js', 'fonts.css']) {
     await cp(path.join(source, storeBuild && file === 'updates.js' ? 'store-updates.js' : file), path.join(dest, file));
   }
   await writeFile(path.join(dest, 'distribution.js'), 'globalThis.AdBlockDistribution = Object.freeze(' +

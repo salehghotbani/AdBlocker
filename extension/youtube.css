@@ -1,0 +1,14 @@
+/* Applied only after the isolated controller confirms native ad UI. The native
+   ad class is also required so an orphan marker cannot hide normal playback. */
+#movie_player.html5-video-player.ad-showing[data-adblocker-youtube="ad"] video.html5-main-video,
+#movie_player.html5-video-player.ad-showing[data-adblocker-youtube="ad"] .ytp-ad-module,
+#movie_player.html5-video-player.ad-showing[data-adblocker-youtube="ad"] .ytp-ad-player-overlay,
+#movie_player.html5-video-player.ad-showing[data-adblocker-youtube="ad"] .ytp-ad-image-overlay {
+  visibility: hidden !important;
+}
+/* Keep the native skip control usable if the site rejects a synthetic click. */
+#movie_player.html5-video-player.ad-showing[data-adblocker-youtube="ad"] .ytp-ad-skip-button,
+#movie_player.html5-video-player.ad-showing[data-adblocker-youtube="ad"] .ytp-ad-skip-button-modern,
+#movie_player.html5-video-player.ad-showing[data-adblocker-youtube="ad"] .ytp-skip-ad-button {
+  visibility: visible !important;
+}

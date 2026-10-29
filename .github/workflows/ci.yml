@@ -34,6 +34,7 @@ jobs:
         run: |
           export CHROMIUM_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")"
           npm run test:dom
+          npm run test:youtube
           npm run test:browser
           npm run test:store-browser
           npm run test:firefox

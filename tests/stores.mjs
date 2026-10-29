@@ -20,9 +20,14 @@ for (const browser of ['chrome', 'edge', 'firefox']) test(`${browser}: store pac
   if (browser === 'firefox') assert.equal(manifest.browser_specific_settings.gecko_android.strict_min_version, '142.0',
     'Android compatibility metadata keeps the data-consent minimum valid; no Android listing is claimed');
   assert.equal(await read(base + 'updates.js'), await read('extension/store-updates.js'));
-  for (const file of ['background.js', 'content.js', 'popup.js', 'popup.html', 'support.js', 'support.html', 'support.css', 'locale-data.js', 'i18n.js', 'fonts.css']) {
+  for (const file of ['background.js', 'content.js', 'youtube.js', 'youtube.css', 'popup.js', 'popup.html', 'support.js', 'support.html', 'support.css', 'locale-data.js', 'i18n.js', 'fonts.css']) {
     assert.equal(await read(base + file), await read('extension/' + file));
   }
+  const youtube = manifest.content_scripts.find(script => script.js.includes('youtube.js'));
+  assert.deepEqual(youtube.matches, ['https://www.youtube.com/*','https://www.youtube-nocookie.com/embed/*']);
+  assert.equal(youtube.run_at,'document_start');
+  assert.notEqual(youtube.world,'MAIN');
+  assert.deepEqual(youtube.css,['youtube.css']);
   for (const font of ['InterVariable.woff2', 'Shabnam.woff2', 'Shabnam-Bold.woff2']) {
     const bytes = await readFile(new URL(base + 'fonts/' + font, root));
     assert.equal(bytes.subarray(0, 4).toString(), 'wOF2');

@@ -9,6 +9,7 @@ A free, open-source ad and tracker blocker for Chrome, Edge and Firefox. The int
 ## Features
 
 - Filters third-party requests to 156 listed hosts, specific ad-script paths and Soft98/W3Schools ad placements.
+- Best-effort [YouTube in-player ad handling](docs/YOUTUBE.md): conceal/mute confirmed ads, use native Skip and restore normal media settings. Real pre-roll observed; real mid-roll validation remains incomplete.
 - Global, site and exact-URL controls, plus a one-time pause. Protection changes reload the current page automatically.
 - Light/dark themes and a gray appearance while protection is paused.
 - [Ten interface languages](docs/LANGUAGES.md), RTL layouts, bundled Shabnam for Persian/Arabic and Inter for Latin scripts; no remote fonts. Private browsing is not supported.
@@ -39,7 +40,7 @@ The [Turtlecute test](https://adblock.turtlecute.org/) reported **100% (132/132)
 
 This is one recorded benchmark, not a universal blocking rate. Some video ads and cross-site integrations may need site-specific handling; use site or URL exceptions when needed. [Test results and CI](docs/TESTING.md).
 
-The [live audit of 21 popular domains](docs/SITE-COMPATIBILITY.md) records partial coverage and unknown results explicitly. Direct banners remain on sites such as Varzesh3 and Zoomit; YouTube in-stream ad removal is unverified. Version 1.6.1 fixes the observed Soft98 content-replacement warning while retaining article/download controls.
+The [live audit of 21 popular domains](docs/SITE-COMPATIBILITY.md) records partial coverage and unknown results explicitly. Direct banners remain on sites such as Varzesh3 and Zoomit; version 1.7.0 adds [targeted YouTube handling with measured limits](docs/YOUTUBE.md). Version 1.6.1 fixes the observed Soft98 content-replacement warning while retaining article/download controls.
 
 ## Build
 

@@ -2,6 +2,13 @@
 
 **English** | [فارسی](TESTING.fa.md)
 
+## Version 1.7.0 YouTube media handling — 2026-10-29
+
+- `npm run test:youtube` decodes a self-generated WebM in Chromium: synthetic pre/mid-roll, nested native Skip, normal content completion, position/rate/mute restoration, paused media, later user edits, source changes with stale ad UI, SPA navigation and global/site/URL exceptions. Packaged integration uses the actual isolated content script; Firefox runtime repeats media checks. Fixture results are not live-ad results.
+- Real Chrome 156.0.8078.48: enable protection during the same real pre-roll, observe conceal/mute and automatic native Skip events, then visible unmuted main content at rate 1 through 49.23 seconds. No manual Skip action occurred in that run. Subsequent media-CDN HTTP 403/player failure prevents a full-playback claim. Earlier long ads sometimes remained concealed/muted with waiting.
+- Real mid-roll remains **unverified**: a separate progress-bar seek with protection OFF stalled on CDN 403. A no-extension control also failed after about 45 seconds; the user's Chrome plays normally, so environment equivalence is not established. The supplied video served no ads in isolated trials and is not counted as a blocking success. [Detailed method](YOUTUBE.md), [sanitized live observations](YOUTUBE-LIVE-2026-10-29.json).
+- CI runs deterministic media tests, existing protection/counter/DOM suites, packaging/localization, Firefox runtime and both Firefox lints. Live auctions are opt-in, excluded from CI. [Current CI](https://github.com/salehghotbani/AdBlocker/actions).
+
 ## Version 1.6.1 Soft98 compatibility and live audit — 2026-10-29
 
 - Reproduced Soft98's destructive ad-block warning with the previous display-based filter. Live checks of the patched home/article pages preserve identical description text, ordinary-link resolution and the download panel while collapsing verified ad slots. No software was downloaded. [21-domain audit and limits](SITE-COMPATIBILITY.md), [sanitized observations](SITE-AUDIT-2026-10-29.json).

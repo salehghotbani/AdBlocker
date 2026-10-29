@@ -174,8 +174,26 @@ try {
   assert.equal(await soft98.locator('#post').isVisible(),true,'Firefox preserves article after site checks');
   assert.equal(await soft98.locator('#ad-child').evaluate(el => el.getBoundingClientRect().width),200);
   await soft98.close();
+  const youtubeHtml=await readFile(path.join(root,'tests/fixtures/youtube-player.html'),'utf8');
+  const youtubeMedia=await readFile(path.join(root,'tests/fixtures/youtube-media.webm'));
+  await context.route('https://www.youtube.com/**',route=>route.fulfill({
+    contentType:new URL(route.request().url()).pathname.endsWith('.webm')?'video/webm':'text/html',
+    body:new URL(route.request().url()).pathname.endsWith('.webm')?youtubeMedia:youtubeHtml
+  }));
+  const youtube=await context.newPage();await youtube.goto('https://www.youtube.com/watch?v=YtFixture01');
+  await youtube.waitForFunction(()=>document.querySelector('video').readyState>=2);
+  await youtube.evaluate(()=>fixture.content(0,1.25));await youtube.evaluate(()=>fixture.ad(false));
+  await youtube.waitForFunction(()=>document.querySelector('#movie_player').getAttribute('data-adblocker-youtube')==='ad');
+  assert.equal(await youtube.locator('video').evaluate(video=>getComputedStyle(video).visibility),'hidden');
+  await youtube.waitForFunction(()=>!fixture.inAd&&document.querySelector('video').readyState>=2&&document.querySelector('video').currentTime>.2);
+  assert.equal(await youtube.locator('video').evaluate(video=>video.playbackRate),1.25);
+  assert.equal(await youtube.locator('video').evaluate(video=>video.muted),false);
+  await youtube.evaluate(()=>fixture.content(6,1.5));await youtube.evaluate(()=>fixture.ad(true));
+  await youtube.waitForFunction(()=>!fixture.inAd&&document.querySelector('video').readyState>=2&&document.querySelector('video').currentTime>=6);
+  assert.ok(await youtube.locator('video').evaluate(video=>video.currentTime<10&&!video.error));
+  await youtube.close();
   await mkdir(path.join(root,'artifacts'),{recursive:true});
-  await writeFile(path.join(root,'artifacts/firefox-runtime.json'),JSON.stringify({browser:context.browser()?.version(),soft98Compatibility:true,reports:[...reports.values()].map(({token:ignored,...item})=>item)},null,2)+'\n');
+  await writeFile(path.join(root,'artifacts/firefox-runtime.json'),JSON.stringify({browser:context.browser()?.version(),soft98Compatibility:true,youtubeSyntheticMedia:true,reports:[...reports.values()].map(({token:ignored,...item})=>item)},null,2)+'\n');
   await page.screenshot({path:path.join(root,'artifacts/firefox-filtered.png'),animations:'disabled'});
   console.log('PASS: actual Firefox temporary install, local network blocking, real popup, ten languages/RTL/Shabnam, counters, exceptions, pause expiry, support, local update help and Soft98 compatibility fixture');
 } finally {

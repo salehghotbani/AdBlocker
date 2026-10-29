@@ -1,5 +1,11 @@
 # Version 1.6.1 security and coverage review
 
+## Version 1.7.0 YouTube media handling — 2026-10-29
+
+The new script runs in the isolated extension world on explicit HTTPS desktop watch/embed matches, without additional permissions, remote code, stream interception, MAIN-world bridge or prototype overrides. It confirms native ad state plus presented ad UI; clicks are restricted to enabled native Skip controls. Only owned mute/rate/marker changes are restored, with source/duration changes locking acceleration to protect content handoff. It never seeks content or calls play. Runtime settings changes require the extension sender and no sender tab; settings reads retain revision guards. The temporary media identity is neither logged nor stored by the extension.
+
+Local actual-media tests exercise restoration, user overrides, exceptions and navigation in packaged Chromium/Firefox builds. Live evidence and its unresolved mid-roll/full-playback limits are [documented separately](YOUTUBE.md). Passing these checks is not a guarantee that no vulnerability or playback regression exists. No credentials, personal profiles or signed media URLs enter the public report.
+
 ## Version 1.6.1 compatibility patch — 2026-10-29
 
 The Soft98 correction uses fixed local CSS properties on existing verified placements. It adds no main-world injection, browser API override, detector/global patch, remote code, permission or domain rule. Original values and priorities are restored independently without overwriting later site edits. Protected article/form/media checks and trusted-message boundaries remain in place. Local Chromium/Firefox fixtures and DOM restoration/counter tests cover the change; live audit data is sanitized before entering this repository. This is the stated review scope, not a guarantee of zero vulnerabilities.

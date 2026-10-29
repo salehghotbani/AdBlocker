@@ -1,0 +1,22 @@
+<!doctype html><html><head><title>Synthetic YouTube player compatibility fixture</title>
+<style>#movie_player{width:640px;height:360px;position:relative}video{width:100%;height:100%}.ytp-ad-module{position:absolute;top:8px;left:8px;padding:12px;background:white;color:black}</style>
+</head><body><main><h1>Local player fixture — synthetic ads</h1>
+<div id="movie_player" class="html5-video-player"><video class="html5-main-video" playsinline src="/fixture-content.webm"></video>
+<div class="ytp-ad-module" hidden><span class="ytp-ad-text">Advertisement</span><button class="ytp-ad-skip-button" hidden>Skip ad</button></div></div></main>
+<script>
+const video=document.querySelector('video'), player=document.getElementById('movie_player'), ui=player.querySelector('.ytp-ad-module');
+let contentPosition=0, contentRate=1, pendingContentPosition=null, ad=false;
+function finishAd(){
+  if(!ad)return;ad=false;player.classList.remove('ad-showing','ad-interrupting');ui.hidden=true;
+  pendingContentPosition=contentPosition;video.src='/fixture-content.webm?resume='+Date.now();video.load();
+}
+video.addEventListener('loadedmetadata',()=>{if(pendingContentPosition!==null){video.currentTime=pendingContentPosition;video.playbackRate=contentRate;pendingContentPosition=null;video.play().catch(()=>{});}});
+video.addEventListener('ended',()=>{if(ad)finishAd();});
+player.querySelector('button').addEventListener('click',finishAd);
+window.fixture={
+  async content(position=0,rate=1.25){contentRate=rate;video.playbackRate=rate;video.currentTime=position;await video.play();},
+  async ad(skippable=false){contentPosition=video.currentTime;ad=true;ui.hidden=false;ui.querySelector('button').hidden=!skippable;player.classList.add('ad-showing','ad-interrupting');video.src='/fixture-ad.webm?ad='+Date.now();video.load();try{await video.play();}catch(error){if(error.name!=='AbortError'||ad)throw error;}},
+  finishAd,
+  get inAd(){return ad;}
+};
+</script></body></html>

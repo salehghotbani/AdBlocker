@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-29T12:17:38.041Z",
+  "browser": "156.0.8078.48",
+  "version": "1.7.0",
+  "youtubeScriptSha256": "80c501cfaf1d026f67b16f027e458d9a633808b5eb3cf35151ea7af53f983cf0",
+  "method": "Isolated anonymous Chrome; protection enabled during the same real playing pre-roll. No ad injection, stream rewrite, personal profile or advertiser click. Browser audio output muted separately.",
+  "preRoll": {
+    "manualSkipActions": 0,
+    "mediaCdn403Count": 12,
+    "automaticSkipClicks": 7,
+    "mainProperties": "Visible, rate 1, unmuted, no media error during observed interval",
+    "trustedSkipClicks": 0,
+    "mutedSamples": 28,
+    "hiddenSamples": 28,
+    "publicVideo": "https://www.youtube.com/watch?v=eFeDpUVEy48",
+    "mainPlaybackSecondsObserved": [
+      0.002517,
+      49.232813
+    ],
+    "endState": "Player error after about 49 seconds of main content; full-video reliability is not established.",
+    "adSamples": 28
+  },
+  "midRoll": {
+    "status": "Not verified with a real ad",
+    "reason": "A separate ordinary progress-bar seek with protection OFF stalled on media-CDN HTTP 403. Synthetic actual-media pre/mid-roll tests passed; they are not live-ad evidence."
+  },
+  "controls": {
+    "connectedChrome": "Computer Use stopped because browser URL could not be verified; no further connected-browser input was attempted.",
+    "noExtension": "A separate headed profile with no extension also failed around 45 seconds.",
+    "userSuppliedVideo": "No ad inventory in isolated trials; not a blocking success. User reports healthy playback and ads in their Chrome.",
+    "otherTrials": "Earlier long ads remained concealed/muted without automatic return within the observation interval. Native Skip availability/acceptance varies; waiting may remain."
+  },
+  "limits": [
+    "One successful real pre-roll is not a universal success rate.",
+    "Real mid-roll, server-inserted ads and full-video playback remain unverified.",
+    "Sample counts are polling observations, not unique-ad counts.",
+    "Cookies, signed URLs, IPs and user-supplied video identity excluded."
+  ]
+}

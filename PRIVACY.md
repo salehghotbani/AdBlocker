@@ -2,7 +2,7 @@
 
 **English** | [فارسی](PRIVACY.fa.md)
 
-This policy describes version 1.6.1 of the manual-install AdBlocker extension. Store editions have a separate [store privacy policy](store/PRIVACY.md).
+This policy describes version 1.7.0 of the manual-install AdBlocker extension. Store editions have a separate [store privacy policy](store/PRIVACY.md).
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
 - The enabled/disabled setting, interface language, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters. Private browsing is disabled in the manifest and is not supported.
@@ -15,6 +15,8 @@ This policy describes version 1.6.1 of the manual-install AdBlocker extension. S
 - Messages sent to content scripts contain only that tab's effective protection state, not the saved site or URL exceptions. Chromium also restricts direct content-script access to `storage.local`.
 - Protection changes automatically reload the current page. The tab's URL is checked first so a different page is not reloaded.
 - The popup reads the browser's native per-tab request count and counts currently filtered main-document ad placements locally. Nested placements count once. These are separate per-page measurements, not a unique-ad total or a lifetime history. Counts, document tokens and request URLs are not saved or transmitted. Missing native counts are shown as unavailable.
+
+- On supported YouTube pages, an isolated script examines native ad UI and temporary media state locally to conceal/mute ads, use Skip and restore playback settings. Media identity is kept only in memory and is not logged or transmitted by the extension. YouTube itself can observe DOM/media changes.
 
 ## Update checks
 

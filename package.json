@@ -1,6 +1,6 @@
 {
   "name": "adblocker",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -21,7 +21,9 @@
     "store:kit": "node scripts/store-kit.mjs",
     "locales": "node scripts/localize.mjs",
     "check:locales": "node scripts/localize.mjs --check",
-    "test:firefox": "node tests/firefox-runtime.mjs"
+    "test:firefox": "node tests/firefox-runtime.mjs",
+    "test:youtube": "node tests/youtube.mjs && node tests/youtube-browser.mjs",
+    "test:youtube-live": "node tests/youtube-live.mjs"
   },
   "engines": {
     "node": ">=20"

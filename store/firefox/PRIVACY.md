@@ -1,6 +1,6 @@
 # AdBlocker privacy policy — Mozilla Firefox
 
-AdBlocker store editions (version 1.6.1) are free and have no account, subscription, analytics or embedded payment processor.
+AdBlocker store editions (version 1.7.0) are free and have no account, subscription, analytics or embedded payment processor.
 
 - Advertising markers are examined locally to hide ad placements. Browser network rules block listed requests locally. Browsing history, page text, form contents and sign-in information are not collected or transmitted by the extension.
 - Global protection, language/theme preferences, selected site exceptions and explicitly saved exact-URL exceptions are kept in browser-local storage. Selected URLs can contain sensitive query parameters. One-time pauses temporarily store a tab ID and URL in session memory and expire on reload/navigation, tab closure or browser shutdown. Private/incognito browsing is disabled in the manifest and is not supported.
@@ -10,6 +10,8 @@ AdBlocker store editions (version 1.6.1) are free and have no account, subscript
 - Updates are delivered by the browser's extension store. Store builds make no GitHub release requests, schedule no update alarm, show no update notifications and download no executable code or filter lists. Extension pages enforce `connect-src 'none'`.
 - Clicking Support opens a bundled page. If financial support is configured, it displays reviewed public receiving addresses and/or an external HTTPS support link. Nothing is sent automatically. Copying an address writes it to the clipboard only after a click; clipboard contents are never read. No wallet is connected, no signature or transaction is requested, no payment is detected and no amount/address history is recorded. Public blockchain transactions may be visible to others. An external support provider or blockchain service has its own privacy practices.
 - Issue and source links open GitHub only when clicked. Those sites see normal connection information, such as the IP address, according to their own policies.
+
+- On supported YouTube pages, an isolated script examines native ad UI and temporary media state locally to conceal/mute ads, use Skip and restore playback settings. Media identity is kept only in memory and is not logged or transmitted by the extension. YouTube itself can observe DOM/media changes.
 
 ## Permissions
 

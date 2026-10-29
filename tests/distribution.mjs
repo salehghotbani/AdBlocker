@@ -33,12 +33,13 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     assert.ok(manifest.permissions.includes('notifications'));
     const paths = [manifest.action.default_popup, ...Object.values(manifest.icons),
       ...manifest.content_scripts.flatMap(script => script.js),
+      ...manifest.content_scripts.flatMap(script => script.css || []),
       ...manifest.declarative_net_request.rule_resources.map(rule => rule.path),
       ...(manifest.background.scripts || [manifest.background.service_worker])];
     for (const file of paths) assert.ok((await read(base + file)).length > 0, file);
     if (browser === 'firefox') assert.equal(manifest.background.service_worker, undefined);
     else assert.equal(manifest.background.service_worker, 'background.js');
-    for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.js', 'popup.css', 'popup.html', 'theme.js', 'support.html', 'support.css', 'support.js']) {
+    for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'youtube.js', 'youtube.css', 'popup.js', 'popup.css', 'popup.html', 'theme.js', 'support.html', 'support.css', 'support.js']) {
       assert.deepEqual(await read(base + file), await read('extension/' + file));
     }
     assert.deepEqual(await read(base + 'LICENSE.txt'), await read('LICENSE'));

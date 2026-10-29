@@ -2,6 +2,12 @@
 
 **English** | [فارسی](CHANGELOG.fa.md)
 
+## 1.7.0 — 2026-10-29
+
+- Add isolated YouTube watch/embed ad handling: confirm native ad UI, conceal/mute it, use enabled native Skip controls and attempt bounded acceleration of stable short ad media. No seeking, stream replacement, page-world injection or extra permission.
+- Restore owned media changes on ad end, source handoff, exceptions and SPA navigation; preserve pause and subsequent user/site edits.
+- Add real-media pre/mid-roll fixtures in Chromium and Firefox, package checks and opt-in real-ad observation. One real pre-roll returned to normal main playback; real mid-roll and full-video reliability remain unverified because of media-CDN failures. Some long ads retain a wait. See [YouTube results](docs/YOUTUBE.md).
+
 ## 1.6.1 — 2026-10-29
 
 - Fix Soft98 compatibility: vertically clip verified advertising placements while retaining descendant layout, preventing the observed display-based check from replacing articles with an ad-block warning. Keep the site's scripts, ordinary links and browser APIs intact.
