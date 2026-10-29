@@ -562,11 +562,12 @@ async function checkPageCounters() {
     });
     browser.setDefaultTimeout(15000);
     const origin = `http://127.0.0.1:${server.address().port}`;
-    await browser.route(`${origin}/counter-*`, route => route.fulfill({ contentType: 'text/html',
+    let counterNavigations = 0;
+    await browser.route(`${origin}/counter-*`, route => route.fulfill({ contentType: 'text/html', headers: { 'cache-control': 'no-store' },
       body: route.request().url().endsWith('/counter-blank') ? '<!doctype html><h1>Useful page</h1>' :
         `<!doctype html><h1>Useful page</h1><ins class="adsbygoogle" id="ad">Ad</ins>
         <div class="textads adsbox"><ins class="adsbygoogle">Nested ad</ins></div>
-        <script src="https://ads.doubleclick.net/counter.js"></script><script src="/pagead.js"></script>`
+        <script src="https://ads.doubleclick.net/counter.js?document=${++counterNavigations}"></script><script src="/pagead.js?document=${counterNavigations}"></script>`
     }));
     await browser.route('https://ads.doubleclick.net/**', route => route.fulfill({
       contentType: 'application/javascript', body: 'window.remoteAdLoaded = true;'
@@ -585,12 +586,17 @@ async function checkPageCounters() {
     await command({ type: 'getSettings' });
     const tabId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, page.url());
     const read = (id = tabId, url = page.url()) => command({ type: 'getCounters', tabId: id, url }).then(result => result.counters);
+    const waitForCounters = (expected, id = tabId, url = page.url()) => panel.waitForFunction(async ({ expected, id, url }) => {
+      const result = await chrome.runtime.sendMessage({ type: 'getCounters', tabId: id, url });
+      return result.counters?.requests === expected.requests && result.counters?.placements === expected.placements;
+    }, { expected, id, url });
     await panel.waitForFunction(async ({ tabId, url }) => {
       const result = await chrome.runtime.sendMessage({ type: 'getCounters', tabId, url });
       return result.counters?.requests === 0 && result.counters?.placements === 0;
     }, { tabId, url: page.url() });
     await page.goto(`${origin}/counter-fixture`);
     await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    await waitForCounters({ requests: 2, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'reads never increment counts');
     await panel.evaluate(() => chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true }));
@@ -608,22 +614,26 @@ async function checkPageCounters() {
     assert.deepEqual(await read(), { requests: 2, placements: 2 });
     await page.reload();
     await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    await waitForCounters({ requests: 2, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'same-URL reload resets native counts');
     const other = await browser.newPage();
     await other.goto(`${origin}/counter-other`);
     await other.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
     await other.evaluate(() => fetch('https://ads.doubleclick.net/extra').catch(() => {}));
     const otherId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, other.url());
+    await waitForCounters({ requests: 3, placements: 2 }, otherId, other.url());
     assert.deepEqual(await read(otherId, other.url()), { requests: 3, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'counts are isolated by tab');
     for (const [type, scope] of [['setSite', { host: '127.0.0.1' }], ['setUrl', { url: page.url() }]]) {
       await command({ type, ...scope, allowed: true });
       await page.reload();
       await page.waitForFunction(() => window.remoteAdLoaded && window.pageAdLoaded);
+      await waitForCounters({ requests: 0, placements: 0 });
       assert.deepEqual(await read(), { requests: 0, placements: 0 }, 'allowed requests do not inflate native count');
       await command({ type, ...scope, allowed: false });
       await page.reload();
       await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+      await waitForCounters({ requests: 2, placements: 2 });
       assert.deepEqual(await read(), { requests: 2, placements: 2 });
     }
     await command({ type: 'setEnabled', enabled: false });
