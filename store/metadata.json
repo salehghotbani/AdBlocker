@@ -1,0 +1,23 @@
+{
+  "defaultLanguage": "en",
+  "name": "AdBlocker — Browse without ads",
+  "summary": "Free ad blocking with site controls, live counters and no browsing-data collection.",
+  "price": "free",
+  "requiredPayment": false,
+  "languages": ["en", "fa", "ar", "es", "fr", "de", "pt-BR", "zh-CN", "ja", "tr"],
+  "privateBrowsing": false,
+  "browserPrivacyUrls": {
+    "chrome": "https://github.com/salehghotbani/AdBlocker/blob/main/store/chrome/PRIVACY.md",
+    "edge": "https://github.com/salehghotbani/AdBlocker/blob/main/store/edge/PRIVACY.md",
+    "firefox": "https://github.com/salehghotbani/AdBlocker/blob/main/store/firefox/PRIVACY.md"
+  },
+  "supportWebsite": "https://github.com/salehghotbani/AdBlocker/issues",
+  "homepage": "https://github.com/salehghotbani/AdBlocker",
+  "privacyUrl": "https://github.com/salehghotbani/AdBlocker/blob/main/store/PRIVACY.md",
+  "license": "MIT",
+  "screenshots": ["01-clean-reading.png", "02-reading-demo.png", "03-themes-and-counters.png", "04-site-controls.png", "05-optional-support.png"],
+  "firefoxScreenshots": ["firefox-filtering.png"],
+  "icon": "icon-128.png",
+  "smallPromo": "promo-small-440x280.png",
+  "marqueePromo": "promo-marquee-1400x560.png"
+}

@@ -1,6 +1,6 @@
 {
   "name": "adblocker",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -12,7 +12,16 @@
     "package": "npm run build && node scripts/package.mjs",
     "check": "node scripts/check.mjs",
     "test:dist": "node --test tests/distribution.mjs",
-    "lint:firefox": "npm exec --yes --package=web-ext@10.8.0 -- web-ext lint --source-dir dist/firefox --warnings-as-errors"
+    "lint:firefox": "npm exec --yes --package=web-ext@10.8.0 -- web-ext lint --source-dir dist/firefox --warnings-as-errors",
+    "build:stores": "node scripts/build.mjs --store",
+    "package:stores": "npm run build:stores && node scripts/package.mjs --store",
+    "test:stores": "node --test tests/stores.mjs",
+    "test:store-browser": "node tests/store-browser.mjs",
+    "store:assets": "node scripts/store-assets.mjs",
+    "store:kit": "node scripts/store-kit.mjs",
+    "locales": "node scripts/localize.mjs",
+    "check:locales": "node scripts/localize.mjs --check",
+    "test:firefox": "node tests/firefox-runtime.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -5,7 +5,7 @@
   --tint:#eaf6ef; --tint-line:#cbe6d6; --icon-bg:#f0f4f2;
   --switch-off:#84958e; --shadow:0 3px 10px #183d2910;
   --notice:#f8f0df; --notice-text:#795016; --on-accent:#fff;
-  font:12px Arial,system-ui,sans-serif;
+  font:12px var(--ui-font,system-ui,sans-serif);
 }
 @media (prefers-color-scheme:dark) {
   :root:not([data-theme="light"]) { color-scheme:dark; --bg:#0e1819; --surface:#172324; --text:#edf4f0; --muted:#a3b8b0; --line:#2c3c39; --accent:#77dfb6; --accent-hover:#9aebcd; --tint:#172f27; --tint-line:#2d5140; --icon-bg:#213230; --switch-off:#63776f; --shadow:0 3px 10px #00000014; --notice:#362d1b; --notice-text:#f3ca80; --on-accent:#10372a; }
@@ -97,7 +97,7 @@ summary { display:flex; align-items:center; gap:8px; cursor:pointer; list-style:
 summary::-webkit-details-marker { display:none; }
 summary > svg { width:14px; height:14px; margin-inline-start:auto; transition:transform .18s; }
 details[open] summary > svg { transform:rotate(180deg); }
-.count-chip { font:10px Arial,sans-serif; padding:2px 5px; min-width:18px; text-align:center; border-radius:5px; background:var(--icon-bg); }
+.count-chip { font:10px var(--ui-font,system-ui,sans-serif); padding:2px 5px; min-width:18px; text-align:center; border-radius:5px; background:var(--icon-bg); }
 .exception-actions { display:grid; gap:6px; padding-bottom:10px; }
 .exception-actions button { display:flex; justify-content:space-between; width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font-size:11px; }
 .exception-actions button:hover:enabled { background:var(--icon-bg); }
@@ -112,5 +112,7 @@ details[open] summary > svg { transform:rotate(180deg); }
 footer { display:flex; align-items:center; gap:5px; padding:12px 18px; font-size:10px; color:var(--muted); border-top:1px solid var(--line); }
 footer svg { width:12px; height:12px; }
 .version { margin-inline-start:auto; font:9px ui-monospace,monospace; }
+.support-link { padding:0 18px; font-size:11px; text-align:center; }
+.support-link a { color:var(--accent); text-underline-offset:3px; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 @media (prefers-reduced-motion:reduce) { *,*::before { transition:none !important; } }

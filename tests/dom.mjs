@@ -217,13 +217,48 @@ try {
   await w3.close();
   console.log('PASS: W3Schools promotion/ad-media slots collapse, lessons/editor/preview/tutorial media and social links remain usable, dynamic slots and exceptions work');
 
+  // Support controls use local data only. These deliberately invalid test
+  // receiving addresses never enter production configuration or artwork.
+  const support = await context.newPage();
+  await support.route('https://support-fixture.example/**', async route => {
+    const file = new URL(route.request().url()).pathname.slice(1) || 'support.html';
+    if (file === 'distribution.js') return route.fulfill({ contentType: 'application/javascript', body:
+      'globalThis.AdBlockDistribution = ' + JSON.stringify({ channel: 'chrome', support: { url: 'javascript:alert(1)',
+        crypto: [{ asset: 'USDT', network: 'tron', address: 'T'.repeat(34) }] } }) + ';' });
+    if (!['support.html', 'support.js', 'support.css', 'theme.js', 'fonts.css', 'locale-data.js', 'i18n.js', 'icons/128.png'].includes(file) && !/^fonts\/[a-zA-Z.-]+\.woff2$/.test(file)) return route.abort();
+    await route.fulfill({ body: await readFile(new URL(`extension/${file}`, root)),
+      contentType: file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : file.endsWith('.png') ? 'image/png' : 'application/javascript' });
+  });
+  await support.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { value: { async writeText(text) {
+      if (window.rejectClipboard) throw new Error('Unavailable'); window.copiedAddress = text;
+    } } });
+  });
+  await support.goto('https://support-fixture.example/');
+  await support.locator('#financial').waitFor({ state: 'visible' });
+  assert.equal(await support.locator('#financial').isVisible(), true);
+  assert.equal(await support.locator('#supportPayment').isVisible(), false, 'executable support links stay hidden');
+  assert.equal(await support.locator('#supportPayment').getAttribute('href'), null);
+  assert.match(await support.locator('.crypto-card label').textContent(), /USDT.*TRON \(TRC-20\) only/);
+  const copy = support.getByRole('button', { name: 'Copy receiving address', exact: true });
+  assert.equal(await support.evaluate(() => window.copiedAddress), undefined);
+  await copy.click();
+  assert.equal(await support.evaluate(() => window.copiedAddress), 'T'.repeat(34));
+  await support.evaluate(() => { window.rejectClipboard = true; });
+  await copy.click();
+  assert.match(await support.locator('#copyStatus').textContent(), /manually/);
+  assert.equal(await support.locator('.crypto-card input').evaluate(el => el.selectionEnd - el.selectionStart), 34);
+  assert.equal(await support.locator('script[src^="https:"]').count(), 0);
+  await support.close();
+  console.log('PASS: support is voluntary; asset/network labels, explicit copy, clipboard fallback and unsafe-link rejection work without wallet access');
+
   // Render the real popup using a mock transport only; logic and styles are real.
   const popup = await context.newPage();
   await popup.setViewportSize({ width: 390, height: 600 });
   await popup.emulateMedia({ colorScheme: 'light' });
   await popup.route('https://popup.example/**', async route => {
     const file = new URL(route.request().url()).pathname.slice(1) || 'popup.html';
-    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js', 'updates.js', 'theme.js'].includes(file) &&
+    if (!['popup.html', 'popup.css', 'popup.js', 'settings.js', 'updates.js', 'theme.js', 'distribution.js', 'locale-data.js', 'i18n.js', 'fonts.css'].includes(file) && !/^fonts\/[a-zA-Z.-]+\.woff2$/.test(file) &&
         !/^icons\/(16|32|48|128)\.png$/.test(file)) return route.abort();
     await route.fulfill({ body: await readFile(new URL(`extension/${file}`, root)),
       contentType: file.endsWith('.png') ? 'image/png' : file.endsWith('.html') ? 'text/html' : file.endsWith('.css') ? 'text/css' : 'application/javascript' });
@@ -237,8 +272,9 @@ try {
     let paused = false;
     window.chrome = {
       storage: { local: {
-        async get() { return { theme: localStorage.getItem('theme') }; },
-        async set({ theme }) {
+        async get() { return { theme: localStorage.getItem('theme'), language: localStorage.getItem('language') }; },
+        async set({ theme, language }) {
+          if (language) { if (window.rejectLanguageSave) throw new Error('Simulated storage failure'); localStorage.setItem('language', language); return; }
           if (window.rejectThemeSave) throw new Error('Simulated storage failure');
           localStorage.setItem('theme', theme);
         }
@@ -292,7 +328,7 @@ try {
   assert.equal(await popup.locator('html').getAttribute('lang'), 'en');
   assert.equal(await popup.locator('html').getAttribute('dir'), 'ltr');
   assert.equal(await popup.locator('#totalCount').textContent(), '0');
-  assert.equal(/[\u0600-\u06ff]/u.test(await popup.locator('body').innerText()), false, 'English is the default even in a Persian browser locale');
+  assert.equal(await popup.locator('#status').textContent(), 'Protection is on', 'English remains the default in a Persian browser locale; the language menu has native names');
   assert.equal(await popup.locator('#version').textContent(), `v${version}`);
   await popup.waitForFunction(() => document.getElementById('requestCount').textContent === '12');
   assert.equal(await popup.locator('#placementCount').textContent(), '3');
@@ -421,6 +457,33 @@ try {
   await popup.waitForFunction(() => document.getElementById('updateSchedule').textContent === 'Manual checks');
   assert.match(await popup.locator('#updateStatus').textContent(), /reload the extension/i);
   assert.equal(await popup.locator('#enabled').isEnabled(), true, 'optional update API failures leave protection controls usable');
+  const languages = ['en', 'fa', 'ar', 'es', 'fr', 'de', 'pt-BR', 'zh-CN', 'ja', 'tr'];
+  assert.equal(await popup.locator('#language option').count(), 10);
+  for (const language of languages) {
+    await popup.locator('#language').selectOption(language);
+    await popup.waitForFunction(language => document.documentElement.lang === language, language);
+    assert.equal(await popup.locator('html').getAttribute('dir'), ['fa', 'ar'].includes(language) ? 'rtl' : 'ltr');
+    assert.equal(await popup.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, language + ' has no horizontal overflow');
+    assert.equal(await popup.locator('#host').textContent(), 'example.com');
+    assert.equal(await popup.locator('#enabled').isChecked(), true, 'language changes do not disable protection');
+    if (language !== 'en') assert.notEqual(await popup.locator('#status').textContent(), 'Protection is on');
+    if (['fa', 'ar'].includes(language)) {
+      await popup.evaluate(() => document.fonts.load('14px Shabnam'));
+      assert.equal(await popup.evaluate(() => document.fonts.check('14px Shabnam')), true);
+      assert.match(await popup.locator('body').evaluate(el => getComputedStyle(el).fontFamily), /Shabnam/);
+    }
+  }
+  await popup.locator('#language').selectOption('fa');
+  await popup.reload();
+  await popup.waitForFunction(() => document.documentElement.lang === 'fa' && !document.getElementById('enabled').disabled);
+  assert.equal(await popup.locator('#language').inputValue(), 'fa', 'language survives reopening');
+  await popup.locator('#language').selectOption('en');
+  await popup.evaluate(() => { window.rejectLanguageSave = true; });
+  await popup.locator('#language').selectOption('fa');
+  await popup.waitForFunction(() => document.getElementById('message').textContent.includes('language'));
+  assert.equal(await popup.locator('html').getAttribute('lang'), 'en', 'failed language save restores prior language');
+  await popup.evaluate(() => { window.rejectLanguageSave = false; });
+  console.log('PASS: all ten languages render without overflow; RTL, bundled Shabnam, persistence and save-failure recovery work; no Hebrew option');
   await popup.evaluate(() => { window.fixtureTabUrl = 'https://other.example/changed'; });
   await popup.locator('#enabled').uncheck();
   await assertProtection('off');

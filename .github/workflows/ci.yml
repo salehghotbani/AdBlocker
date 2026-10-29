@@ -22,21 +22,33 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm audit --audit-level=low
       - run: npm run check
+      - run: npm run check:locales
       - run: npm run package
+      - run: npm run package:stores
       - run: npm test
       - run: npm run test:dist
-      - run: npx playwright install --with-deps chromium
+      - run: npm run test:stores
+      - run: npx playwright install --with-deps chromium firefox
       - name: DOM and extension integration
         shell: bash
         run: |
           export CHROMIUM_PATH="$(node --input-type=module -e "import { chromium } from 'playwright'; console.log(chromium.executablePath())")"
           npm run test:dom
           npm run test:browser
+          npm run test:store-browser
+          npm run test:firefox
+          npm run store:assets
       - run: npm run lint:firefox
+      - run: npm exec --yes --package=web-ext@10.8.0 -- web-ext lint --source-dir dist/stores/firefox --warnings-as-errors
+      - run: npm run store:kit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: extension-builds-and-screenshots
           path: |
             dist/*.zip
+            dist/stores/*.zip
+            dist/stores/*.txt
             artifacts/*.png
+            artifacts/firefox-runtime.json
+            store/assets/

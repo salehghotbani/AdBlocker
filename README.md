@@ -4,21 +4,25 @@
 
 **English** | [فارسی](README.fa.md)
 
-An ad and tracker blocker for Chrome, Edge and Firefox. The interface and primary documentation are in English; Persian guides are available in `.fa.md` files. Browsing history and page content are not collected.
+A free, open-source ad and tracker blocker for Chrome, Edge and Firefox. The interface starts in English and supports ten selectable languages; primary documentation is English with `.fa.md` Persian guides. Browsing history and page content are not collected.
 
 ## Features
 
 - Filters third-party requests to 156 listed hosts, specific ad-script paths and Soft98/W3Schools ad placements.
 - Global, site and exact-URL controls, plus a one-time pause. Protection changes reload the current page automatically.
 - Light/dark themes and a gray appearance while protection is paused.
+- [Ten interface languages](docs/LANGUAGES.md), RTL layouts, bundled Shabnam for Persian/Arabic and Inter for Latin scripts; no remote fonts. Private browsing is not supported.
 - Live per-page counters for blocked requests and hidden ad placements, plus the browser's request-count badge. Counts are separate: several requests can belong to one ad. Placement counts cover the main document; unavailable values show a dash. No counter history is saved.
-- Manual update checks and automatic checks every three days, with a notification and release link. No automatic installation; manual checks remain usable if optional APIs are unavailable.
+- Store editions delegate updates to the browser, without GitHub checks or update-notification permissions. Manual-install editions retain the optional three-day GitHub update checks.
+- Every blocking feature is free. [Voluntary support](SUPPORT.md) never unlocks a feature or buys an advertising exception.
 
 | Light | Dark |
 | --- | --- |
 | <img src="docs/images/popup-light.png" width="250" alt="English light theme"> | <img src="docs/images/popup-dark.png" width="250" alt="English dark theme"> |
 
 ## Install and update
+
+Store submissions are being prepared; no approved store listing is claimed. [Submission guide, English/Persian descriptions and images](store/SUBMISSION.md). Build the three upload ZIPs with `npm run package:stores`; assemble the source, images and documentation with `npm run store:kit`. Store editions and manual-install packages have separate update channels.
 
 Download and extract your browser's ZIP from the [latest release](https://github.com/salehghotbani/AdBlocker/releases/latest).
 
@@ -41,6 +45,6 @@ Requires Node.js 20+ and Python 3. Run `npm run build` or `npm run package`; bro
 
 ## License
 
-[MIT](LICENSE) — © 2026 Saleh Ghotbani. Use, modification and redistribution are permitted with the copyright and license notice retained. Provided without warranty.
+[MIT](LICENSE) — © 2026 Saleh Ghotbani. Use, modification and redistribution are permitted with the copyright and license notice retained. Bundled fonts retain their [own licenses](extension/fonts/README.md). Provided without warranty.
 
 [Privacy](PRIVACY.md) · [Changelog](CHANGELOG.md) · [Security reporting](SECURITY.md) · [Security review](docs/SECURITY-REVIEW.md)

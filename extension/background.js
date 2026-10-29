@@ -1,5 +1,5 @@
 /* Chromium service worker / Firefox background script. */
-if (typeof importScripts === 'function') importScripts('settings.js', 'updates.js');
+if (typeof importScripts === 'function') importScripts('distribution.js', 'settings.js', 'updates.js');
 const api = globalThis.browser || chrome;
 const { normalize, hostname, isAllowed, allowRules, pageUrl, urlRule } = AdBlockSettings;
 let pending = Promise.resolve();

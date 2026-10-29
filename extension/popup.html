@@ -6,6 +6,7 @@
   <title>AdBlocker</title>
   <script src="theme.js"></script>
   <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="fonts.css">
 </head>
 <body>
   <svg class="svg-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -27,6 +28,7 @@
     </div>
     <span id="themeStatus" class="sr-only" role="status"></span>
   </header>
+  <div class="language-bar"><label for="language"><svg aria-hidden="true"><use href="#globe"/></svg>Language</label><select id="language" data-language-picker aria-label="Language"></select></div>
   <main>
     <section class="protection" id="protection" data-state="loading" aria-labelledby="status">
       <span class="protection-icon"><img class="brand-logo" src="icons/128.png" width="30" height="30" alt=""></span>
@@ -59,7 +61,8 @@
       <a id="updateLink" target="_blank" rel="noopener noreferrer" hidden>View and download the update</a>
     </section>
   </main>
+  <p class="support-link"><a href="support.html" target="_blank" rel="noopener noreferrer">Support this free project</a></p>
   <footer><svg aria-hidden="true"><use href="#lock"/></svg><span>No tracking. Settings stay on your device.</span><span id="version" class="version" dir="ltr"></span></footer>
-  <script src="settings.js"></script><script src="updates.js"></script><script src="popup.js"></script>
+  <script src="distribution.js"></script><script src="locale-data.js"></script><script src="i18n.js"></script><script src="settings.js"></script><script src="updates.js"></script><script src="popup.js"></script>
 </body>
 </html>

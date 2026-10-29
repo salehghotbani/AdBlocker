@@ -1,0 +1,1 @@
+AdBlockI18n.initialize();

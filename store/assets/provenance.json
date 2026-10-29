@@ -1,0 +1,7 @@
+{
+  "version": "1.6.0",
+  "content": "Local English reading demonstration; actual store-edition popup and filtering; no live-site screenshots or mock counters.",
+  "firefox": "This harness exercises Chromium only; Firefox is tested separately by tests/firefox-runtime.mjs.",
+  "artwork": "HTML/CSS frames around genuine UI captures; no fabricated counts, ratings, store approvals or third-party branding.",
+  "firefoxImages": "Unannotated reading-demo capture from an actual Firefox temporary installation. Runtime report is artifacts/firefox-runtime.json."
+}

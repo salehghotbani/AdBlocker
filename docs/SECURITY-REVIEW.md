@@ -1,4 +1,14 @@
-# Version 1.5.0 security and coverage review
+# Version 1.6.0 security and coverage review
+
+## Version 1.6.0 store channels and voluntary support — 2026-10-29
+
+Store builds replace the manual updater with a local module that opens a fixed native extension-manager URL where supported, or bundled localized help in Firefox. Actual Firefox testing rejected direct about:addons navigation. The module makes no fetch, schedules no alarm, installs no update, requests no update permission and never claims a latest-version check. CSP removes the GitHub exception (`connect-src 'none'`). Blocking/message authorization are shared with the manual edition.
+
+The support page is bundled and optional. All blocking remains free. Build-time support configuration rejects non-HTTPS/credentialed/executable links, unknown fields (including secrets), invalid address formats, unsupported network identifiers and duplicate asset/network entries. This is syntax validation, not ownership, checksum or token verification; the creator must verify receiving details before publication. Rendered labels use textContent/read-only inputs; there is no HTML interpolation, remote widget, wallet SDK, automatic clipboard read, signature or transaction flow. Address copy is user-initiated and has manual fallback. Unconfigured financial support stays hidden rather than using a sample destination.
+
+Ten-language translations and licensed fonts are local and rendered as text. Locale choices are allowlisted; default/fallback is English, failed writes restore the previous selection and RTL is explicit. No translation/font server is contacted. Private browsing is explicitly disabled to avoid retaining private-session URLs. Edge's public privacy/listing files are browser-specific. Test-only Firefox drivers are confined to an isolated copy and excluded from upload packages.
+
+Tests cover store isolation, unsafe configuration, copy/fallback, CSP, packaged fonts/locales/licenses and ZIP contents. Chromium and real Firefox runtime tests use controlled demonstration content. Accounts, verified receiving details and final store review remain publication requirements. See [policy preflight](../store/POLICY-REVIEW.md), [submission instructions](../store/SUBMISSION.md) and [validation results](TESTING.md).
 
 ## Version 1.5.0 local counters — 2026-10-29
 

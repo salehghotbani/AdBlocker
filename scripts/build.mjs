@@ -1,9 +1,12 @@
 import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { validateSupport } from './support-config.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const source = path.join(root, 'extension');
+const storeBuild = process.argv.includes('--store');
+const support = validateSupport(JSON.parse(await readFile(path.join(root, 'config/support.json'), 'utf8')));
 const { version } = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const domains = JSON.parse(await readFile(path.join(source, 'ad-domains.json'), 'utf8'));
 if (new Set(domains).size !== domains.length ||
@@ -35,10 +38,12 @@ rules.push({
 
 const common = {
   manifest_version: 3,
-  name: 'AdBlocker — Browse without ads',
+  name: '__MSG_extensionName__',
+  default_locale: 'en',
+  incognito: 'not_allowed',
   version,
-  description: 'Block ads and tracking requests with site exceptions and no browsing-data collection.',
-  permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation', 'alarms', 'notifications'],
+  description: '__MSG_extensionDescription__',
+  permissions: ['storage', 'declarativeNetRequest', 'activeTab', 'webNavigation', ...(storeBuild ? [] : ['alarms', 'notifications'])],
   content_security_policy: { extension_pages:
     "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; connect-src https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest; frame-src 'none'; form-action 'none'; frame-ancestors 'none'" },
   host_permissions: ['http://*/*', 'https://*/*'],
@@ -52,20 +57,32 @@ const common = {
 };
 
 for (const browser of ['chrome', 'edge', 'firefox']) {
-  const dest = path.join(root, 'dist', browser);
+  const dest = path.join(root, 'dist', ...(storeBuild ? ['stores'] : []), browser);
+  if (!path.resolve(dest).startsWith(path.join(root, 'dist') + path.sep)) throw new Error('Unexpected build directory');
   await rm(dest, { recursive: true, force: true });
   await mkdir(path.join(dest, 'rules'), { recursive: true });
   await cp(path.join(source, 'icons'), path.join(dest, 'icons'), { recursive: true });
-  for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js', 'theme.js']) {
-    await cp(path.join(source, file), path.join(dest, file));
+  await cp(path.join(source, 'fonts'), path.join(dest, 'fonts'), { recursive: true });
+  await cp(path.join(source, '_locales'), path.join(dest, '_locales'), { recursive: true });
+  for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.html', 'popup.css', 'popup.js', 'theme.js', 'support.html', 'support.css', 'support.js', 'locale-data.js', 'i18n.js', 'fonts.css']) {
+    await cp(path.join(source, storeBuild && file === 'updates.js' ? 'store-updates.js' : file), path.join(dest, file));
   }
+  await writeFile(path.join(dest, 'distribution.js'), 'globalThis.AdBlockDistribution = Object.freeze(' +
+    JSON.stringify({ channel: storeBuild ? browser : 'github', support }) + ');\n');
   await cp(path.join(root, 'LICENSE'), path.join(dest, 'LICENSE.txt'));
   for (const file of ['PRIVACY.md', 'PRIVACY.fa.md', 'PRIVACY.en.md', 'SECURITY.md', 'SECURITY.fa.md', 'SECURITY.en.md']) {
     await cp(path.join(root, file), path.join(dest, file));
   }
   const manifest = { ...common };
+  if (storeBuild) {
+    if (browser === 'firefox') for (const file of ['update-help.html', 'update-help.js']) await cp(path.join(source, file), path.join(dest, file));
+    manifest.content_security_policy = { extension_pages: common.content_security_policy.extension_pages.replace(
+      'connect-src https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest', "connect-src 'none'") };
+    await cp(path.join(root, `store/${browser}/PRIVACY.md`), path.join(dest, 'PRIVACY.md'));
+    await cp(path.join(root, `store/${browser}/PRIVACY.fa.md`), path.join(dest, 'PRIVACY.fa.md'));
+  }
   if (browser === 'firefox') {
-    manifest.background = { scripts: ['settings.js', 'updates.js', 'background.js'] };
+    manifest.background = { scripts: ['distribution.js', 'settings.js', 'updates.js', 'background.js'] };
     manifest.browser_specific_settings = { gecko: {
       id: 'adblocker@salehghotbani.local', strict_min_version: '140.0',
       data_collection_permissions: { required: ['none'] }

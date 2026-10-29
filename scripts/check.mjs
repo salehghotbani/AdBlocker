@@ -23,6 +23,7 @@ async function collectDocuments(dir) {
   }
 }
 await collectDocuments('docs');
+await collectDocuments('store');
 for (const file of documents) {
   const text = await readFile(path.join(root, file), 'utf8');
   const targets = [...text.matchAll(/\]\(([^)]+)\)|src="([^"]+)"/g)].map(match => match[1] || match[2]);

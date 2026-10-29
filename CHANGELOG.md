@@ -2,6 +2,15 @@
 
 **English** | [فارسی](CHANGELOG.fa.md)
 
+## 1.6.0 — 2026-10-29
+
+- Add ten selectable languages with English default, localized store descriptions, RTL/persistence/recovery checks and locally bundled Shabnam/Inter with licenses; Hebrew is not included.
+- Redesign listing images as English-only, generic reading previews without named-site claims. Add a genuine Firefox runtime capture and browser-specific privacy policies. Disable private browsing explicitly.
+- Add separate Chrome, Edge and Firefox store submission builds with browser-managed updates, no GitHub release requests, no alarms/notifications permissions and extension-page `connect-src 'none'`.
+- Keep all blocking features free and add a bundled voluntary-support page focused on maintaining Persian-site filters. Reviewed public HTTPS links or explicit asset/network/receiving-address entries can be configured; no sample address is used in production. No wallet connection, transaction, signature or payment tracking is implemented.
+- Prepare English/Persian listings, store privacy policies, reviewer notes, source/upload ZIPs, correctly sized images and a reproducible submission kit. Public listing submission still requires the publisher's accounts and store review.
+- Add actual Firefox temporary-install tests for filtering, the real popup, all languages/fonts, controls and support. Replace the disallowed direct about:addons action with bundled localized update help. Keep store review and minimum-version/device coverage distinct from automated tests.
+
 ## 1.5.0 — 2026-10-29
 
 - Add separate live counters for blocked requests and hidden main-document ad placements, a refresh button, and the browser's per-tab request-count badge. The popup refreshes every two seconds while open.

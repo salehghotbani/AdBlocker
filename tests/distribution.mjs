@@ -13,7 +13,9 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     const manifest = await json(`${base}manifest.json`);
     assert.equal(manifest.manifest_version, 3);
     assert.equal(manifest.version, (await json('package.json')).version);
-    assert.equal(manifest.name, 'AdBlocker — Browse without ads');
+    assert.equal(manifest.name, '__MSG_extensionName__');
+    assert.equal(manifest.default_locale, 'en');
+    assert.equal(manifest.incognito, 'not_allowed');
     assert.equal(/[\u0600-\u06ff]/u.test(manifest.description), false, 'browser listing metadata defaults to English');
     const popup = (await read(base + 'popup.html')).toString();
     assert.ok(popup.includes('lang="en" dir="ltr"'));
@@ -36,7 +38,7 @@ for (const browser of ['chrome', 'edge', 'firefox']) {
     for (const file of paths) assert.ok((await read(base + file)).length > 0, file);
     if (browser === 'firefox') assert.equal(manifest.background.service_worker, undefined);
     else assert.equal(manifest.background.service_worker, 'background.js');
-    for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.js', 'popup.css', 'popup.html', 'theme.js']) {
+    for (const file of ['settings.js', 'updates.js', 'background.js', 'content.js', 'popup.js', 'popup.css', 'popup.html', 'theme.js', 'support.html', 'support.css', 'support.js']) {
       assert.deepEqual(await read(base + file), await read('extension/' + file));
     }
     assert.deepEqual(await read(base + 'LICENSE.txt'), await read('LICENSE'));
