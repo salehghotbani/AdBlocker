@@ -24,9 +24,17 @@ const html = `<!doctype html><html><body>
 <script src="/widget/ads.fixture.js"></script>
 <script src="/reader.js?reference=/widget/ads.js"></script>
 </body></html>`;
-let fixtureNavigations = 0;
+let fixtureNavigations = 0, counterNavigations = 0;
 const server = http.createServer((req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  if (req.url.startsWith('/adblocker-fixture.js') || req.url.startsWith('/counter.js')) {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.end(req.url.startsWith('/counter.js') ? 'window.remoteAdLoaded = true;' : 'window.adScriptLoaded = true;');
+    return;
+  }
+  if (req.url.startsWith('/adblocker-probe') || ['/late-paused','/after-pause','/extra'].includes(req.url)) {
+    res.setHeader('Content-Type', 'text/plain'); res.end('Native local network fixture'); return;
+  }
   if (/^\/(pagead\.js|widget\/ads\.fixture\.js|reader\.js)/.test(req.url)) {
     res.setHeader('Content-Type', 'application/javascript');
     res.end(req.url.startsWith('/reader.js') ? 'window.readerLoaded = true;' :
@@ -34,14 +42,25 @@ const server = http.createServer((req, res) => {
     return;
   }
   res.setHeader('Content-Type', 'text/html');
+  if (req.url.startsWith('/counter-')) {
+    res.end(req.url === '/counter-blank' ? '<!doctype html><h1>Useful page</h1>' :
+      `<!doctype html><h1>Useful page</h1><ins class="adsbygoogle" id="ad">Ad</ins>
+      <div class="textads adsbox"><ins class="adsbygoogle">Nested ad</ins></div>
+      <script src="${adOrigin}/counter.js?document=${++counterNavigations}"></script><script src="/pagead.js?document=${counterNavigations}"></script>`);
+    return;
+  }
   // A fresh resource URL prevents earlier blocked/routed loads from being
   // reused across different document-policy scenarios. Every scenario still
   // requires actual execution or explicit client blocking of the same host.
   res.end(req.url.startsWith('/frame') ? '<p>Useful embedded content</p>' : html.replace(
     'https://ads.doubleclick.net/adblocker-fixture.js',
-    `https://ads.doubleclick.net/adblocker-fixture.js?document=${++fixtureNavigations}`));
+    `${adOrigin}/adblocker-fixture.js?document=${++fixtureNavigations}`));
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+const adOrigin = `http://ads.doubleclick.net:${server.address().port}`;
+// Only fixture hostnames are resolved to loopback. No production manifest,
+// browser profile or system DNS setting is modified.
+const nativeArgs = ['--no-proxy-server', '--host-resolver-rules=MAP ads.doubleclick.net 127.0.0.1'];
 let context;
 try {
   context = await chromium.launchPersistentContext(profile, {
@@ -49,13 +68,10 @@ try {
     headless: true,
     locale: 'fa-IR',
     ignoreDefaultArgs: ['--disable-extensions'],
-    args: ['--no-sandbox', `--disable-extensions-except=${extension}`, `--load-extension=${extension}`]
+    args: ['--no-sandbox', ...nativeArgs, `--disable-extensions-except=${extension}`, `--load-extension=${extension}`]
   });
   context.setDefaultTimeout(15000);
   // Satisfy external fixtures locally; no external website is contacted by this test.
-  await context.route('https://ads.doubleclick.net/**', route => route.fulfill({
-    contentType: 'application/javascript', headers: { 'cache-control': 'no-store' }, body: 'window.adScriptLoaded = true;'
-  }));
   await context.route('https://*/adblocker-probe', route => route.fulfill({
     contentType: 'text/plain', body: 'Local network fixture'
   }));
@@ -161,10 +177,10 @@ try {
     'www.hotjar.com', 'www.segment.com', 'kaprila.com', 'faradars.org',
     'soft98.ir', 'forum.soft98.ir', 'img.soft98.ir', 'file3.soft98.ir', 'cdn.hostdl.com',
     'www.w3schools.com', 'campus.w3schools.com', 'order.w3schools.com', 'profile.w3schools.com'];
-  const probe = hosts => page.evaluate(hosts => Promise.all(hosts.map(async host => {
-    try { await fetch(`https://${host}/adblocker-probe`, { method: 'HEAD', mode: 'no-cors' }); return false; }
+  const probe = (hosts, port = null) => page.evaluate(({ hosts, port }) => Promise.all(hosts.map(async host => {
+    try { await fetch(`${port ? 'http://' + host + ':' + port : 'https://' + host}/adblocker-probe`, { method: 'HEAD', mode: 'no-cors' }); return false; }
     catch { return true; }
-  })), hosts);
+  })), { hosts, port });
   assert.ok((await probe(trackerHosts)).every(Boolean), 'every advertising/tracking domain is blocked');
   for (const host of trackerHosts) {
     assert.ok(failures.some(failure => failure.url === `https://${host}/adblocker-probe` &&
@@ -192,6 +208,14 @@ try {
     'same-site dashboard-to-API requests remain allowed');
   await providerPage.close();
   console.log('PASS: six newly restricted hosts still allow direct navigation, first-party scripts/fetches and same-site API use');
+  await command({ type: 'setSite', host: '127.0.0.1', allowed: true });
+  assert.ok((await probe(domains)).every(blocked => !blocked), 'site exception permits every routed tracker-host fixture');
+  await command({ type: 'setSite', host: '127.0.0.1', allowed: false });
+  // Allowance, pause and native-count tests below use real loopback HTTP traffic
+  // with DNS-mapped ad hosts, without Playwright request interception.
+  await context.unrouteAll({ behavior: 'wait' });
+  await page.reload();
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
   for (const id of ['story', 'player', 'login', 'ordinary', 'protected', 'safe-frame']) {
     assert.equal(await page.locator(`#${id}`).isVisible(), true, `${id} must be preserved`);
   }
@@ -212,7 +236,7 @@ try {
   await page.reload();
   assert.equal(await page.evaluate(() => window.adScriptLoaded), true);
   assert.equal(await page.evaluate(() => window.pageAdLoaded && window.widgetAdLoaded), true);
-  assert.ok((await probe(domains)).every(blocked => !blocked), 'site exception permits all tracker requests');
+  assert.ok((await probe(['ads.doubleclick.net'], server.address().port)).every(blocked => !blocked), 'site exception permits native local cross-origin requests');
   assert.equal(await page.locator('#ad').isVisible(), true);
   console.log('PASS: site exception restores cosmetic styles and allows network resources after reload');
   await command({ type: 'setSite', host: '127.0.0.1', allowed: false });
@@ -273,7 +297,7 @@ try {
   await command({ type: 'setPause', tabId, url: page.url(), paused: true });
   await page.waitForFunction(() => window.adScriptLoaded === true);
   assert.equal((await popup.evaluate(tabId => chrome.runtime.sendMessage({ type: 'getSettings', tabId }), tabId)).paused, true);
-  assert.equal(await page.evaluate(() => fetch('https://ads.doubleclick.net/late-paused', { mode: 'no-cors' }).then(() => true, () => false)), true,
+  assert.equal(await page.evaluate(url => fetch(url, { mode: 'no-cors' }).then(() => true, () => false), adOrigin + '/late-paused'), true,
     'the committed paused document retains its allowance for late requests');
   const other = await context.newPage();
   await other.goto(url + '/paused');
@@ -287,7 +311,7 @@ try {
   // synchronous browser guarantee that the API does not provide.
   assert.equal((await command({ type: 'getSettings', tabId })).paused, false);
   assert.equal(await popup.evaluate(async () => (await chrome.declarativeNetRequest.getSessionRules()).length), 0);
-  assert.equal(await page.evaluate(() => fetch('https://ads.doubleclick.net/after-pause', { mode: 'no-cors' }).then(() => true, () => false)), false);
+  assert.equal(await page.evaluate(url => fetch(url, { mode: 'no-cors' }).then(() => true, () => false), adOrigin + '/after-pause'), false);
   console.log('PASS: permanent URL distinguishes paths/query; pause is tab-isolated, expires on reload and restores network blocking after expiry');
   await page.bringToFront();
   await popup.reload();
@@ -482,12 +506,9 @@ async function checkMissingUpdatePermissions() {
     compatContext = await chromium.launchPersistentContext(compatProfile, {
       executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true,
       ignoreDefaultArgs: ['--disable-extensions'],
-      args: ['--no-sandbox', `--disable-extensions-except=${compatExtension}`, `--load-extension=${compatExtension}`]
+      args: ['--no-sandbox', ...nativeArgs, `--disable-extensions-except=${compatExtension}`, `--load-extension=${compatExtension}`]
     });
     compatContext.setDefaultTimeout(15000);
-    await compatContext.route('https://ads.doubleclick.net/**', route => route.fulfill({
-      contentType: 'application/javascript', body: 'window.adScriptLoaded = true;'
-    }));
     await compatContext.route('https://api.github.com/repos/salehghotbani/AdBlocker/releases/latest', route => route.fulfill({
       contentType: 'application/json', body: JSON.stringify({ tag_name: 'v9.0.0', draft: false, prerelease: false })
     }));
@@ -510,6 +531,7 @@ async function checkMissingUpdatePermissions() {
     assert.equal(update.notificationsAvailable, false);
     assert.equal(await panel.locator('#updateSchedule').textContent(), 'Manual checks');
     assert.match(await panel.locator('#updateStatus').textContent(), /reload the extension/i);
+    await compatContext.unrouteAll({ behavior: 'wait' });
     const page = await compatContext.newPage();
     await page.goto(`http://127.0.0.1:${server.address().port}/missing-updates`);
     await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
@@ -525,7 +547,7 @@ async function checkMissingUpdatePermissions() {
     await page.reload();
     await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
     assert.equal((await command({ type: 'getSettings', tabId })).paused, false);
-    assert.equal(await page.evaluate(() => fetch('https://ads.doubleclick.net/after-pause', { mode: 'no-cors' }).then(() => true, () => false)), false);
+    assert.equal(await page.evaluate(url => fetch(url, { mode: 'no-cors' }).then(() => true, () => false), adOrigin + '/after-pause'), false);
     console.log('PASS: missing alarms/notifications permissions preserve manual update checks, network controls and pause expiry in the actual browser');
   } finally {
     await compatContext?.close();
@@ -558,20 +580,10 @@ async function checkPageCounters() {
     browser = await chromium.launchPersistentContext(counterProfile, {
       executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true,
       ignoreDefaultArgs: ['--disable-extensions'],
-      args: ['--no-sandbox', `--disable-extensions-except=${copy}`, `--load-extension=${copy}`]
+      args: ['--no-sandbox', ...nativeArgs, `--disable-extensions-except=${copy}`, `--load-extension=${copy}`]
     });
     browser.setDefaultTimeout(15000);
     const origin = `http://127.0.0.1:${server.address().port}`;
-    let counterNavigations = 0;
-    await browser.route(`${origin}/counter-*`, route => route.fulfill({ contentType: 'text/html', headers: { 'cache-control': 'no-store' },
-      body: route.request().url().endsWith('/counter-blank') ? '<!doctype html><h1>Useful page</h1>' :
-        `<!doctype html><h1>Useful page</h1><ins class="adsbygoogle" id="ad">Ad</ins>
-        <div class="textads adsbox"><ins class="adsbygoogle">Nested ad</ins></div>
-        <script src="https://ads.doubleclick.net/counter.js?document=${++counterNavigations}"></script><script src="/pagead.js?document=${counterNavigations}"></script>`
-    }));
-    await browser.route('https://ads.doubleclick.net/**', route => route.fulfill({
-      contentType: 'application/javascript', body: 'window.remoteAdLoaded = true;'
-    }));
     const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
     const page = await browser.newPage();
     await page.goto(`${origin}/counter-blank`);
@@ -629,7 +641,7 @@ async function checkPageCounters() {
     const other = await browser.newPage();
     await other.goto(`${origin}/counter-other`);
     await other.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
-    await other.evaluate(() => fetch('https://ads.doubleclick.net/extra').catch(() => {}));
+    await other.evaluate(url => fetch(url).catch(() => {}), adOrigin + '/extra');
     const otherId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, other.url());
     await waitForCounters({ requests: 3, placements: 2 }, otherId, other.url());
     assert.deepEqual(await read(otherId, other.url()), { requests: 3, placements: 2 });
