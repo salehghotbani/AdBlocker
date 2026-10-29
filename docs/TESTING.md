@@ -10,7 +10,7 @@
 - Actual Firefox 153 test-build temporary installation exercises the real popup with test-only drivers in an isolated copy: local ad-script requests explicitly fail without reaching the server; counters, site/URL controls, pause expiry, all ten languages/RTL/Shabnam, themes, support and update help pass. Drivers are absent from upload ZIPs. Direct about:addons opening was rejected by Firefox; the action now opens bundled localized instructions, which are tested in the actual browser.
 - Five 1280×800 English-only images, an icon and 440×280 / 1400×560 promos use real interface captures without locale/site claims. A separate unannotated image is captured in actual Firefox. No live-site, store approval, rating or percentage is invented. Typeface files are official releases with licenses.
 - Firefox lint, runtime testing and store review remain distinct. The runtime suite tests its reported browser version, not every minimum version/device. Wallet ownership/payment receipt and public publication are untested; no receiving destination is invented. Private browsing is disabled in manifests. [Policy preflight](../store/POLICY-REVIEW.md).
-- Final CI is linked from the repository's [Actions page](https://github.com/salehghotbani/AdBlocker/actions). Store approval and account onboarding are separate from CI.
+- [CI run 40850884220](https://github.com/salehghotbani/AdBlocker/actions/runs/40850884220) passed for implementation commit `fbebb5246b4f9e69a80f7d9ff05be354b797b279`, including actual Chromium/Firefox integration, both Firefox lint checks with zero errors/warnings/notices, store artwork and submission-kit assembly. Store approval and account onboarding are separate from CI.
 
 ## Version 1.5.0 page counters — 2026-10-29
 
