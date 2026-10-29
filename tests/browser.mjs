@@ -46,7 +46,19 @@ const server = http.createServer((req, res) => {
     res.end(req.url === '/counter-blank' ? '<!doctype html><h1>Useful page</h1>' :
       `<!doctype html><h1>Useful page</h1><ins class="adsbygoogle" id="ad">Ad</ins>
       <div class="textads adsbox"><ins class="adsbygoogle">Nested ad</ins></div>
-      <script src="${adOrigin}/counter.js?document=${++counterNavigations}"></script><script src="/pagead.js?document=${counterNavigations}"></script>`);
+      <script>
+      // Counter traffic starts explicitly after navigation/count reset. The
+      // earlier policy matrix separately covers parser/preloader blocking.
+      window.startCounterTraffic = async () => {
+        for (const url of ['${adOrigin}/counter.js?document=${++counterNavigations}', '/pagead.js?document=${counterNavigations}']) {
+          await new Promise(resolve => {
+            const script = document.createElement('script');
+            script.onload = script.onerror = resolve; script.src = url;
+            document.body.append(script);
+          });
+        }
+      };
+      </script>`);
     return;
   }
   // A fresh resource URL prevents earlier blocked/routed loads from being
@@ -634,12 +646,19 @@ async function checkPageCounters() {
       const native = await panel.evaluate(id => chrome.declarativeNetRequest.getMatchedRules({ tabId: id }), id);
       throw new Error(`Native counters did not settle: ${JSON.stringify({ expected, samples: samples.slice(-10), native })}`);
     };
+    const startTraffic = async (target = page, id = tabId, placements = 2) => {
+      // Keep navigation's native reset separate from the requests being counted.
+      // Do not retry loads or accept a smaller count when blocking is expected.
+      await waitForCounters({ requests: 0, placements }, id, target.url());
+      await target.evaluate(() => window.startCounterTraffic());
+    };
     await panel.waitForFunction(async ({ tabId, url }) => {
       const result = await chrome.runtime.sendMessage({ type: 'getCounters', tabId, url });
       return result.counters?.requests === 0 && result.counters?.placements === 0;
     }, { tabId, url: page.url() });
     await page.goto(`${origin}/counter-fixture`);
     await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    await startTraffic();
     await waitForCounters({ requests: 2, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'reads never increment counts');
@@ -658,30 +677,36 @@ async function checkPageCounters() {
     assert.deepEqual(await read(), { requests: 2, placements: 2 });
     await page.reload();
     await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+    await startTraffic();
     await waitForCounters({ requests: 2, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'same-URL reload resets native counts');
     const other = await browser.newPage();
     await other.goto(`${origin}/counter-other`);
     await other.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
-    await other.evaluate(url => fetch(url).catch(() => {}), adOrigin + '/extra');
     const otherId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, other.url());
+    await startTraffic(other, otherId);
+    await other.evaluate(url => fetch(url).catch(() => {}), adOrigin + '/extra');
     await waitForCounters({ requests: 3, placements: 2 }, otherId, other.url());
     assert.deepEqual(await read(otherId, other.url()), { requests: 3, placements: 2 });
     assert.deepEqual(await read(), { requests: 2, placements: 2 }, 'counts are isolated by tab');
     for (const [type, scope] of [['setSite', { host: '127.0.0.1' }], ['setUrl', { url: page.url() }]]) {
       await command({ type, ...scope, allowed: true });
       await page.reload();
+      await startTraffic(page, tabId, 0);
       await page.waitForFunction(() => window.remoteAdLoaded && window.pageAdLoaded);
       await waitForCounters({ requests: 0, placements: 0 });
       assert.deepEqual(await read(), { requests: 0, placements: 0 }, 'allowed requests do not inflate native count');
       await command({ type, ...scope, allowed: false });
       await page.reload();
       await page.waitForFunction(() => getComputedStyle(document.getElementById('ad')).display === 'none');
+      await startTraffic();
       await waitForCounters({ requests: 2, placements: 2 });
       assert.deepEqual(await read(), { requests: 2, placements: 2 });
     }
     await command({ type: 'setEnabled', enabled: false });
     await page.reload();
+    // Global disable deliberately reports the native count as unavailable.
+    await page.evaluate(() => window.startCounterTraffic());
     await page.waitForFunction(() => window.remoteAdLoaded && window.pageAdLoaded);
     assert.equal((await read()).placements, 0);
     await command({ type: 'setEnabled', enabled: true });
