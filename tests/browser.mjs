@@ -91,6 +91,16 @@ try {
   // Capture notification API calls without showing synthetic v9.0.0 OS toasts.
   await worker.evaluate(() => {
     globalThis.updateNotificationCalls = [];
+    globalThis.navigationTrace = [];
+    for (const [name, source] of [['before', chrome.webNavigation.onBeforeNavigate], ['committed', chrome.webNavigation.onCommitted]]) {
+      source.addListener(details => {
+        if (details.frameId !== 0) return;
+        const record = { name, tabId: details.tabId, url: details.url, documentId: details.documentId, timeStamp: details.timeStamp };
+        globalThis.navigationTrace.push(record);
+        if (globalThis.navigationTrace.length > 40) globalThis.navigationTrace.shift();
+        chrome.storage.session.get('pausedTabs').then(value => { record.pauses = value.pausedTabs; });
+      });
+    }
     chrome.notifications.create = async (id, options) => {
       globalThis.updateNotificationCalls.push({ id, options }); return id;
     };
@@ -295,7 +305,19 @@ try {
   assert.equal(ungrantedCounters.placements, 1);
   console.log('PASS: production permissions show unavailable network count honestly without a toolbar grant; cosmetic count remains usable');
   await command({ type: 'setPause', tabId, url: page.url(), paused: true });
-  await page.waitForFunction(() => window.adScriptLoaded === true);
+  try { await page.waitForFunction(() => window.adScriptLoaded === true); }
+  catch (error) {
+    const diagnostic = await popup.evaluate(async tabId => ({
+      state: await chrome.runtime.sendMessage({ type: 'getSettings', tabId }),
+      session: await chrome.storage.session.get('pausedTabs'),
+      rules: await chrome.declarativeNetRequest.getSessionRules(),
+      frame: await chrome.webNavigation.getFrame({ tabId, frameId: 0 })
+    }), tabId);
+    const scripts = await page.evaluate(() => ({ pageAdLoaded: window.pageAdLoaded, widgetAdLoaded: window.widgetAdLoaded,
+      adScriptLoaded: window.adScriptLoaded, urls: [...document.scripts].map(script => script.src) }));
+    throw new Error(`Paused document did not allow scripts: ${JSON.stringify({ ...diagnostic, scripts,
+      trace: await worker.evaluate(() => globalThis.navigationTrace), failures: failures.slice(-10) })}`, { cause: error });
+  }
   assert.equal((await popup.evaluate(tabId => chrome.runtime.sendMessage({ type: 'getSettings', tabId }), tabId)).paused, true);
   assert.equal(await page.evaluate(url => fetch(url, { mode: 'no-cors' }).then(() => true, () => false), adOrigin + '/late-paused'), true,
     'the committed paused document retains its allowance for late requests');
