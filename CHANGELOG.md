@@ -2,6 +2,13 @@
 
 **English** | [فارسی](CHANGELOG.fa.md)
 
+## 1.6.1 — 2026-10-29
+
+- Fix Soft98 compatibility: vertically clip verified advertising placements while retaining descendant layout, preventing the observed display-based check from replacing articles with an ad-block warning. Keep the site's scripts, ordinary links and browser APIs intact.
+- Preserve each original CSS property/priority on exceptions, retain later site edits, and count clipped outer placements once. Add DOM, Chromium and Firefox regression fixtures.
+- Record an opt-in live audit of 21 popular Iranian/international domains, including a Soft98 article and a YouTube watch page. Report remaining banners, tracker-only blocking and access/inventory limits explicitly; no universal success percentage is claimed.
+- No permissions, dependencies or network-filter domains were added.
+
 ## 1.6.0 — 2026-10-29
 
 - Add ten selectable languages with English default, localized store descriptions, RTL/persistence/recovery checks and locally bundled Shabnam/Inter with licenses; Hebrew is not included.

@@ -39,6 +39,8 @@ The [Turtlecute test](https://adblock.turtlecute.org/) reported **100% (132/132)
 
 This is one recorded benchmark, not a universal blocking rate. Some video ads and cross-site integrations may need site-specific handling; use site or URL exceptions when needed. [Test results and CI](docs/TESTING.md).
 
+The [live audit of 21 popular domains](docs/SITE-COMPATIBILITY.md) records partial coverage and unknown results explicitly. Direct banners remain on sites such as Varzesh3 and Zoomit; YouTube in-stream ad removal is unverified. Version 1.6.1 fixes the observed Soft98 content-replacement warning while retaining article/download controls.
+
 ## Build
 
 Requires Node.js 20+ and Python 3. Run `npm run build` or `npm run package`; browser folders and ZIPs are generated in `dist/`. See [Contributing](CONTRIBUTING.md).

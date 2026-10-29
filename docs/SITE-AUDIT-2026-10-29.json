@@ -1,0 +1,811 @@
+{
+  "date": "2026-10-29",
+  "browser": "156.0.4314.50",
+  "baselineVersion": "1.6.0",
+  "fixVersion": "1.6.1",
+  "method": "Sequential OFF/ON visits in an isolated logged-out Edge profile. Requests are not unique ads. No broad cookie acceptance, CAPTCHA bypass or paid access. Raw screenshots/page contents/headers/cookies/IPs are excluded. Follow-up versions describe the tested build; YouTube follow-up used unchanged YouTube rules.",
+  "baseline": [
+    {
+      "name": "varzesh3",
+      "url": "https://www.varzesh3.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 36227,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 36225,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "zoomit",
+      "url": "https://www.zoomit.ir/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 18584,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 18584,
+          "explicitListedHostBlocks": 2,
+          "blockedHosts": [
+            "analytics.google.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "digiato",
+      "url": "https://digiato.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 8768,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 8768,
+          "explicitListedHostBlocks": 1,
+          "blockedHosts": [
+            "www.google-analytics.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "asriran",
+      "url": "https://www.asriran.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 27899,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 27899,
+          "explicitListedHostBlocks": 1,
+          "blockedHosts": [
+            "analytics.google.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tabnak",
+      "url": "https://www.tabnak.ir/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 10730,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 10730,
+          "explicitListedHostBlocks": 1,
+          "blockedHosts": [
+            "analytics.google.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "namnak",
+      "url": "https://namnak.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 8398,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 8398,
+          "explicitListedHostBlocks": 5,
+          "blockedHosts": [
+            "analytics.google.com",
+            "cdn.yektanet.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "aparat",
+      "url": "https://www.aparat.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 3582,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 3601,
+          "explicitListedHostBlocks": 1,
+          "blockedHosts": [
+            "www.google-analytics.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "digikala",
+      "url": "https://www.digikala.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 5521,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 5521,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "google",
+      "url": "https://www.google.com/search?q=wireless+headphones",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 353,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 353,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "youtube",
+      "url": "https://www.youtube.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 483,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 483,
+          "explicitListedHostBlocks": 2,
+          "blockedHosts": [
+            "googleads.g.doubleclick.net",
+            "static.doubleclick.net"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "facebook",
+      "url": "https://www.facebook.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 468,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 468,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "instagram",
+      "url": "https://www.instagram.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 811,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 811,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "x",
+      "url": "https://x.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "error": "page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at https://x.com/",
+          "textLength": 116,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "error": "page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at https://x.com/",
+          "textLength": 116,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "tiktok",
+      "url": "https://www.tiktok.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 450,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 743,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "reddit",
+      "url": "https://www.reddit.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 143,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 143,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "yahoo",
+      "url": "https://www.yahoo.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 5516,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 5516,
+          "explicitListedHostBlocks": 29,
+          "blockedHosts": [
+            "cdn.taboola.com",
+            "census-web.scorecardresearch.com",
+            "pagead2.googlesyndication.com",
+            "securepubads.g.doubleclick.net",
+            "www.google-analytics.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cnn",
+      "url": "https://www.cnn.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 9250,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 9250,
+          "explicitListedHostBlocks": 6,
+          "blockedHosts": [
+            "pagead2.googlesyndication.com",
+            "pubads.g.doubleclick.net",
+            "sb.scorecardresearch.com",
+            "secure.quantserve.com",
+            "securepubads.g.doubleclick.net"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "bbc",
+      "url": "https://www.bbc.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 15440,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 15414,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        }
+      ]
+    },
+    {
+      "name": "weather",
+      "url": "https://weather.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 3913,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 3895,
+          "explicitListedHostBlocks": 10,
+          "blockedHosts": [
+            "aax.amazon-adsystem.com",
+            "c2.taboola.com",
+            "cdn.taboola.com",
+            "client.aps.amazon-adsystem.com",
+            "config.aps.amazon-adsystem.com",
+            "micro.rubiconproject.com",
+            "securepubads.g.doubleclick.net",
+            "tpc.googlesyndication.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "w3schools",
+      "url": "https://www.w3schools.com/html/default.asp",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 6171,
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 6146,
+          "explicitListedHostBlocks": 1,
+          "blockedHosts": [
+            "analytics.google.com"
+          ]
+        }
+      ]
+    }
+  ],
+  "followUps": [
+    {
+      "name": "soft98",
+      "url": "https://soft98.ir/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 8735,
+          "interaction": {
+            "title": "دانلود رایگان نرم افزار",
+            "posts": 6,
+            "destructiveWarning": false,
+            "resolvedLinkHost": "soft98.ir",
+            "resolvedLinkScheme": "https"
+          },
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": [],
+          "soft98": {
+            "slots": [
+              {
+                "id": "abddh",
+                "height": 91,
+                "display": "block"
+              },
+              {
+                "id": "abdds",
+                "height": 513.1875,
+                "display": "block"
+              },
+              {
+                "id": "sbds",
+                "height": 899,
+                "display": "block"
+              },
+              {
+                "id": "",
+                "height": 173,
+                "display": "flex"
+              }
+            ],
+            "downloadPanel": false,
+            "gate": false,
+            "posts": [
+              {
+                "sha256": "0295fd43107ed00c9cf494d4c1de10ab83ea66055a7f3a85a86c21abd93e800a",
+                "length": 679,
+                "visible": true
+              },
+              {
+                "sha256": "387a84aaa69b7303de0bf1d863a09893546c528a9cbfd5d3174932e70b4ea63e",
+                "length": 770,
+                "visible": true
+              },
+              {
+                "sha256": "ff60278e3897663b9561ab71aeea59d756c43cf78d33a55332be8e286d56e763",
+                "length": 510,
+                "visible": true
+              },
+              {
+                "sha256": "dc8ea5220aa04d46ea8533f7a7882fdd099cfe62324c1b14b976fff68d010c6f",
+                "length": 726,
+                "visible": true
+              },
+              {
+                "sha256": "e91c95b6cc1d404886be39b08a90654f1176de141ed0fff28fe16006e74fc17c",
+                "length": 745,
+                "visible": true
+              },
+              {
+                "sha256": "5485dedc4448a677be80f971eb736f062cd9f3b72da3843796f648a096c2cc70",
+                "length": 640,
+                "visible": true
+              }
+            ]
+          }
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 8779,
+          "interaction": {
+            "title": "دانلود رایگان نرم افزار",
+            "posts": 6,
+            "destructiveWarning": false,
+            "resolvedLinkHost": "soft98.ir",
+            "resolvedLinkScheme": "https"
+          },
+          "explicitListedHostBlocks": 2,
+          "blockedHosts": [
+            "beta.kaprila.com",
+            "www.google-analytics.com"
+          ],
+          "soft98": {
+            "slots": [
+              {
+                "id": "abddh",
+                "height": 0,
+                "display": "block"
+              },
+              {
+                "id": "abdds",
+                "height": 0,
+                "display": "block"
+              },
+              {
+                "id": "sbds",
+                "height": 0,
+                "display": "block"
+              },
+              {
+                "id": "",
+                "height": 0,
+                "display": "flex"
+              }
+            ],
+            "downloadPanel": false,
+            "gate": false,
+            "posts": [
+              {
+                "sha256": "0295fd43107ed00c9cf494d4c1de10ab83ea66055a7f3a85a86c21abd93e800a",
+                "length": 679,
+                "visible": true
+              },
+              {
+                "sha256": "387a84aaa69b7303de0bf1d863a09893546c528a9cbfd5d3174932e70b4ea63e",
+                "length": 770,
+                "visible": true
+              },
+              {
+                "sha256": "ff60278e3897663b9561ab71aeea59d756c43cf78d33a55332be8e286d56e763",
+                "length": 510,
+                "visible": true
+              },
+              {
+                "sha256": "dc8ea5220aa04d46ea8533f7a7882fdd099cfe62324c1b14b976fff68d010c6f",
+                "length": 726,
+                "visible": true
+              },
+              {
+                "sha256": "e91c95b6cc1d404886be39b08a90654f1176de141ed0fff28fe16006e74fc17c",
+                "length": 745,
+                "visible": true
+              },
+              {
+                "sha256": "5485dedc4448a677be80f971eb736f062cd9f3b72da3843796f648a096c2cc70",
+                "length": 640,
+                "visible": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "soft98-article",
+      "url": "https://soft98.ir/security/firewall/14349-windows-firewall-control.html",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 7658,
+          "interaction": {
+            "title": "دانلود Windows Firewall Control 6.38 مدیریت آسان فایروال ویندوز",
+            "posts": 2,
+            "destructiveWarning": false,
+            "resolvedLinkHost": "dl2.soft98.ir",
+            "resolvedLinkScheme": "https"
+          },
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": [],
+          "soft98": {
+            "slots": [
+              {
+                "id": "abddh",
+                "height": 91,
+                "display": "block"
+              },
+              {
+                "id": "abdds",
+                "height": 513.1875,
+                "display": "block"
+              },
+              {
+                "id": "",
+                "height": 1747.65625,
+                "display": "flex"
+              },
+              {
+                "id": "sbds",
+                "height": 899,
+                "display": "block"
+              },
+              {
+                "id": "",
+                "height": 173,
+                "display": "flex"
+              }
+            ],
+            "downloadPanel": true,
+            "gate": false,
+            "posts": [
+              {
+                "sha256": "0295fd43107ed00c9cf494d4c1de10ab83ea66055a7f3a85a86c21abd93e800a",
+                "length": 679,
+                "visible": true
+              },
+              {
+                "sha256": "17f5aaa0adddb2365261d2f87deca1965d63dd94da4c200e6e4ae588dbd4f7aa",
+                "length": 2131,
+                "visible": true
+              }
+            ]
+          }
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 7695,
+          "interaction": {
+            "title": "دانلود Windows Firewall Control 6.38 مدیریت آسان فایروال ویندوز",
+            "posts": 2,
+            "destructiveWarning": false,
+            "resolvedLinkHost": "dl2.soft98.ir",
+            "resolvedLinkScheme": "https"
+          },
+          "explicitListedHostBlocks": 2,
+          "blockedHosts": [
+            "beta.kaprila.com",
+            "www.google-analytics.com"
+          ],
+          "soft98": {
+            "slots": [
+              {
+                "id": "abddh",
+                "height": 0,
+                "display": "block"
+              },
+              {
+                "id": "abdds",
+                "height": 0,
+                "display": "block"
+              },
+              {
+                "id": "",
+                "height": 1583.65625,
+                "display": "flex"
+              },
+              {
+                "id": "sbds",
+                "height": 0,
+                "display": "block"
+              },
+              {
+                "id": "",
+                "height": 0,
+                "display": "flex"
+              }
+            ],
+            "downloadPanel": true,
+            "gate": false,
+            "posts": [
+              {
+                "sha256": "0295fd43107ed00c9cf494d4c1de10ab83ea66055a7f3a85a86c21abd93e800a",
+                "length": 679,
+                "visible": true
+              },
+              {
+                "sha256": "17f5aaa0adddb2365261d2f87deca1965d63dd94da4c200e6e4ae588dbd4f7aa",
+                "length": 2131,
+                "visible": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "weather",
+      "url": "https://weather.com/",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "consentAction": "explicit refusal",
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "consentAction": null,
+          "explicitListedHostBlocks": 10,
+          "blockedHosts": [
+            "aax.amazon-adsystem.com",
+            "c2.taboola.com",
+            "cdn.taboola.com",
+            "client.aps.amazon-adsystem.com",
+            "config.aps.amazon-adsystem.com",
+            "micro.rubiconproject.com",
+            "securepubads.g.doubleclick.net",
+            "tpc.googlesyndication.com"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "w3schools",
+      "url": "https://www.w3schools.com/html/default.asp",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "consentAction": "explicit refusal",
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "consentAction": null,
+          "explicitListedHostBlocks": 2,
+          "blockedHosts": [
+            "analytics.google.com",
+            "stats.g.doubleclick.net"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "youtube-video",
+      "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+      "observations": [
+        {
+          "enabled": false,
+          "status": 200,
+          "textLength": 5456,
+          "video": {
+            "adShowing": false,
+            "readyState": 4,
+            "currentTime": 8.005422
+          },
+          "explicitListedHostBlocks": 0,
+          "blockedHosts": []
+        },
+        {
+          "enabled": true,
+          "status": 200,
+          "textLength": 5694,
+          "video": {
+            "adShowing": false,
+            "readyState": 4,
+            "currentTime": 8.018269
+          },
+          "explicitListedHostBlocks": 3,
+          "blockedHosts": [
+            "googleads.g.doubleclick.net",
+            "static.doubleclick.net"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+<!doctype html><html><head><title>Local compatibility fixture</title></head><body>
+<main><h1>Software article</h1><article id="post"><p>Useful description remains readable.</p>
+<a id="continue" href="/article">Continue reading</a></article></main>
+<form id="search"><input aria-label="Search"></form>
+<div class="abdd" id="abddh" style="width:400px;height:140px"><span id="ad-child" style="display:block;width:200px;height:100px">Direct advertising</span></div>
+<div class="abdd" id="abdds">Related advertising</div>
+<aside><section id="useful-sidebar">Useful software list</section><div id="sbds"><section>Side ads</section></div>
+<div class="cbdd" id="hosting-ad"><header>Hosting promotion</header><div class="cbddb abdd">Banner</div></div></aside>
+<script>
+// A minimal local model of the observed site's checks; no third-party bundle.
+document.getElementById('continue').addEventListener('mouseover', () => {
+  if (getComputedStyle(document.getElementById('abddh')).display === 'none' ||
+      document.getElementById('ad-child').getBoundingClientRect().width === 0) {
+    document.querySelector('main').textContent = 'Disable your ad blocker';
+  }
+});
+</script></body></html>

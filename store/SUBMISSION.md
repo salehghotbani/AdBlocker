@@ -1,6 +1,6 @@
 # Store submission kit
 
-This kit prepares publication; it does not mean an account was registered, a store submission was made, or a listing was approved. Version 1.6.0 is free in every channel. English is the default listing language; LISTING.fa.md is optional Persian listing text.
+This kit prepares publication; it does not mean an account was registered, a store submission was made, or a listing was approved. Version 1.6.1 is free in every channel. English is the default listing language; LISTING.fa.md is optional Persian listing text.
 
 ## Build and assets
 
@@ -11,9 +11,9 @@ This kit prepares publication; it does not mean an account was registered, a sto
 
 | Destination | Upload file | Images |
 | --- | --- | --- |
-| Chrome Web Store | adblocker-chrome-store-1.6.0.zip | assets/01 through 05 (1280×800), icon-128.png, optional 440×280 / 1400×560 promos |
-| Edge Add-ons | adblocker-edge-store-1.6.0.zip | Same five images, icon and optional promos |
-| Firefox Add-ons (desktop) | adblocker-firefox-store-1.6.0.zip | assets/firefox-filtering.png is an actual Firefox runtime capture; use a localized caption |
+| Chrome Web Store | adblocker-chrome-store-1.6.1.zip | assets/01 through 05 (1280×800), icon-128.png, optional 440×280 / 1400×560 promos |
+| Edge Add-ons | adblocker-edge-store-1.6.1.zip | Same five images, icon and optional promos |
+| Firefox Add-ons (desktop) | adblocker-firefox-store-1.6.1.zip | assets/firefox-filtering.png is an actual Firefox runtime capture; use a localized caption |
 
 The Firefox ZIP is an unsigned submission package; AMO performs signing. Keep `adblocker@salehghotbani.local` stable across updates. Do not upload the entire submission-kit ZIP as the extension. Never upload the manual GitHub build to a store.
 

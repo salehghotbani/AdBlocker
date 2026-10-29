@@ -165,10 +165,19 @@ try {
   await completed;
   const finalBlocked=await page.evaluate(()=>new Promise(resolve=>{const script=document.createElement('script');script.src='/pagead.js?after-expiry';script.onload=()=>resolve(true);script.onerror=()=>resolve(false);document.body.append(script);}));
   assert.equal(finalBlocked,false,'network blocking resumes after pause expiry');
+  await context.route('https://soft98.ir/adblocker-fixture', async route => route.fulfill({
+    contentType: 'text/html', body: await readFile(path.join(root,'tests/fixtures/soft98-compat.html'),'utf8')
+  }));
+  const soft98 = await context.newPage(); await soft98.goto('https://soft98.ir/adblocker-fixture');
+  await soft98.waitForFunction(() => ['abddh','abdds','sbds','hosting-ad'].every(id => document.getElementById(id).getBoundingClientRect().height === 0));
+  await soft98.locator('#continue').hover();
+  assert.equal(await soft98.locator('#post').isVisible(),true,'Firefox preserves article after site checks');
+  assert.equal(await soft98.locator('#ad-child').evaluate(el => el.getBoundingClientRect().width),200);
+  await soft98.close();
   await mkdir(path.join(root,'artifacts'),{recursive:true});
-  await writeFile(path.join(root,'artifacts/firefox-runtime.json'),JSON.stringify({browser:context.browser()?.version(),reports:[...reports.values()].map(({token:ignored,...item})=>item)},null,2)+'\n');
+  await writeFile(path.join(root,'artifacts/firefox-runtime.json'),JSON.stringify({browser:context.browser()?.version(),soft98Compatibility:true,reports:[...reports.values()].map(({token:ignored,...item})=>item)},null,2)+'\n');
   await page.screenshot({path:path.join(root,'artifacts/firefox-filtered.png'),animations:'disabled'});
-  console.log('PASS: actual Firefox temporary install, local network blocking, real popup, ten languages/RTL/Shabnam, counters, exceptions, pause expiry, support and local update help');
+  console.log('PASS: actual Firefox temporary install, local network blocking, real popup, ten languages/RTL/Shabnam, counters, exceptions, pause expiry, support, local update help and Soft98 compatibility fixture');
 } finally {
   clearTimeout(timeout);await context?.close();await new Promise(resolve=>server.close(resolve));
   if(path.dirname(path.resolve(work))!==path.resolve(testRoot))throw new Error('Unexpected Firefox test directory');

@@ -130,17 +130,24 @@ try {
   const soft98 = await context.newPage();
   const soft98Fixture = `<!doctype html><main><h1>Downloads</h1><article id="download-post">
     <a id="download-link" href="/files/example.zip">Download</a><p>Software description</p></article></main>
-    <form id="search"><input></form><div class="abdd" id="abddh" style="display:flex!important">Direct banner</div>
+    <form id="search"><input></form><div class="abdd" id="abddh" style="display:flex!important;height:125px;padding-top:7px!important;overflow-x:scroll!important;overflow-y:auto"><span id="banner-child" style="display:block;width:200px;height:100px;flex-shrink:0">Direct banner</span></div>
     <div class="abdd" id="abdds"><div id="kaprila_soft98_ir_related-top-post">Related ads</div></div>
     <aside><section id="useful-sidebar">Useful software list</section><div id="sbds"><section class="cbdd">
     <header>Advertising</header><div class="cbddb"><div class="abdds"><div id="kaprila_soft98_ir_side">Ad</div></div></div>
     </section></div><div class="cbdd" id="hosting-ad"><header>Hosting promotion</header>
     <div class="cbddb abdd">Direct banner</div></div><div class="cbdd" id="useful-card"><div class="cbddb">Useful card</div></div></aside>
-    <div class="abdd" id="protected-soft98"><article>Real article</article></div>`;
+    <div class="abdd" id="protected-soft98"><article>Real article</article></div>
+    <script>document.getElementById('download-link').addEventListener('mouseover', () => {
+      if (getComputedStyle(document.getElementById('abddh')).display === 'none' ||
+          document.getElementById('banner-child').getBoundingClientRect().width === 0) {
+        document.querySelector('main').textContent = 'Disable your ad blocker';
+      }
+    });</script>`;
   await soft98.route('https://soft98.ir/**', route => route.fulfill({ contentType: 'text/html', body: soft98Fixture }));
   await soft98.goto('https://soft98.ir/');
   await soft98.evaluate(() => {
     window.chrome = { runtime: {
+      id: 'fixture',
       onMessage: { addListener(listener) { window.contentListener = listener; } },
       async sendMessage() { return { settings: { enabled: true } }; }
     } };
@@ -148,7 +155,13 @@ try {
   await soft98.addScriptTag({ content: settingsScript });
   await soft98.addScriptTag({ content: contentScript });
   const soft98Hidden = ['abddh', 'abdds', 'sbds', 'hosting-ad'];
-  await soft98.waitForFunction(ids => ids.every(id => getComputedStyle(document.getElementById(id)).display === 'none'), soft98Hidden);
+  await soft98.waitForFunction(ids => ids.every(id => document.getElementById(id).getBoundingClientRect().height === 0), soft98Hidden);
+  await soft98.locator('#download-link').hover();
+  assert.equal(await soft98.locator('#download-post').isVisible(), true, 'ad checks on ordinary links do not erase the article');
+  assert.deepEqual(await soft98.locator('#banner-child').evaluate(el => [el.getBoundingClientRect().width, el.getBoundingClientRect().height]), [200, 100], 'clipped descendants retain layout for site checks');
+  assert.equal(await soft98.locator('#abddh').evaluate(el => getComputedStyle(el).display), 'flex');
+  assert.equal((await soft98.evaluate(() => new Promise(resolve => window.contentListener(
+    { type: 'getCosmeticCount' }, { id: 'fixture' }, resolve)))).placements, 4, 'clipped outer placements are counted once');
   for (const id of ['download-post', 'download-link', 'search', 'useful-sidebar', 'useful-card', 'protected-soft98']) {
     assert.equal(await soft98.locator(`#${id}`).isVisible(), true, id);
   }
@@ -156,22 +169,27 @@ try {
     const placement = document.createElement('div'); placement.id = 'kaprila_soft98_ir_dynamic';
     placement.textContent = 'Delayed ad'; document.body.append(placement);
   });
-  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('kaprila_soft98_ir_dynamic')).display === 'none');
+  await soft98.waitForFunction(() => document.getElementById('kaprila_soft98_ir_dynamic').getBoundingClientRect().height === 0);
   await soft98.evaluate(() => {
     const content = document.createElement('article'); content.textContent = 'Real new content';
     document.getElementById('hosting-ad').append(content);
   });
-  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('hosting-ad')).display !== 'none');
+  await soft98.waitForFunction(() => document.getElementById('hosting-ad').getBoundingClientRect().height > 0);
   await soft98.evaluate(() => document.querySelector('#hosting-ad article').remove());
-  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('hosting-ad')).display === 'none');
+  await soft98.waitForFunction(() => document.getElementById('hosting-ad').getBoundingClientRect().height === 0);
   for (const settings of [{ enabled: false }, { enabled: true, allowedSites: ['soft98.ir'] },
     { enabled: true, allowedUrls: ['https://soft98.ir/'] }]) {
     await soft98.evaluate(settings => window.contentListener({ type: 'settingsChanged', settings }), settings);
     assert.deepEqual(await soft98.locator('#abddh').evaluate(el => [el.style.display, el.style.getPropertyPriority('display')]), ['flex', 'important']);
+    assert.deepEqual(await soft98.locator('#abddh').evaluate(el => ['height','padding-top','overflow-x','overflow-y'].map(name =>
+      [el.style.getPropertyValue(name), el.style.getPropertyPriority(name)])), [['125px',''],['7px','important'],['scroll','important'],['auto','']], 'original property values and individual priorities are restored');
     for (const id of soft98Hidden) assert.equal(await soft98.locator(`#${id}`).isVisible(), true, id);
     await soft98.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: { enabled: true } }));
-    await soft98.waitForFunction(ids => ids.every(id => getComputedStyle(document.getElementById(id)).display === 'none'), soft98Hidden);
+    await soft98.waitForFunction(ids => ids.every(id => document.getElementById(id).getBoundingClientRect().height === 0), soft98Hidden);
   }
+  await soft98.evaluate(() => document.getElementById('abddh').style.setProperty('height','37px','important'));
+  await soft98.evaluate(() => window.contentListener({ type: 'settingsChanged', settings: { enabled: false } }));
+  assert.equal(await soft98.locator('#abddh').evaluate(el => el.style.height), '37px', 'later site edits survive restoration');
   await soft98.close();
   console.log('PASS: Soft98 direct, Kaprila and hosting slots collapse; dynamic ads, protected content and exact style restoration work; selectors stay off other hosts');
 

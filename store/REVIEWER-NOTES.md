@@ -1,6 +1,6 @@
 # Reviewer notes
 
-Version 1.6.0. Free, open-source ad/tracker blocker. No login or payment is needed to test any feature. MIT license. English is the initial UI; nine other selectable languages and localized descriptions are included. Fonts are bundled with their own licenses. Private browsing is disabled in the manifest.
+Version 1.6.1. Free, open-source ad/tracker blocker. No login or payment is needed to test any feature. MIT license. English is the initial UI; nine other selectable languages and localized descriptions are included. Fonts are bundled with their own licenses. Private browsing is disabled in the manifest.
 
 ## Reproduce the build
 

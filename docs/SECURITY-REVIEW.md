@@ -1,4 +1,8 @@
-# Version 1.6.0 security and coverage review
+# Version 1.6.1 security and coverage review
+
+## Version 1.6.1 compatibility patch — 2026-10-29
+
+The Soft98 correction uses fixed local CSS properties on existing verified placements. It adds no main-world injection, browser API override, detector/global patch, remote code, permission or domain rule. Original values and priorities are restored independently without overwriting later site edits. Protected article/form/media checks and trusted-message boundaries remain in place. Local Chromium/Firefox fixtures and DOM restoration/counter tests cover the change; live audit data is sanitized before entering this repository. This is the stated review scope, not a guarantee of zero vulnerabilities.
 
 ## Version 1.6.0 store channels and voluntary support — 2026-10-29
 

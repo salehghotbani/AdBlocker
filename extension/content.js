@@ -4,7 +4,9 @@
   const { normalize, isAllowed, pageUrl } = AdBlockSettings;
   // Soft98 serves direct banners from its shared image/download hosts as well
   // as Kaprila placements. Keep these layout-specific rules on the main site.
-  const siteSelectors = ['soft98.ir', 'www.soft98.ir'].includes(location.hostname) ? [
+  const soft98 = ['soft98.ir', 'www.soft98.ir'].includes(location.hostname);
+  const soft98Ads = '.abdd, .abdds, #sbds, [id^="kaprila_soft98_ir_"], .cbdd:has(> .cbddb.abdd)';
+  const siteSelectors = soft98 ? [
     '.abdd', '.abdds', '#sbds', '[id^="kaprila_soft98_ir_"]',
     '.cbdd:has(> .cbddb.abdd)'
   ] : [];
@@ -62,21 +64,31 @@
 
   function restore(element, previous) {
     // Preserve subsequent site changes rather than overwriting its new style.
-    if (element.style.getPropertyValue('display') === 'none' &&
-        element.style.getPropertyPriority('display') === 'important') {
-      if (previous.value) element.style.setProperty('display', previous.value, previous.priority);
-      else element.style.removeProperty('display');
+    for (const [property, state] of Object.entries(previous.properties)) {
+      if (element.style.getPropertyValue(property) !== state.applied ||
+          element.style.getPropertyPriority(property) !== 'important') continue;
+      if (state.value) element.style.setProperty(property, state.value, state.priority);
+      else element.style.removeProperty(property);
     }
     hidden.delete(element);
   }
 
   function hide(element) {
     if (hidden.has(element) || !safeMatch(element)) return;
-    hidden.set(element, {
-      value: element.style.getPropertyValue('display'),
-      priority: element.style.getPropertyPriority('display')
-    });
-    element.style.setProperty('display', 'none', 'important');
+    // Soft98 checks the display/geometry of ad descendants before opening its
+    // ordinary links. Clip only the verified outer placements vertically, while
+    // retaining their children's layout and the site's own script/API behavior.
+    const clipped = soft98 && element.matches(soft98Ads);
+    const values = clipped ? { height: '0px', 'min-height': '0px', 'overflow-x': 'hidden', 'overflow-y': 'hidden',
+      'padding-top': '0px', 'padding-bottom': '0px', 'margin-top': '0px', 'margin-bottom': '0px',
+      'border-top-width': '0px', 'border-bottom-width': '0px' } : { display: 'none' };
+    const properties = {};
+    for (const [property, applied] of Object.entries(values)) {
+      properties[property] = { value: element.style.getPropertyValue(property),
+        priority: element.style.getPropertyPriority(property), applied };
+      element.style.setProperty(property, applied, 'important');
+    }
+    hidden.set(element, { properties });
   }
 
   function scan() {
@@ -128,8 +140,9 @@
     if (message?.type === 'getCosmeticCount') {
       if (!api.runtime.id || sender?.id !== api.runtime.id || sender.tab) return;
       if (message.document && message.document !== counterDocument) { sendResponse({ stale: true }); return; }
-      const counted = new Set([...hidden.keys()].filter(element => element.isConnected && safeMatch(element) &&
-        element.style.getPropertyValue('display') === 'none' && element.style.getPropertyPriority('display') === 'important'));
+      const counted = new Set([...hidden].filter(([element, state]) => element.isConnected && safeMatch(element) &&
+        Object.entries(state.properties).every(([property, value]) => element.style.getPropertyValue(property) === value.applied &&
+          element.style.getPropertyPriority(property) === 'important')).map(([element]) => element));
       let placements = 0;
       for (const element of counted) {
         let nested = false;

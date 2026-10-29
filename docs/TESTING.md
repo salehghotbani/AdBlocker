@@ -2,6 +2,12 @@
 
 **English** | [فارسی](TESTING.fa.md)
 
+## Version 1.6.1 Soft98 compatibility and live audit — 2026-10-29
+
+- Reproduced Soft98's destructive ad-block warning with the previous display-based filter. Live checks of the patched home/article pages preserve identical description text, ordinary-link resolution and the download panel while collapsing verified ad slots. No software was downloaded. [21-domain audit and limits](SITE-COMPATIBILITY.md), [sanitized observations](SITE-AUDIT-2026-10-29.json).
+- DOM regressions require descendant geometry and article survival, four deduplicated outer placement counts, exact CSS values/priorities after site/URL/global exceptions, dynamic protected-content recovery and preservation of later site edits. Chromium and actual Firefox run a local fixture modelling the observed checks. No proprietary site bundle or remote script enters the packages.
+- 38 unit tests, four manual-distribution checks and five store checks remain required. DOM, actual Chromium/Edge and Firefox runtime suites cover the patch alongside existing controls/security checks. No permissions, dependencies, domain rules or browser API overrides were added. The live audit stays opt-in outside CI; the historical Turtlecute percentage is unchanged. Current CI is available in [Actions](https://github.com/salehghotbani/AdBlocker/actions).
+
 ## Version 1.6.0 store submission preparation — 2026-10-29
 
 - 38 unit tests cover protection/update logic, support configuration, store channels and complete localization. Four manual-distribution checks and five store checks cover ZIP integrity, source/policy identity, restricted permissions/CSP, locales/fonts/licenses, local updater and exact image dimensions.

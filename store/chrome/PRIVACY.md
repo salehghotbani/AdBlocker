@@ -1,6 +1,6 @@
 # AdBlocker privacy policy — Google Chrome
 
-AdBlocker store editions (version 1.6.0) are free and have no account, subscription, analytics or embedded payment processor.
+AdBlocker store editions (version 1.6.1) are free and have no account, subscription, analytics or embedded payment processor.
 
 - Advertising markers are examined locally to hide ad placements. Browser network rules block listed requests locally. Browsing history, page text, form contents and sign-in information are not collected or transmitted by the extension.
 - Global protection, language/theme preferences, selected site exceptions and explicitly saved exact-URL exceptions are kept in browser-local storage. Selected URLs can contain sensitive query parameters. One-time pauses temporarily store a tab ID and URL in session memory and expire on reload/navigation, tab closure or browser shutdown. Private/incognito browsing is disabled in the manifest and is not supported.

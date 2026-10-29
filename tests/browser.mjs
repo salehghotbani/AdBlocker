@@ -304,24 +304,22 @@ try {
   await popup.screenshot({ path: path.join(root, 'artifacts/popup.png') });
   console.log('PASS: popup loads and reads persisted settings; screenshot saved');
   const soft98 = await context.newPage();
-  await context.route('https://soft98.ir/adblocker-fixture', route => route.fulfill({
-    contentType: 'text/html', body: `<!doctype html><main><h1>Software downloads</h1><article id="post">
-    <a href="/files/example.zip">Download file</a></article></main><form id="search"><input></form>
-    <div class="abdd" id="abddh">Direct banner</div><div class="abdd" id="abdds">Kaprila grid</div>
-    <aside><section id="useful-sidebar">Useful software list</section><div id="sbds"><section>Side ads</section></div>
-    <div class="cbdd" id="hosting-ad"><header>Hosting ad</header><div class="cbddb abdd">Banner</div></div></aside>`
+  await context.route('https://soft98.ir/adblocker-fixture', async route => route.fulfill({
+    contentType: 'text/html', body: await readFile(path.join(root, 'tests/fixtures/soft98-compat.html'), 'utf8')
   }));
   await soft98.goto('https://soft98.ir/adblocker-fixture');
   await soft98.waitForFunction(() => ['abddh', 'abdds', 'sbds', 'hosting-ad'].every(id =>
-    getComputedStyle(document.getElementById(id)).display === 'none'));
+    document.getElementById(id).getBoundingClientRect().height === 0));
+  await soft98.locator('#continue').hover();
+  assert.equal(await soft98.locator('#ad-child').evaluate(el => el.getBoundingClientRect().width), 200);
   for (const id of ['post', 'search', 'useful-sidebar']) assert.equal(await soft98.locator(`#${id}`).isVisible(), true, id);
   await command({ type: 'setSite', host: 'soft98.ir', allowed: true });
-  await soft98.waitForFunction(() => document.getElementById('abddh').style.display !== 'none');
+  await soft98.waitForFunction(() => document.getElementById('abddh').getBoundingClientRect().height > 0);
   await soft98.reload();
   assert.equal(await soft98.locator('#hosting-ad').isVisible(), true);
   await command({ type: 'setSite', host: 'soft98.ir', allowed: false });
   await soft98.reload();
-  await soft98.waitForFunction(() => getComputedStyle(document.getElementById('abdds')).display === 'none');
+  await soft98.waitForFunction(() => document.getElementById('abdds').getBoundingClientRect().height === 0);
   await soft98.close();
   console.log('PASS: actual extension collapses Soft98 ad slots, preserves downloads/search/sidebar, and respects site exceptions');
   const w3 = await context.newPage();
@@ -401,7 +399,7 @@ try {
     await live.reload({ waitUntil: 'domcontentloaded', timeout: 45000 });
     await live.waitForFunction(() => ['abddh', 'abdds', 'sbds'].every(id => {
       const element = document.getElementById(id);
-      return element && getComputedStyle(element).display === 'none';
+      return element && element.getBoundingClientRect().height === 0;
     }));
     assert.ok(liveFailures.some(item => item.url.startsWith('https://beta.kaprila.com/') && item.error?.includes('BLOCKED_BY_CLIENT')),
       'Kaprila loader must be explicitly blocked, not fail from DNS or network errors');
@@ -413,10 +411,10 @@ try {
     const report = await live.evaluate(() => ({
       url: location.href, visiblePosts: [...document.querySelectorAll('.cbddpb')].filter(el => el.getClientRects().length > 0).length,
       placements: ['#abddh', '#abdds', '#sbds', '.cbdd:has(> .cbddb.abdd)'].map(selector => ({
-        selector, displays: [...document.querySelectorAll(selector)].map(el => getComputedStyle(el).display)
+        selector, heights: [...document.querySelectorAll(selector)].map(el => el.getBoundingClientRect().height)
       }))
     }));
-    assert.ok(report.placements.every(slot => slot.displays.every(display => display === 'none')),
+    assert.ok(report.placements.every(slot => slot.heights.every(height => height === 0)),
       'remaining ad containers must stay collapsed after site initialization');
     await writeFile(path.join(root, 'artifacts/soft98-result.json'), JSON.stringify({ ...report, failures: liveFailures }, null, 2) + '\n');
     await live.close();
