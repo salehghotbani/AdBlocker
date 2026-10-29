@@ -1,13 +1,17 @@
 {
   "version": "1.7.1",
   "browser": "chrome",
-  "publicationStatus": "not_submitted",
+  "publicationStatus": "deferred_by_owner",
   "publisher": {
     "displayName": "saleh ghotbani",
     "homepage": "https://github.com/salehghotbani/AdBlocker",
     "supportWebsite": "https://github.com/salehghotbani/AdBlocker/issues",
     "publicSupportEmail": null,
-    "allowPublicEmail": false
+    "allowPublicEmail": false,
+    "publicationTargets": [
+      "edge",
+      "firefox"
+    ]
   },
   "name": "AdBlocker — Browse without ads",
   "defaultLanguage": "en",
@@ -58,14 +62,9 @@
   "marqueePromo": "assets/promo-marquee-1400x560.png",
   "reviewerNotes": "REVIEWER-NOTES.md",
   "buildInstructions": "BUILD.md",
-  "ownerActionsRequired": [
-    "Create/sign in to the publisher account and complete its verification/security requirements.",
-    "Use real account details and determine any publisher/trader disclosures in the dashboard; no legal identity is inferred by this kit.",
-    "Choose the matching category/eligible markets and review the final listing before submission."
-  ],
+  "ownerActionsRequired": [],
   "publicationBlockers": [
-    "No publisher account is ready.",
-    "Owner does not authorize a public email. Google documents a required verified contact email displayed in extension contact information. Resolve this with the owner before submission."
+    "Deferred by the owner. Do not submit this store."
   ],
   "locales": {
     "en": {

@@ -10,6 +10,7 @@ from hashlib import sha256
 import json, subprocess, sys
 root=Path.cwd()
 version=json.loads((root/'package.json').read_text(encoding='utf-8'))['version']
+targets=json.loads((root/'store'/'publisher.json').read_text(encoding='utf-8'))['publicationTargets']
 folder=root/'dist'/'stores'
 cache=root/'.cache'/'reviewer-rebuild'
 cache.mkdir(parents=True,exist_ok=True)
@@ -37,7 +38,12 @@ kit=folder/f'adblocker-submission-kit-{version}.zip'
 with ZipFile(kit) as archive:
     assert archive.testzip() is None
     assert 'START-HERE.md' in archive.namelist()
-    for browser in ('chrome','edge','firefox'): assert f'{browser}/DASHBOARD.json' in archive.namelist()
+    for browser in ('chrome','edge','firefox'):
+        assert (f'{browser}/DASHBOARD.json' in archive.namelist()) == (browser in targets)
+        assert (f'adblocker-{browser}-store-{version}.zip' in archive.namelist()) == (browser in targets)
+    for line in archive.read(f'SHA256SUMS-submission-{version}.txt').decode().splitlines():
+        expected,name=line.split('  ',1)
+        assert sha256(archive.read(name)).hexdigest()==expected, name
 assert kit.with_suffix('.zip.sha256').read_text(encoding='utf-8').split()[0]==sha256(kit.read_bytes()).hexdigest()
 print('PASS: offline reviewer-source rebuild matches all three store uploads byte for byte; kit integrity and checksum verified')
 `, process.execPath], { encoding: 'utf8', timeout: 60000 });

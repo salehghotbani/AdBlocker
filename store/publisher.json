@@ -3,5 +3,6 @@
   "homepage": "https://github.com/salehghotbani/AdBlocker",
   "supportWebsite": "https://github.com/salehghotbani/AdBlocker/issues",
   "publicSupportEmail": null,
-  "allowPublicEmail": false
+  "allowPublicEmail": false,
+  "publicationTargets": ["edge", "firefox"]
 }

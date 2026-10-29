@@ -84,7 +84,8 @@ test('submission fields match manifests/locales, satisfy Edge lengths and keep t
   for(const browser of ['chrome','edge','firefox']){
     const fields=JSON.parse(await read(`store/${browser}/DASHBOARD.json`));
     const manifest=JSON.parse(await read(`dist/stores/${browser}/manifest.json`));
-    assert.equal(fields.version,current);assert.equal(fields.publicationStatus,'not_submitted');
+    assert.equal(fields.version,current);assert.equal(fields.publicationStatus,browser==='chrome'?'deferred_by_owner':'not_submitted');
+    assert.deepEqual(fields.publisher.publicationTargets,['edge','firefox']);
     assert.equal(fields.publisher.displayName,'saleh ghotbani');
     assert.equal(fields.publisher.publicSupportEmail,null);assert.equal(fields.publisher.allowPublicEmail,false);
     assert.equal(fields.supportWebsite,'https://github.com/salehghotbani/AdBlocker/issues');
@@ -96,7 +97,10 @@ test('submission fields match manifests/locales, satisfy Edge lengths and keep t
       assert.equal(listing.name,messages.extensionName.message);assert.equal(listing.summary,messages.extensionDescription.message);
       assert.ok(listing.description.length>=250&&listing.description.length<=10000,`${browser}/${locale} description`);
     }
-    if(browser==='chrome')assert.ok(fields.publicationBlockers.some(text=>text.includes('public email')));
+    if(browser==='chrome'){
+      assert.deepEqual(fields.ownerActionsRequired,[]);
+      assert.ok(fields.publicationBlockers.some(text=>text.includes('Do not submit')));
+    }
     for(const name of [...fields.screenshotFiles,fields.iconFile])assert.ok((await readFile(new URL('store/'+name,root))).length>0,name);
   }
   const generated=spawnSync(process.execPath,['scripts/store-fields.mjs','--check'],{encoding:'utf8'});

@@ -7,6 +7,8 @@ const metadata = await read('store/metadata.json');
 const translations = await read('localization/translations.json');
 const support = await read('config/support.json');
 const { version } = await read('package.json');
+const targets = publisher.publicationTargets;
+if (!Array.isArray(targets) || !targets.length || new Set(targets).size !== targets.length || targets.some(name => !['chrome','edge','firefox'].includes(name))) throw new Error('Invalid publication targets');
 if (!publisher.displayName || publisher.publicSupportEmail !== null || publisher.allowPublicEmail !== false) {
   throw new Error('The approved publisher profile uses GitHub support without a public email');
 }
@@ -23,9 +25,10 @@ const permissions = {
 };
 const purpose = 'Block listed advertising/tracking requests and targeted ad placements locally, including selected Persian-language sites, with user-controlled exceptions.';
 for (const browser of ['chrome','edge','firefox']) {
+  const active = targets.includes(browser);
   const images = browser === 'firefox' ? metadata.firefoxScreenshots : metadata.screenshots;
   const output = {
-    version, browser, publicationStatus: 'not_submitted',
+    version, browser, publicationStatus: active ? 'not_submitted' : 'deferred_by_owner',
     publisher, name: metadata.name, defaultLanguage: 'en',
     uploadFile: `adblocker-${browser}-store-${version}.zip`,
     sourceFile: `adblocker-reviewer-source-${version}.zip`,
@@ -52,6 +55,10 @@ for (const browser of ['chrome','edge','firefox']) {
     publicationBlockers: browser === 'chrome' ? ['No publisher account is ready.', 'Owner does not authorize a public email. Google documents a required verified contact email displayed in extension contact information. Resolve this with the owner before submission.'] : ['No publisher account is ready.'],
     locales: {}
   };
+  if (!active) {
+    output.ownerActionsRequired = [];
+    output.publicationBlockers = ['Deferred by the owner. Do not submit this store.'];
+  }
   if (browser === 'firefox') output.firefox = { distribution: 'listed', stableId: 'adblocker@salehghotbani.local', requiredDataCollection: ['none'], sourceRequired: true, androidListing: false };
   for (const [index, language] of translations.languages.entries()) {
     const description = translations.rows.at(-1)[index], summary = translations.rows.at(-2)[index];
