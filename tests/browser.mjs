@@ -586,10 +586,20 @@ async function checkPageCounters() {
     await command({ type: 'getSettings' });
     const tabId = await panel.evaluate(async url => (await chrome.tabs.query({})).find(tab => tab.url === url).id, page.url());
     const read = (id = tabId, url = page.url()) => command({ type: 'getCounters', tabId: id, url }).then(result => result.counters);
-    const waitForCounters = (expected, id = tabId, url = page.url()) => panel.waitForFunction(async ({ expected, id, url }) => {
-      const result = await chrome.runtime.sendMessage({ type: 'getCounters', tabId: id, url });
-      return result.counters?.requests === expected.requests && result.counters?.placements === expected.placements;
-    }, { expected, id, url });
+    const waitForCounters = async (expected, id = tabId, url = page.url()) => {
+      // Native badge updates can arrive after request/DOM completion. A single
+      // matching sample need not be settled; require three consecutive reads.
+      const deadline = Date.now() + 15000, samples = [];
+      let consecutive = 0;
+      while (Date.now() < deadline) {
+        const actual = await read(id, url); samples.push(actual);
+        consecutive = actual.requests === expected.requests && actual.placements === expected.placements ? consecutive + 1 : 0;
+        if (consecutive === 3) return actual;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      const native = await panel.evaluate(id => chrome.declarativeNetRequest.getMatchedRules({ tabId: id }), id);
+      throw new Error(`Native counters did not settle: ${JSON.stringify({ expected, samples: samples.slice(-10), native })}`);
+    };
     await panel.waitForFunction(async ({ tabId, url }) => {
       const result = await chrome.runtime.sendMessage({ type: 'getCounters', tabId, url });
       return result.counters?.requests === 0 && result.counters?.placements === 0;
