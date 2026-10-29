@@ -24,7 +24,9 @@ const html = `<!doctype html><html><body>
 <script src="/widget/ads.fixture.js"></script>
 <script src="/reader.js?reference=/widget/ads.js"></script>
 </body></html>`;
+let fixtureNavigations = 0;
 const server = http.createServer((req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
   if (/^\/(pagead\.js|widget\/ads\.fixture\.js|reader\.js)/.test(req.url)) {
     res.setHeader('Content-Type', 'application/javascript');
     res.end(req.url.startsWith('/reader.js') ? 'window.readerLoaded = true;' :
@@ -32,7 +34,12 @@ const server = http.createServer((req, res) => {
     return;
   }
   res.setHeader('Content-Type', 'text/html');
-  res.end(req.url.startsWith('/frame') ? '<p>Useful embedded content</p>' : html);
+  // A fresh resource URL prevents earlier blocked/routed loads from being
+  // reused across different document-policy scenarios. Every scenario still
+  // requires actual execution or explicit client blocking of the same host.
+  res.end(req.url.startsWith('/frame') ? '<p>Useful embedded content</p>' : html.replace(
+    'https://ads.doubleclick.net/adblocker-fixture.js',
+    `https://ads.doubleclick.net/adblocker-fixture.js?document=${++fixtureNavigations}`));
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 let context;
@@ -47,7 +54,7 @@ try {
   context.setDefaultTimeout(15000);
   // Satisfy external fixtures locally; no external website is contacted by this test.
   await context.route('https://ads.doubleclick.net/**', route => route.fulfill({
-    contentType: 'application/javascript', body: 'window.adScriptLoaded = true;'
+    contentType: 'application/javascript', headers: { 'cache-control': 'no-store' }, body: 'window.adScriptLoaded = true;'
   }));
   await context.route('https://*/adblocker-probe', route => route.fulfill({
     contentType: 'text/plain', body: 'Local network fixture'
