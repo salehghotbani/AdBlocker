@@ -23,7 +23,10 @@
     "check:locales": "node scripts/localize.mjs --check",
     "test:firefox": "node tests/firefox-runtime.mjs",
     "test:youtube": "node tests/youtube.mjs && node tests/youtube-browser.mjs",
-    "test:youtube-live": "node tests/youtube-live.mjs"
+    "test:youtube-live": "node tests/youtube-live.mjs",
+    "store:fields": "node scripts/store-fields.mjs",
+    "check:store-fields": "node scripts/store-fields.mjs --check",
+    "test:store-kit": "node tests/store-kit.mjs"
   },
   "engines": {
     "node": ">=20"

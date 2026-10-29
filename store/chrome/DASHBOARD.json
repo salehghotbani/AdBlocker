@@ -1,0 +1,122 @@
+{
+  "version": "1.7.1",
+  "browser": "chrome",
+  "publicationStatus": "not_submitted",
+  "publisher": {
+    "displayName": "saleh ghotbani",
+    "homepage": "https://github.com/salehghotbani/AdBlocker",
+    "supportWebsite": "https://github.com/salehghotbani/AdBlocker/issues",
+    "publicSupportEmail": null,
+    "allowPublicEmail": false
+  },
+  "name": "AdBlocker — Browse without ads",
+  "defaultLanguage": "en",
+  "uploadFile": "adblocker-chrome-store-1.7.1.zip",
+  "sourceFile": "adblocker-reviewer-source-1.7.1.zip",
+  "supportWebsite": "https://github.com/salehghotbani/AdBlocker/issues",
+  "homepage": "https://github.com/salehghotbani/AdBlocker",
+  "privacyPolicy": "https://github.com/salehghotbani/AdBlocker/blob/main/store/chrome/PRIVACY.md",
+  "license": "MIT",
+  "price": "free",
+  "requiresPayment": false,
+  "financialSupportConfigured": false,
+  "purpose": "Block listed advertising/tracking requests and targeted ad placements locally, including selected Persian-language sites, with user-controlled exceptions.",
+  "permissionJustifications": {
+    "storage": "Save protection, language/theme preferences and explicit site/URL exceptions locally; keep one-time tab pauses in session memory.",
+    "declarativeNetRequest": "Apply bundled local ad/tracker blocking rules and explicit user exceptions through the browser.",
+    "activeTab": "Read the selected page for user-invoked controls and the native per-tab blocked-request count when available.",
+    "webNavigation": "Expire one-time pauses and refresh effective protection on top-level navigation and SPA route changes; no browsing history is retained.",
+    "hostAccess": "HTTP/HTTPS access lets bundled rules and isolated content scripts filter websites, including changing tabs and new ad placements. A fixed small domain list cannot provide general website filtering. Processing is local, with per-site and exact-URL exceptions."
+  },
+  "remoteCode": {
+    "used": false,
+    "explanation": "All executable code, filters, translations and fonts are bundled. Store builds make no GitHub update checks; updates are managed by the store/browser."
+  },
+  "privacy": {
+    "collectsOrTransmitsUserData": false,
+    "localProcessing": "Page markers, native YouTube ad UI/media state and per-page counters are processed locally. Settings and chosen exception URLs stay in browser storage. No analytics, history collection or sale of data.",
+    "externalLinks": "Only explicit user clicks open GitHub support/source pages; those sites receive normal connection information under their own policies.",
+    "dataUseCertifications": {
+      "noSale": true,
+      "noUnrelatedUse": true,
+      "noCreditOrLendingUse": true
+    }
+  },
+  "platforms": [
+    "desktop"
+  ],
+  "privateBrowsing": false,
+  "screenshotFiles": [
+    "assets/01-clean-reading.png",
+    "assets/02-reading-demo.png",
+    "assets/03-themes-and-counters.png",
+    "assets/04-site-controls.png",
+    "assets/05-optional-support.png"
+  ],
+  "iconFile": "assets/icon-128.png",
+  "smallPromo": "assets/promo-small-440x280.png",
+  "marqueePromo": "assets/promo-marquee-1400x560.png",
+  "reviewerNotes": "REVIEWER-NOTES.md",
+  "buildInstructions": "BUILD.md",
+  "ownerActionsRequired": [
+    "Create/sign in to the publisher account and complete its verification/security requirements.",
+    "Use real account details and determine any publisher/trader disclosures in the dashboard; no legal identity is inferred by this kit.",
+    "Choose the matching category/eligible markets and review the final listing before submission."
+  ],
+  "publicationBlockers": [
+    "No publisher account is ready.",
+    "Owner does not authorize a public email. Google documents a required verified contact email displayed in extension contact information. Resolve this with the owner before submission."
+  ],
+  "locales": {
+    "en": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "Free ad blocking with site controls, live counters and no browsing-data collection.",
+      "description": "AdBlocker filters listed advertising and tracking requests and marked ad placements locally. Use global, site and exact-URL controls, a one-time pause, separate request/placement counters, and light/dark themes. English is the default; choose another interface language in the popup. Every blocking feature is free, without an account or subscription. Support is voluntary. Settings and selected exceptions stay in browser-local storage; browsing history and form contents are not collected. Store updates are managed by the browser. Coverage is targeted, not universal; some ads may remain and exceptions may be needed. Protection changes reload the page automatically. Pause expiry is asynchronous. Private browsing is not supported.\n\nIncludes targeted filters for Persian-language websites and best-effort YouTube in-player ad handling. Some video ads can still appear or leave a wait; full coverage is not guaranteed."
+    },
+    "fa": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "مسدودسازی رایگان تبلیغات، کنترل سایت و شمارندهٔ زنده، بدون جمع‌آوری اطلاعات مرور.",
+      "description": "AdBlocker درخواست‌های فهرست‌شدهٔ تبلیغاتی و ردیابی و جایگاه‌های مشخص تبلیغ را محلی فیلتر می‌کند. کنترل کلی، سایت و نشانی دقیق، توقف یک‌باره، شمارنده‌های جداگانه و حالت روز/شب در دسترس است. پیش‌فرض انگلیسی است و زبان را در پنجرهٔ افزونه انتخاب می‌کنید. تمام قابلیت‌های مسدودسازی بدون حساب یا اشتراک رایگان‌اند؛ حمایت اختیاری است. تنظیمات و استثناها محلی می‌مانند و تاریخچه و فرم‌ها جمع‌آوری نمی‌شوند. آپدیت فروشگاهی با مرورگر است. پوشش همه‌جانبه نیست؛ برخی تبلیغات می‌مانند و گاهی استثنا لازم است. تغییر محافظت صفحه را خودکار بازخوانی می‌کند؛ انقضای توقف ناهمگام است. مرور خصوصی پشتیبانی نمی‌شود.\n\nفیلترهای هدفمند سایت‌های فارسی و مدیریت محدود تبلیغات داخل پخش‌کنندهٔ YouTube دارد. بعضی تبلیغات ویدیویی ممکن است نمایش داده شوند یا زمان انتظار باقی بگذارند؛ پوشش کامل تضمین نمی‌شود."
+    },
+    "ar": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "حظر إعلانات مجاني مع تحكم بالمواقع وعدادات مباشرة دون جمع بيانات التصفح.",
+      "description": "يفلتر AdBlocker محليًا طلبات الإعلان والتتبع المدرجة والمواضع الإعلانية المحددة. يوفر تحكمًا عامًا وبالموقع والرابط الدقيق، وإيقافًا لمرة واحدة، وعدادات منفصلة ومظهرًا فاتحًا وداكنًا. الإنجليزية افتراضية ويمكن اختيار لغة الواجهة من النافذة. كل ميزات الحظر مجانية دون حساب أو اشتراك؛ الدعم اختياري. تبقى الإعدادات والاستثناءات محلية، ولا يُجمع سجل التصفح أو محتوى النماذج. يدير المتصفح تحديثات المتجر. التغطية محددة وليست شاملة؛ قد تبقى إعلانات وتلزم استثناءات. تغييرات الحماية تعيد تحميل الصفحة تلقائيًا وانتهاء الإيقاف غير متزامن. التصفح الخاص غير مدعوم.\n\nيتضمن مرشحات مخصصة لمواقع باللغة الفارسية ومعالجة إعلانات مشغل YouTube بقدر الإمكان. قد تظهر بعض إعلانات الفيديو أو يبقى انتظار؛ لا توجد تغطية مضمونة بالكامل."
+    },
+    "es": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "Bloqueo de anuncios gratis, controles por sitio y contadores sin recopilar datos de navegación.",
+      "description": "AdBlocker filtra localmente las solicitudes de publicidad y seguimiento incluidas y los espacios publicitarios marcados. Ofrece controles globales, por sitio y URL exacta, pausa de una vez, contadores separados y temas claro/oscuro. El idioma predeterminado es inglés; puedes cambiarlo en el panel. Todas las funciones de bloqueo son gratis, sin cuenta ni suscripción. El apoyo es voluntario. Los ajustes y las excepciones se guardan localmente; no se recopilan historial ni formularios. El navegador gestiona las actualizaciones de la tienda. La cobertura es limitada: pueden quedar anuncios y ser necesarias excepciones. Los cambios recargan la página automáticamente; la pausa caduca de forma asíncrona. No se admite navegación privada.\n\nIncluye filtros específicos para sitios en persa y gestión de anuncios en el reproductor de YouTube cuando es posible. Algunos anuncios pueden aparecer o dejar una espera; no se garantiza cobertura total."
+    },
+    "fr": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "Blocage publicitaire gratuit, contrôles par site et compteurs, sans collecte des données de navigation.",
+      "description": "AdBlocker filtre localement les requêtes publicitaires et de suivi répertoriées et les emplacements marqués. Il propose des contrôles globaux, par site et URL exacte, une pause unique, des compteurs séparés et des thèmes clair/sombre. L’anglais est la langue par défaut ; le choix se fait dans la fenêtre. Toutes les fonctions de blocage sont gratuites, sans compte ni abonnement. Le soutien est volontaire. Réglages et exceptions restent locaux ; aucun historique ni contenu de formulaire n’est collecté. Le navigateur gère les mises à jour du magasin. La couverture est ciblée, non universelle ; des publicités peuvent rester et des exceptions être nécessaires. Les changements rechargent automatiquement la page ; la pause expire de manière asynchrone. La navigation privée n’est pas prise en charge.\n\nComprend des filtres ciblés pour les sites en persan et une gestion des publicités du lecteur YouTube lorsque possible. Certaines publicités peuvent rester ou imposer une attente ; la couverture complète n’est pas garantie."
+    },
+    "de": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "Kostenloser Werbeblocker mit Website-Steuerung und Live-Zählern, ohne Erfassung von Browserdaten.",
+      "description": "AdBlocker filtert gelistete Werbe- und Trackinganfragen sowie markierte Werbeplätze lokal. Globale, Website- und genaue URL-Steuerung, einmalige Pause, getrennte Zähler sowie helle und dunkle Designs sind verfügbar. Standardsprache ist Englisch; die Auswahl erfolgt im Popup. Alle Blockierfunktionen sind kostenlos, ohne Konto oder Abo. Unterstützung ist freiwillig. Einstellungen und Ausnahmen bleiben lokal; Verlauf und Formulardaten werden nicht erfasst. Der Browser verwaltet Store-Updates. Die Abdeckung ist gezielt, nicht universell; Werbung kann verbleiben und Ausnahmen können nötig sein. Schutzänderungen laden die Seite automatisch neu; Pausen enden asynchron. Privates Surfen wird nicht unterstützt.\n\nEnthält gezielte Filter für persischsprachige Websites und eine bestmögliche Behandlung von YouTube-Player-Werbung. Manche Videoanzeigen oder Wartezeiten können bleiben; eine vollständige Abdeckung ist nicht garantiert."
+    },
+    "pt-BR": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "Bloqueio gratuito de anúncios com controles por site e contadores, sem coletar dados de navegação.",
+      "description": "AdBlocker filtra localmente solicitações listadas de anúncios e rastreamento e espaços publicitários marcados. Oferece controles globais, por site e URL exata, pausa única, contadores separados e temas claro/escuro. O inglês é o padrão; escolha outro idioma no painel. Todos os recursos de bloqueio são gratuitos, sem conta ou assinatura. O apoio é voluntário. Configurações e exceções ficam locais; histórico e formulários não são coletados. O navegador gerencia as atualizações da loja. A cobertura é específica, não universal; anúncios podem permanecer e exceções ser necessárias. Alterações recarregam a página automaticamente; a pausa expira de forma assíncrona. A navegação privada não é compatível.\n\nInclui filtros específicos para sites em persa e tratamento de anúncios no player do YouTube quando possível. Alguns anúncios podem aparecer ou exigir espera; não há garantia de cobertura completa."
+    },
+    "zh-CN": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "免费广告拦截，支持网站设置和实时计数，不收集浏览数据。",
+      "description": "AdBlocker 在本地过滤规则列表中的广告、跟踪请求和标记的广告位，提供全局、网站及精确网址设置、单次暂停、独立计数和浅色/深色主题。默认语言为英语，可在面板中选择其他语言。所有拦截功能均免费，无需账户或订阅，支持完全自愿。设置和选定例外保存在本地，不收集浏览历史或表单内容。商店更新由浏览器管理。过滤范围有针对性，并非覆盖所有广告；部分广告可能保留，有时需要例外。更改防护会自动重新加载页面，暂停以异步方式到期。不支持无痕浏览。\n\n包含针对波斯语网站的专用过滤规则，并尽可能处理 YouTube 播放器内的广告。部分视频广告仍可能出现，或需要等待才能继续播放；不保证覆盖所有广告、地区或播放器版本。用户可随时使用网站或精确网址例外来恢复页面内容。"
+    },
+    "ja": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "無料の広告ブロック。サイトごとの設定とカウンターを備え、閲覧データを収集しません。",
+      "description": "AdBlockerは、一覧にある広告・追跡リクエストと、目印のある広告枠を端末内でフィルタリングします。全体、サイト、正確なURLの設定、一度だけの停止、別々のカウンター、ライト・ダークテーマを備えています。初期言語は英語で、パネルで変更できます。ブロック機能はすべて無料で、アカウントや契約は不要です。支援は任意です。設定と例外は端末内に保存し、閲覧履歴やフォーム内容を収集しません。ストアの更新はブラウザーが管理します。すべての広告への対応を保証するものではなく、例外が必要な場合があります。保護の変更後はページを自動で再読み込みし、一時停止の解除は非同期です。プライベートブラウジングには対応していません。\n\nペルシア語サイト向けの個別フィルターと、可能な範囲でのYouTubeプレーヤー内広告処理を含みます。一部の動画広告や待ち時間が残る場合があり、完全な対応は保証しません。"
+    },
+    "tr": {
+      "name": "AdBlocker — Browse without ads",
+      "summary": "Site denetimleri ve canlı sayaçlarla ücretsiz reklam engelleme; gezinme verileri toplanmaz.",
+      "description": "AdBlocker, listelenen reklam ve takip istekleriyle işaretli reklam alanlarını yerel olarak filtreler. Genel, site ve tam URL denetimleri, tek seferlik duraklatma, ayrı sayaçlar ve açık/koyu tema sunar. Varsayılan dil İngilizcedir; panelden değiştirebilirsiniz. Tüm engelleme özellikleri hesap veya abonelik olmadan ücretsizdir. Destek gönüllüdür. Ayarlar ve seçilen istisnalar yerel kalır; geçmiş veya form içeriği toplanmaz. Mağaza güncellemelerini tarayıcı yönetir. Kapsam hedeflidir, tüm reklamları kapsamaz; bazı reklamlar kalabilir ve istisna gerekebilir. Koruma değişiklikleri sayfayı otomatik yeniler; duraklatma zaman uyumsuz sona erer. Gizli gezinme desteklenmez.\n\nFarsça siteler için hedefli filtreler ve mümkün olduğunda YouTube oynatıcı içi reklam işlemesi içerir. Bazı video reklamları veya bekleme süreleri kalabilir; tam kapsam garanti edilmez."
+    }
+  }
+}

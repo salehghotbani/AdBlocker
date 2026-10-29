@@ -71,10 +71,34 @@ test('listing images have official dimensions and metadata does not claim paid c
   assert.ok(metadata.summary.length <= 132);
   for (const [names, width, height] of [
     [[...metadata.screenshots, ...metadata.firefoxScreenshots], 1280, 800],
-    [[metadata.icon], 128, 128], [[metadata.smallPromo], 440, 280], [[metadata.marqueePromo], 1400, 560]
+    [[metadata.icon], 128, 128], [['icon-64.png'],64,64], [['icon-300.png'],300,300], [[metadata.smallPromo], 440, 280], [[metadata.marqueePromo], 1400, 560]
   ]) for (const name of names) {
     const bytes = await readFile(new URL(`store/assets/${name}`, root));
     assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
     assert.equal(bytes.readUInt32BE(16), width, name); assert.equal(bytes.readUInt32BE(20), height, name);
   }
+});
+
+test('submission fields match manifests/locales, satisfy Edge lengths and keep the approved public contact', async () => {
+  const current=JSON.parse(await read('package.json')).version;
+  for(const browser of ['chrome','edge','firefox']){
+    const fields=JSON.parse(await read(`store/${browser}/DASHBOARD.json`));
+    const manifest=JSON.parse(await read(`dist/stores/${browser}/manifest.json`));
+    assert.equal(fields.version,current);assert.equal(fields.publicationStatus,'not_submitted');
+    assert.equal(fields.publisher.displayName,'saleh ghotbani');
+    assert.equal(fields.publisher.publicSupportEmail,null);assert.equal(fields.publisher.allowPublicEmail,false);
+    assert.equal(fields.supportWebsite,'https://github.com/salehghotbani/AdBlocker/issues');
+    assert.equal(fields.remoteCode.used,false);assert.equal(fields.financialSupportConfigured,false);
+    assert.deepEqual(Object.keys(fields.permissionJustifications).filter(name=>name!=='hostAccess').sort(),[...manifest.permissions].sort());
+    assert.equal(Object.keys(fields.locales).length,10);
+    for(const [locale,listing] of Object.entries(fields.locales)){
+      const messages=JSON.parse(await read(`dist/stores/${browser}/_locales/${locale.replace('-','_')}/messages.json`));
+      assert.equal(listing.name,messages.extensionName.message);assert.equal(listing.summary,messages.extensionDescription.message);
+      assert.ok(listing.description.length>=250&&listing.description.length<=10000,`${browser}/${locale} description`);
+    }
+    if(browser==='chrome')assert.ok(fields.publicationBlockers.some(text=>text.includes('public email')));
+    for(const name of [...fields.screenshotFiles,fields.iconFile])assert.ok((await readFile(new URL('store/'+name,root))).length>0,name);
+  }
+  const generated=spawnSync(process.execPath,['scripts/store-fields.mjs','--check'],{encoding:'utf8'});
+  assert.equal(generated.status,0,generated.stderr);
 });

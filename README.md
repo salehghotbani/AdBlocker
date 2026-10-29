@@ -23,7 +23,7 @@ A free, open-source ad and tracker blocker for Chrome, Edge and Firefox. The int
 
 ## Install and update
 
-Store submissions are being prepared; no approved store listing is claimed. [Submission guide, English/Persian descriptions and images](store/SUBMISSION.md). Build the three upload ZIPs with `npm run package:stores`; assemble the source, images and documentation with `npm run store:kit`. Store editions and manual-install packages have separate update channels.
+Upload packages, ten-language listings, artwork and reviewer source are prepared; no store submission or approval is claimed. [Submission guide, English/Persian descriptions and images](store/SUBMISSION.md). Build the three upload ZIPs with `npm run package:stores`; assemble the source, images and documentation with `npm run store:kit` and verify its offline rebuild with `npm run test:store-kit`. Approved public support is GitHub; Chrome publication still needs resolution of its required verified public contact email. Store editions and manual-install packages have separate update channels.
 
 Download and extract your browser's ZIP from the [latest release](https://github.com/salehghotbani/AdBlocker/releases/latest).
 

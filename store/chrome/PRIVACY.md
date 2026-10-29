@@ -2,6 +2,8 @@
 
 AdBlocker store editions (version 1.7.1) are free and have no account, subscription, analytics or embedded payment processor.
 
+Publisher: saleh ghotbani. Public support is provided through [GitHub Issues](https://github.com/salehghotbani/AdBlocker/issues); no public support email is configured.
+
 - Advertising markers are examined locally to hide ad placements. Browser network rules block listed requests locally. Browsing history, page text, form contents and sign-in information are not collected or transmitted by the extension.
 - Global protection, language/theme preferences, selected site exceptions and explicitly saved exact-URL exceptions are kept in browser-local storage. Selected URLs can contain sensitive query parameters. One-time pauses temporarily store a tab ID and URL in session memory and expire on reload/navigation, tab closure or browser shutdown. Private/incognito browsing is disabled in the manifest and is not supported.
 - Translations and font files are bundled, including Shabnam for Persian/Arabic and Inter for Latin scripts. No translation or font service is contacted.
@@ -20,3 +22,5 @@ AdBlocker store editions (version 1.7.1) are free and have no account, subscript
 ## Data removal and contact
 
 Clear site/URL exceptions in the popup to delete them, or uninstall to remove browser-local settings. Resume protection to end a one-time pause. There is no extension backend or payment account. For support use [repository Issues](https://github.com/salehghotbani/AdBlocker/issues); report security findings privately through the repository's Security tab when available. Never post private URLs, credentials or wallet recovery phrases.
+
+The extension’s handling of information complies with the Chrome Web Store User Data Policy, including its Limited Use requirements.

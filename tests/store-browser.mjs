@@ -65,6 +65,8 @@ for (const channel of ['chrome', 'edge']) {
     await panel.locator('#siteEnabled').click();
     await page.waitForFunction(() => getComputedStyle(document.getElementById('top-ad')).display !== 'none');
     await panel.waitForFunction(() => document.documentElement.dataset.protection === 'off');
+    await panel.waitForFunction(() => !document.getElementById('siteEnabled').disabled &&
+      document.getElementById('placementCount').textContent === '0');
     await panel.screenshot({ path: path.join(captures, `${channel}-popup-paused.png`), fullPage: true, animations: 'disabled' });
     await page.screenshot({ path: path.join(captures, `${channel}-reading-unfiltered.png`) });
     await panel.locator('#siteEnabled').click();

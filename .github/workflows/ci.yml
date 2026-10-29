@@ -23,6 +23,7 @@ jobs:
       - run: npm audit --audit-level=low
       - run: npm run check
       - run: npm run check:locales
+      - run: npm run check:store-fields
       - run: npm run package
       - run: npm run package:stores
       - run: npm test
@@ -42,6 +43,7 @@ jobs:
       - run: npm run lint:firefox
       - run: npm exec --yes --package=web-ext@10.8.0 -- web-ext lint --source-dir dist/stores/firefox --warnings-as-errors
       - run: npm run store:kit
+      - run: npm run test:store-kit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -50,6 +52,7 @@ jobs:
             dist/*.zip
             dist/stores/*.zip
             dist/stores/*.txt
+            dist/stores/*.sha256
             artifacts/*.png
             artifacts/firefox-runtime.json
             store/assets/

@@ -2,18 +2,33 @@
 
 This kit prepares publication; it does not mean an account was registered, a store submission was made, or a listing was approved. Version 1.7.1 is free in every channel. English is the default listing language; LISTING.fa.md is optional Persian listing text.
 
+Publisher: **saleh ghotbani**. Public support: [GitHub Issues](https://github.com/salehghotbani/AdBlocker/issues). The owner has not authorized a public email. No email, wallet address, legal identity or publisher account is invented by this kit.
+
+## Start here
+
+The combined ZIP contains `START-HERE.md`, three browser upload ZIPs, a reviewer source ZIP, listings in ten languages, artwork and permission/privacy answers. Use the matching browser's `DASHBOARD.json` for copy/paste field values and `REVIEWER-NOTES.md` for testing notes. These JSON files are preparation material, not an upload API or proof of submission.
+
+| Store | Dashboard | Current owner-side requirement |
+| --- | --- | --- |
+| Chrome | [Developer Dashboard](https://chrome.google.com/webstore/devconsole) | Register/verify the publisher account. Google's [account guide](https://developer.chrome.com/docs/webstore/set-up-account) requires a verified contact email displayed in extension contact information. This conflicts with the owner's current no-public-email instruction; do not submit or enter an email without resolving that choice. |
+| Edge | [Partner Center](https://partner.microsoft.com/dashboard/microsoftedge/overview) | Register/verify the publisher account. Use the GitHub support URL for the optional support-contact field. |
+| Firefox | [AMO Developer Hub](https://addons.mozilla.org/developers/) | Register/sign in to the publisher account. Use GitHub as Support website; leave optional public support email blank. Select desktop only and listed distribution. |
+
+Private account sign-in/verification is distinct from public listing fields. Do not put credentials or verification codes in this repository. Complete account/eligibility and any required identity/trader declarations with the owner's real information; this kit does not select a legal status. Chrome registration availability depends on the owner's actual location; consult the [official registration guide](https://developer.chrome.com/docs/webstore/register).
+
 ## Build and assets
 
 1. Run `npm run package` and `npm run package:stores`.
-2. Run `npm test`, `npm run test:dist`, `npm run test:stores` and the Chromium integration suites. Set `CHROMIUM_PATH` to the test browser executable.
+2. Run `npm run locales`, `npm run store:fields`, `npm run check:store-fields`, `npm test`, `npm run test:dist`, `npm run test:stores` and the Chromium integration suites. Set `CHROMIUM_PATH` to the test browser executable.
 3. Run `npm run test:store-browser` and `npm run test:firefox`, then `npm run store:assets` to refresh captures and artwork. The Firefox test needs the Playwright Firefox test browser (`npx playwright install firefox`). See assets/provenance.json for capture scope.
-4. Run `npm run store:kit` to produce the combined kit, source archive and SHA-256 list in `dist/stores/`.
+4. Run `npm run store:kit`, then `npm run test:store-kit`. The latter rebuilds the extracted reviewer source without npm dependencies/network access and compares every produced upload file. See [reviewer build instructions](BUILD.md).
+5. The combined kit has its own `.zip.sha256` file; `SHA256SUMS-stores-1.7.1.txt` covers individual uploads and source. ZIP metadata can differ across machines; extracted production file bytes must match.
 
 | Destination | Upload file | Images |
 | --- | --- | --- |
 | Chrome Web Store | adblocker-chrome-store-1.7.1.zip | assets/01 through 05 (1280×800), icon-128.png, optional 440×280 / 1400×560 promos |
-| Edge Add-ons | adblocker-edge-store-1.7.1.zip | Same five images, icon and optional promos |
-| Firefox Add-ons (desktop) | adblocker-firefox-store-1.7.1.zip | assets/firefox-filtering.png is an actual Firefox runtime capture; use a localized caption |
+| Edge Add-ons | adblocker-edge-store-1.7.1.zip | Same five English images, icon-300.png and optional promos |
+| Firefox Add-ons (desktop) | adblocker-firefox-store-1.7.1.zip | icon-64.png and assets/firefox-filtering.png, an actual Firefox runtime capture; use a caption outside the image |
 
 The Firefox ZIP is an unsigned submission package; AMO performs signing. Keep `adblocker@salehghotbani.local` stable across updates. Do not upload the entire submission-kit ZIP as the extension. Never upload the manual GitHub build to a store.
 
@@ -21,12 +36,12 @@ The Firefox ZIP is an unsigned submission package; AMO performs signing. Keep `a
 
 - Name/summary/full description: use the selected browser's `listings/en.md`, with optional localized text from the other nine files. For Edge, use `edge/listings/` and `edge/PRIVACY.md` so the public listing/policy does not advertise other browsers. The top-level LISTING guides are reference material, not a replacement for the browser-specific files.
 - Price: Free. No account, subscription or paid capabilities. Disclose voluntary support transparently in the description/reviewer notes. If a dashboard asks about monetization, explain the actual configured support method; do not describe it as an in-app feature purchase.
-- Publisher identity and support contact email: use the creator's real, verified account information. The repository does not invent these fields. Support website: `https://github.com/salehghotbani/AdBlocker/issues`.
+- Publisher name: `saleh ghotbani`. Public support website: `https://github.com/salehghotbani/AdBlocker/issues`. No public email is authorized; see the Chrome blocker above. Account registration details must be entered by the owner.
 - Privacy URL: `https://github.com/salehghotbani/AdBlocker/blob/main/store/BROWSER/PRIVACY.md`, with BROWSER replaced by chrome, edge or firefox. These must be public before submission.
 - Purpose: local blocking of listed ads/tracking requests and targeted placements, with per-site controls. Use REVIEWER-NOTES.md for permission explanations.
 - Data disclosures: the extension itself does not collect/transmit browsing or payment data. Local settings/selected exceptions and user-initiated external support links are described in PRIVACY.md. Do not claim “no data ever leaves the browser” for a clicked external link or blockchain transfer.
 - AMO: no payment/non-free service is required to use functionality. Existing `data_collection_permissions.required = ["none"]` reflects the no-collection store implementation. No Android listing until Android runtime is tested.
-- Include source ZIP if requested; code is readable and generated rule inputs/build instructions are included.
+- AMO source upload: include the reviewer source ZIP because custom generators produce rules/localization/channel metadata, even though the shipped JavaScript is readable. `README-REVIEWER.md` at the source root gives the offline build steps.
 
 ## Remaining publication requirements
 
@@ -45,3 +60,6 @@ English remains the initial UI language until explicitly changed. Supported lang
 - [Edge publication](https://learn.microsoft.com/en-us/microsoft-edge/extensions-chromium/publish/publish-extension)
 - [Firefox submission](https://extensionworkshop.com/documentation/publish/submitting-an-add-on/)
 - [Firefox listing images](https://extensionworkshop.com/documentation/develop/create-an-appealing-listing/)
+- [Mozilla source-code submission](https://extensionworkshop.com/documentation/publish/source-code-submission/)
+
+No store submission has been made. Store acceptance, name availability and account eligibility must be resolved in the actual dashboards. [فارسی: راهنمای کوتاه](SUBMISSION.fa.md).

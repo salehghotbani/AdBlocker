@@ -2,6 +2,12 @@
 
 **English** | [فارسی](CHANGELOG.fa.md)
 
+## Store publication material for 1.7.1 — 2026-10-29
+
+- Finalize three store upload/source packages, generated dashboard/privacy/permission answers and ten localized listings. Fix the Chinese description's Edge minimum-length shortfall and disclose Persian-site filters and limited YouTube handling.
+- Record approved publisher saleh ghotbani with GitHub-only public support; no email or receiving destination is invented. Chrome's public contact-email requirement remains a publication blocker under the owner's preference. No account registration, store submission or approval is claimed.
+- Refresh actual UI artwork, add 64/300px store icon formats, root reviewer instructions and kit checksums. Add an offline extracted-source rebuild comparison and CI gates. Filtering behavior, permissions and version remain unchanged.
+
 ## 1.7.1 — 2026-10-29
 
 - Recognize native modern Sponsored badges and legacy ad badges even before a Skip button is presented. Previously these layouts could leave the ad picture/audio unchanged.

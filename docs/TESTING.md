@@ -2,6 +2,13 @@
 
 **English** | [فارسی](TESTING.fa.md)
 
+## Store publication finalization — 2026-10-29
+
+- Prepared version 1.7.1 upload ZIPs and generated dashboard fields for Chrome, Edge and desktop Firefox, with approved publisher `saleh ghotbani` and GitHub-only public support. No public email, publisher account or receiving destination is invented. Chrome's documented public verified-contact-email requirement remains an owner-side blocker; all stores still need publisher account access. No submission or approval has occurred.
+- All ten full listings now satisfy Edge's 250–10,000 character range; the previous Chinese description was too short. Targeted Persian-site filtering and best-effort YouTube media behavior are disclosed without a universal blocking claim. English-only artwork and actual Firefox imagery were refreshed; 64/128/300px icon outputs and both promo sizes are present. Paused-state captures wait for saved settings and settled counters.
+- 38 unit tests, four distribution checks, six store checks, current Chromium/Edge store integration and actual Firefox passed locally. Both Firefox lints reported zero errors, warnings and notices. The new offline reviewer-source test extracts the source archive without dependencies/network access, runs its generators and compares every produced production file with all three upload ZIPs; kit integrity and its SHA-256 are verified. CI adds dashboard drift and reviewer-rebuild gates. [Submission material](../store/SUBMISSION.md), [policy review](../store/POLICY-REVIEW.md), [CI](https://github.com/salehghotbani/AdBlocker/actions).
+- This preparation changes no blocking behavior or permissions. The 1.7.1 YouTube fix was confirmed by the user in their Chrome; that report does not establish real mid-roll or universal coverage. The older exact-URL fixture's intermittent Chromium failure remains documented; no retry is a proof of its elimination.
+
 ## Version 1.7.1 YouTube detection fix — 2026-10-29
 
 - Added synthetic actual-media cases for modern `ytp-ad-badge--clean-player` and legacy `ytp-ad-badge` layouts with no available Skip, plus visible ad UI/Skip inside an `aria-hidden` ancestor. The new modern-badge regression times out against 1.7.0 before the fix, reproducing visible/audible ads; the corrected controller conceals/mutes these cases and restores normal media.

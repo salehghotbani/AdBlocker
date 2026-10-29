@@ -46,6 +46,17 @@ try {
   await shot('promo-small-440x280.png', promo(440, 280), { width: 440, height: 280 });
   await shot('promo-marquee-1400x560.png', promo(1400, 560), { width: 1400, height: 560 });
   await cp(path.join(root, 'extension/icons/128.png'), path.join(assets, 'icon-128.png'));
+  // Store-format exports from the existing brand master; no new artwork.
+  const master = (await readFile(path.join(root,'docs/images/logo.png'))).toString('base64');
+  for (const size of [64,300]) {
+    const png = await page.evaluate(async ({master,size})=>{
+      const img=new Image();img.src='data:image/png;base64,'+master;await img.decode();
+      const canvas=document.createElement('canvas');canvas.width=canvas.height=size;
+      const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+      ctx.drawImage(img,0,0,size,size);return canvas.toDataURL('image/png').split(',')[1];
+    },{master,size});
+    await writeFile(path.join(assets,`icon-${size}.png`),Buffer.from(png,'base64'));
+  }
   const provenance = JSON.parse(await readFile(path.join(captures, 'provenance.json'), 'utf8'));
   // Keep provenance portable; machine-local runtime paths do not belong in Git.
   delete provenance.runtime;
@@ -53,7 +64,7 @@ try {
     artwork: 'HTML/CSS frames around genuine UI captures; no fabricated counts, ratings, store approvals or third-party branding.',
     firefoxImages: 'Unannotated reading-demo capture from an actual Firefox temporary installation. Runtime report is artifacts/firefox-runtime.json.'
   }, null, 2) + '\n');
-  console.log('PASS: five English-only 1280x800 images, actual Firefox capture, 128px icon and both promotional sizes rendered');
+  console.log('PASS: five English-only 1280x800 images, actual Firefox capture, 64/128/300px icons and both promotional sizes rendered');
 } finally {
   await context?.close();
   if (path.dirname(path.resolve(profile)) !== path.resolve(profiles)) throw new Error('Unexpected asset profile');

@@ -10,7 +10,8 @@ const outputs = new Map();
 for (const [browser, name] of Object.entries({ chrome: 'Google Chrome', edge: 'Microsoft Edge', firefox: 'Mozilla Firefox' })) {
   for (const suffix of ['', '.fa']) {
     const base = await readFile(new URL(`store/PRIVACY${suffix}.md`, root), 'utf8');
-    outputs.set(`store/${browser}/PRIVACY${suffix}.md`, base.replace(/^# .*$/m, suffix ? `# حریم خصوصی AdBlocker — ${name}` : `# AdBlocker privacy policy — ${name}`));
+    const limitedUse = browser === 'chrome' ? (suffix ? '\nاستفادهٔ این افزونه از اطلاعات با سیاست دادهٔ کاربر Chrome Web Store، از جمله الزامات Limited Use، مطابقت دارد.\n' : '\nThe extension’s handling of information complies with the Chrome Web Store User Data Policy, including its Limited Use requirements.\n') : '';
+    outputs.set(`store/${browser}/PRIVACY${suffix}.md`, base.replace(/^# .*$/m, suffix ? `# حریم خصوصی AdBlocker — ${name}` : `# AdBlocker privacy policy — ${name}`) + limitedUse);
   }
 }
 for (const [index, language] of languages.entries()) {

@@ -22,6 +22,10 @@ Store editions receive updates through the browser's store. They do not fetch Gi
 
 Coverage is targeted, not universal. Some first-party promotions, video ads and site-specific layouts may remain. Use exceptions if a page breaks, and report a public URL through the support link so filters can be improved. Protection changes reload the current page automatically. A one-time pause expires asynchronously on the next reload or navigation; very early requests can race expiry.
 
+Includes targeted filters for Persian-language websites and best-effort YouTube in-player ad handling. Some video ads can still appear or leave a wait; full coverage is not guaranteed.
+
+Publisher: saleh ghotbani. Public support uses GitHub Issues; no public support email is configured.
+
 ## Support and privacy URLs
 
 - Support: https://github.com/salehghotbani/AdBlocker/issues

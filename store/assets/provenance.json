@@ -1,5 +1,5 @@
 {
-  "version": "1.6.1",
+  "version": "1.7.1",
   "content": "Local English reading demonstration; actual store-edition popup and filtering; no live-site screenshots or mock counters.",
   "firefox": "This harness exercises Chromium only; Firefox is tested separately by tests/firefox-runtime.mjs.",
   "artwork": "HTML/CSS frames around genuine UI captures; no fabricated counts, ratings, store approvals or third-party branding.",
