@@ -23,6 +23,7 @@ try{
  await command({type:'getSettings'});
  const page=await context.newPage();await page.goto('https://www.youtube.com/watch?v=YtFixture01');
  await page.waitForFunction(()=>document.querySelector('video').readyState>=2);
+ await page.evaluate(()=>{document.querySelector('.ytp-ad-module span').className='ytp-ad-badge--clean-player';document.querySelector('.ytp-ad-module').setAttribute('aria-hidden','true');});
  await page.evaluate(()=>fixture.content(0,1.25));await page.evaluate(()=>fixture.ad(false));
  await page.waitForFunction(()=>document.querySelector('#movie_player').getAttribute('data-adblocker-youtube')==='ad');
  assert.equal(await page.locator('video').evaluate(video=>getComputedStyle(video).visibility),'hidden');

@@ -15,7 +15,8 @@ if (!ids.every(id => /^[a-zA-Z0-9_-]{11}$/.test(id))) throw new Error('Invalid p
 const seconds = Number(process.env.ADBLOCK_YT_SECONDS || 90);
 if (!Number.isInteger(seconds) || seconds < 10 || seconds > 600) throw new Error('Observation must be 10–600 seconds');
 const toggleOnAd = process.env.ADBLOCK_YT_TOGGLE_ON_AD === '1';
-const phases = toggleOnAd || process.env.ADBLOCK_YT_PHASE === 'off' ? [false] : [false,true];
+if (process.env.ADBLOCK_YT_PHASE && !['off','on'].includes(process.env.ADBLOCK_YT_PHASE)) throw new Error('Phase must be off or on');
+const phases = toggleOnAd || process.env.ADBLOCK_YT_PHASE === 'off' ? [false] : process.env.ADBLOCK_YT_PHASE === 'on' ? [true] : [false,true];
 const reports = []; let context;
 const sourceHash=createHash('sha256').update(await readFile(path.join(root,'dist/stores/chrome/youtube.js'))).digest('hex');
 const noExtension = process.env.ADBLOCK_YT_NO_EXTENSION === '1';
@@ -43,6 +44,18 @@ try {
     await page.bringToFront();
     await page.addInitScript(()=>{
       window.__youtubeAuditSkips=[];
+      window.__youtubeAuditEarly=[];
+      // Read-only observation from document start, including ads before Skip.
+      const observe=()=>{
+        const player=document.querySelector('#movie_player.html5-video-player'),video=player?.querySelector('video.html5-main-video');
+        if(!player?.classList.contains('ad-showing')||!video||window.__youtubeAuditEarly.length>=5000)return;
+        const labels=[...player.querySelectorAll('.ytp-ad-badge--clean-player,.ytp-ad-badge,.ytp-ad-text,.ytp-ad-preview-container')].filter(el=>el.getClientRects().length>0);
+        window.__youtubeAuditEarly.push({at:Date.now(),time:video.currentTime,ready:video.readyState,paused:video.paused,
+          visible:getComputedStyle(video).visibility==='visible',muted:video.muted,controller:player.getAttribute('data-adblocker-youtube'),
+          labels:labels.map(el=>({classes:el.className,accessibilityHidden:Boolean(el.closest('[aria-hidden="true"]'))})),
+          skipVisible:[...player.querySelectorAll('button.ytp-skip-ad-button,button.ytp-ad-skip-button,button.ytp-ad-skip-button-modern')].some(el=>el.getClientRects().length>0&&getComputedStyle(el).visibility==='visible'&&!el.disabled&&!el.hidden)});
+      };
+      setInterval(observe,50);
       document.addEventListener('click',event=>{
         const control=event.target.closest?.('[class*="skip-ad"],[class*="ad-skip"]');
         if(control&&control.closest('#movie_player'))window.__youtubeAuditSkips.push({at:Date.now(),classes:String(control.className),trusted:event.isTrusted});
@@ -78,7 +91,7 @@ try {
         const video=player?.querySelector('video.html5-main-video');
         const exists=selector=>[...(player?.querySelectorAll(selector)||[])].some(el=>el.getClientRects().length>0&&getComputedStyle(el).display!=='none');
         return { at:Date.now(),ad:player?.classList.contains('ad-showing')||false,
-          adUi:exists('.ytp-ad-player-overlay,.ytp-ad-text,.ytp-ad-skip-button,.ytp-ad-skip-button-modern,.ytp-skip-ad-button,.ytp-ad-preview-container'),
+          adUi:exists('.ytp-ad-player-overlay,.ytp-ad-text,.ytp-ad-badge--clean-player,.ytp-ad-badge,.ytp-ad-skip-button,.ytp-ad-skip-button-modern,.ytp-skip-ad-button,.ytp-ad-preview-container'),
           currentTime:video?.currentTime,duration:Number.isFinite(video?.duration)?video.duration:null,
           paused:video?.paused,ended:video?.ended,rate:video?.playbackRate,muted:video?.muted,readyState:video?.readyState,
           videoVisible:video?getComputedStyle(video).visibility!=='hidden'&&getComputedStyle(video).display!=='none':false,
@@ -143,7 +156,8 @@ try {
     }
     await page.screenshot({path:path.join(output,`${tag}-${id}-${enabled?'on':'off'}-end.png`)}).catch(()=>{});
     const skipEvents=await page.evaluate(()=>window.__youtubeAuditSkips||[]).catch(()=>[]);
-    const report={id,enabled,noExtension,toggleOnAd,actions,skipEvents,error,refusal,blocked,mediaHttpErrors,networkErrors,playerResponses:await Promise.all(playerResponses),samples};
+    const earlyAdStates=await page.evaluate(()=>window.__youtubeAuditEarly||[]).catch(()=>[]);
+    const report={id,enabled,noExtension,toggleOnAd,actions,skipEvents,earlyAdStates,error,refusal,blocked,mediaHttpErrors,networkErrors,playerResponses:await Promise.all(playerResponses),samples};
     reports.push(report); await page.close();
     await writeFile(path.join(output,`${tag}-results.json`),JSON.stringify({browser:context.browser().version(),version:panel?await panel.evaluate(()=>chrome.runtime.getManifest().version):null,sourceHash,date:new Date().toISOString(),
       method:'Actual isolated browser, native YouTube player, no synthetic ads, no player-response injection. Browser audio output muted; media mute/rate are observed unchanged by harness. No accounts or personal profiles.',reports},null,2)+'\n');

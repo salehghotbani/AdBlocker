@@ -2,6 +2,14 @@
 
 **English** | [فارسی](TESTING.fa.md)
 
+## Version 1.7.1 YouTube detection fix — 2026-10-29
+
+- Added synthetic actual-media cases for modern `ytp-ad-badge--clean-player` and legacy `ytp-ad-badge` layouts with no available Skip, plus visible ad UI/Skip inside an `aria-hidden` ancestor. The new modern-badge regression times out against 1.7.0 before the fix, reproducing visible/audible ads; the corrected controller conceals/mutes these cases and restores normal media.
+- Both packaged Chromium integration and actual Firefox integration use the modern badge with an accessibility-hidden ancestor. Existing hidden-container, ambiguous-state, source handoff, user overrides, position/rate restoration, pause and exception checks remain required. The opt-in live harness additionally records read-only observations from document start and can start with protection ON, avoiding inference from a later toggle or an unrelated auction.
+- The user's installed 1.7.0 version was confirmed. The regression establishes a detection gap, not certainty that every advertisement in that user's session uses the same layout. No claim of universal or verified real mid-roll support is made. [YouTube scope and live results](YOUTUBE.md).
+
+- Actual Chrome 156.0.8078.48, protection ON before navigation: 128/128 sampled playing-ad states with clean-player badge evidence were hidden/muted; automatic native Skip returned to visible unmuted main content. This is sampled evidence, not a universal rate. No playing ad inventory on the second video. [1.7.1 live report](YOUTUBE-LIVE-1.7.1-2026-10-29.json). CDN 403/player errors still limit full playback and real mid-roll verification.
+
 ## Version 1.7.0 YouTube media handling — 2026-10-29
 
 - `npm run test:youtube` decodes a self-generated WebM in Chromium: synthetic pre/mid-roll, nested native Skip, normal content completion, position/rate/mute restoration, paused media, later user edits, source changes with stale ad UI, SPA navigation and global/site/URL exceptions. Packaged integration uses the actual isolated content script; Firefox runtime repeats media checks. Fixture results are not live-ad results.

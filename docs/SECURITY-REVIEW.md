@@ -1,5 +1,9 @@
 # Version 1.6.1 security and coverage review
 
+## Version 1.7.1 ad evidence and accessibility — 2026-10-29
+
+Detection adds native modern/legacy badge selectors under the existing player ad-state requirement. Accessibility-hidden labels are no longer confused with visually hidden elements; actual hidden ancestors, layout dimensions and computed CSS visibility are still checked. This changes no permission, trusted-message boundary, network rule, storage or stream behavior. Packaged Chromium/Firefox media regressions cover the new layout and normal playback restoration. These tests are not a proof of absence of every vulnerability.
+
 ## Version 1.7.0 YouTube media handling — 2026-10-29
 
 The new script runs in the isolated extension world on explicit HTTPS desktop watch/embed matches, without additional permissions, remote code, stream interception, MAIN-world bridge or prototype overrides. It confirms native ad state plus presented ad UI; clicks are restricted to enabled native Skip controls. Only owned mute/rate/marker changes are restored, with source/duration changes locking acceleration to protect content handoff. It never seeks content or calls play. Runtime settings changes require the extension sender and no sender tab; settings reads retain revision guards. The temporary media identity is neither logged nor stored by the extension.

@@ -4,6 +4,8 @@
 
 Version 1.7.0 adds an isolated content script for desktop `www.youtube.com/watch` and standard YouTube/YouTube No-Cookie embeds. It handles native client-side ad states, including pre-roll and mid-roll, when the player exposes recognizable ad UI. This is targeted, best-effort support, not a guarantee for every account, region, player experiment or server-inserted advertisement.
 
+Version 1.7.1 fixes a reproduced detection gap: modern/legacy native Sponsored badges can appear without legacy ad text or an available Skip, and `aria-hidden` can mark a still-visible badge/control. Detection now recognizes those native badges and checks visual visibility separately from accessibility metadata. New actual-media regressions fail against 1.7.0 and pass after the fix; this does not imply every regional/player experiment is covered.
+
 ## Behavior
 
 - Require the player's native `ad-showing` state and visible ad-specific UI. A class name alone is insufficient. Ambiguous states and player errors leave normal playback visible.
@@ -18,7 +20,9 @@ The script does not rewrite player responses, patch browser/page prototypes, inj
 
 Local tests use a **clearly synthetic** player and a self-generated WebM file with real browser decoding. They cover pre/mid-roll, modern/legacy native Skip controls, natural content completion, position/rate/mute restoration, source handoff with lingering ad UI, paused media, user overrides, SPA changes and global/site/URL exceptions. The packaged script runs in the actual isolated extension world in Chromium and Firefox. These fixtures are not proof of a live ad auction.
 
-A real Chrome 156.0.8078.48 session displayed an actual in-player advertisement with protection OFF. Protection was enabled **during that same advertisement**, rather than inferring success from a different ad auction. Ad frames were concealed/muted and the native player returned to visible content at ordinary rate and unmuted state. The content then progressed normally through the observed post-ad interval. The [sanitized live report](YOUTUBE-LIVE-2026-10-29.json) records the measured bounds and final build/source identity where available.
+**1.7.1 follow-up:** with protection ON before navigation, actual Chrome served a real pre-roll using the native clean-player Sponsored badge. All 128 recorded playing-ad observations with visible-layout badge evidence were concealed and muted; native Skip clicks were automatic and main content resumed at rate 1, unmuted and visible. The second video served no playing ad inventory and is not counted as a success. CDN/player failures still prevent full-video and real-mid-roll verification. [Sanitized 1.7.1 live report](YOUTUBE-LIVE-1.7.1-2026-10-29.json).
+
+Historical 1.7.0 result: A real Chrome 156.0.8078.48 session displayed an actual in-player advertisement with protection OFF. Protection was enabled **during that same advertisement**, rather than inferring success from a different ad auction. Ad frames were concealed/muted and the native player returned to visible content at ordinary rate and unmuted state. The content then progressed normally through the observed post-ad interval. The [sanitized live report](YOUTUBE-LIVE-2026-10-29.json) records the measured bounds and final build/source identity where available.
 
 **Real mid-roll validation remains incomplete.** A native progress-bar seek intended to reach a mid-roll opportunity encountered HTTP 403 responses from the media CDN and stalled. Separate OFF/no-extension checks also encountered playback failure around 45–47 seconds in this environment. The user reports normal playback in their Chrome, so this environment is not an equivalent long-play control. Do not present the seek as a passed mid-roll test, the no-inventory user-provided video as a successful blocking test, or the short post-ad observation as proof of full-video reliability.
 

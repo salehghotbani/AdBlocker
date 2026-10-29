@@ -2,6 +2,12 @@
 
 **English** | [فارسی](CHANGELOG.fa.md)
 
+## 1.7.1 — 2026-10-29
+
+- Recognize native modern Sponsored badges and legacy ad badges even before a Skip button is presented. Previously these layouts could leave the ad picture/audio unchanged.
+- Treat `aria-hidden` as accessibility metadata rather than visual invisibility; retain actual hidden/display/visibility/geometry checks and native ad-state confirmation. Visually presented native Skip remains usable inside an accessibility-hidden wrapper.
+- Reproduce the detection failure against 1.7.0, then verify conceal/mute, normal playback restoration and packaged Chromium/Firefox media integration. No new permissions, streams, seeking or remote code. Real mid-roll validation remains incomplete.
+
 ## 1.7.0 — 2026-10-29
 
 - Add isolated YouTube watch/embed ad handling: confirm native ad UI, conceal/mute it, use enabled native Skip controls and attempt bounded acceleration of stable short ad media. No seeking, stream replacement, page-world injection or extra permission.

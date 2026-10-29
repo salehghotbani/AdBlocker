@@ -34,6 +34,22 @@ try{
   await page.waitForTimeout(300);
   const normal=await page.locator('video').evaluate(video=>({time:video.currentTime,rate:video.playbackRate,muted:video.muted,visible:getComputedStyle(video).visibility}));
   assert.ok(normal.time>before.time);assert.equal(normal.rate,1.25);assert.equal(normal.muted,false);assert.equal(normal.visible,'visible');
+  // Native badge layouts can show an unskippable ad without legacy ad text.
+  // aria-hidden is accessibility metadata, not visual concealment.
+  for (const [badge, accessibilityHidden] of [['ytp-ad-badge--clean-player',false],['ytp-ad-badge',false],['ytp-ad-text',true]]) {
+    await page.evaluate(({badge,accessibilityHidden})=>{
+      const ui=document.querySelector('.ytp-ad-module'),label=ui.querySelector('span');
+      label.className=badge;label.textContent='Sponsored';
+      if(accessibilityHidden)ui.setAttribute('aria-hidden','true');else ui.removeAttribute('aria-hidden');
+    },{badge,accessibilityHidden});
+    await page.evaluate(()=>fixture.content(0,1.25));await page.evaluate(()=>fixture.ad(false));
+    await page.waitForFunction(()=>document.querySelector('#movie_player').getAttribute('data-adblocker-youtube')==='ad',null,{timeout:1500});
+    assert.equal(await page.locator('video').evaluate(video=>getComputedStyle(video).visibility),'hidden',badge);
+    assert.equal(await page.locator('video').evaluate(video=>video.muted),true,badge);
+    await page.evaluate(()=>fixture.finishAd());
+    await page.waitForFunction(()=>!fixture.inAd&&document.querySelector('video').readyState>=2&&document.querySelector('video').muted===false);
+  }
+  await page.evaluate(()=>{document.querySelector('.ytp-ad-module').removeAttribute('aria-hidden');document.querySelector('.ytp-ad-module span').className='ytp-ad-text';});
   // Pre-roll: normal media resumes at the start after an accelerated short ad.
   await page.evaluate(()=>fixture.content(0,1.25));await page.evaluate(()=>fixture.ad(false));
   await page.waitForFunction(()=>document.querySelector('#movie_player').getAttribute('data-adblocker-youtube')==='ad'&&document.querySelector('video').playbackRate===16);
@@ -46,12 +62,14 @@ try{
   // Mid-roll: use the site's own skip button and retain the content position.
   await page.evaluate(()=>{
     const button=document.querySelector('.ytp-ad-skip-button'),wrapper=document.createElement('yt-button-shape');
-    wrapper.className='ytp-skip-ad-button';button.className='yt-spec-button-shape-next';button.replaceWith(wrapper);wrapper.append(button);
+    wrapper.className='ytp-skip-ad-button';wrapper.setAttribute('aria-hidden','true');button.className='yt-spec-button-shape-next';button.replaceWith(wrapper);wrapper.append(button);
+    window.nativeSkipClicks=0;button.addEventListener('click',()=>window.nativeSkipClicks++);
   });
   await page.evaluate(()=>fixture.content(6,1.5));await page.evaluate(()=>fixture.ad(true));
   await page.waitForFunction(()=>!fixture.inAd&&document.querySelector('video').readyState>=2&&document.querySelector('video').currentTime>=6);
   const middle=await page.locator('video').evaluate(video=>({time:video.currentTime,rate:video.playbackRate,muted:video.muted,error:video.error}));
   assert.ok(middle.time<10);assert.equal(middle.rate,1.5);assert.equal(middle.muted,false);assert.equal(middle.error,null);
+  assert.equal(await page.evaluate(()=>window.nativeSkipClicks),1,'visually presented native Skip remains usable inside an aria-hidden accessibility wrapper');
   // A replacement content source may arrive before the ad UI is removed.
   await page.evaluate(()=>fixture.ad(false));
   await page.waitForFunction(()=>document.querySelector('video').playbackRate===16);

@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-29T13:25:44.174Z",
+  "browser": "156.0.8078.48",
+  "version": "1.7.1",
+  "youtubeScriptSha256": "1e74c415861a68c77e967f3ec748031e0e0b56f4b5bfdb144243d1471c324a05",
+  "method": "Actual isolated anonymous Chrome with protection ON before navigation, native YouTube player, real ad inventory, read-only 50 ms observations from document start. No synthetic ads, player-response injection, manual Skip, account or personal profile. Browser audio output muted separately from the observed video.muted property.",
+  "videos": [
+    {
+      "publicVideo": "https://www.youtube.com/watch?v=eFeDpUVEy48",
+      "realPlayingAdObserved": true,
+      "playingAdSamples": 128,
+      "hiddenAndMutedSamples": 128,
+      "recognizedNativeBadgeClasses": [
+        "ytp-ad-badge--clean-player ytp-ad-badge--stark-clean-player"
+      ],
+      "playingAdSamplesWithoutVisibleSkip": 19,
+      "automaticNativeSkipClicks": 6,
+      "manualNativeSkipClicks": 0,
+      "mainReturnedAfterAd": true,
+      "observedMainSeconds": [
+        0.069037,
+        49.172337
+      ],
+      "observedMainPropertiesNormal": true,
+      "mediaCdn403Count": 12,
+      "playerErrorAtEnd": true,
+      "classification": "Real pre-roll conceal/mute and native return observed"
+    },
+    {
+      "publicVideo": "https://www.youtube.com/watch?v=_gCXmKjDecU",
+      "realPlayingAdObserved": false,
+      "playingAdSamples": 0,
+      "hiddenAndMutedSamples": 0,
+      "recognizedNativeBadgeClasses": [],
+      "playingAdSamplesWithoutVisibleSkip": 0,
+      "automaticNativeSkipClicks": 0,
+      "manualNativeSkipClicks": 0,
+      "mainReturnedAfterAd": false,
+      "observedMainSeconds": [
+        0.08963,
+        47.621901
+      ],
+      "observedMainPropertiesNormal": true,
+      "mediaCdn403Count": 6,
+      "playerErrorAtEnd": true,
+      "classification": "No playing ad inventory observed; not counted as a blocking success"
+    }
+  ],
+  "limits": [
+    "Polling observations are not a universal blocking percentage or a unique-ad count.",
+    "No zero-frame-flash guarantee is inferred from 50 ms samples.",
+    "Real mid-roll and full-video reliability remain unverified.",
+    "The test environment still encounters media-CDN HTTP 403 and subsequent player errors; no-extension failure was documented separately.",
+    "Cookies, signed media URLs, IPs and private user-supplied video identity are excluded."
+  ]
+}

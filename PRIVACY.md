@@ -2,7 +2,7 @@
 
 **English** | [فارسی](PRIVACY.fa.md)
 
-This policy describes version 1.7.0 of the manual-install AdBlocker extension. Store editions have a separate [store privacy policy](store/PRIVACY.md).
+This policy describes version 1.7.1 of the manual-install AdBlocker extension. Store editions have a separate [store privacy policy](store/PRIVACY.md).
 
 - The extension does not collect or transmit browsing history, page text, sign-in details, or form contents. Visited URLs are not automatically stored; only URLs explicitly selected as permanent exceptions are saved.
 - The enabled/disabled setting, interface language, light/dark theme preference, excluded site names, and user-selected URLs including paths and query strings are saved in that browser's `storage.local`. These settings are not synchronized to the cloud. Selected URLs may contain sensitive parameters. Private browsing is disabled in the manifest and is not supported.

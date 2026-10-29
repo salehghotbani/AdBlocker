@@ -6,7 +6,8 @@
   const marker = 'data-adblocker-youtube';
   const skipSelector = '.ytp-ad-skip-button button,.ytp-ad-skip-button-modern button,.ytp-skip-ad-button button,.ytp-ad-skip-button-container button,' +
     '.ytp-ad-skip-button,.ytp-ad-skip-button-modern,.ytp-skip-ad-button';
-  const evidenceSelector = skipSelector + ',.ytp-ad-preview-container,.ytp-ad-text,.ytp-ad-simple-ad-badge,.ytp-ad-player-overlay-instream-info';
+  const evidenceSelector = skipSelector + ',.ytp-ad-preview-container,.ytp-ad-text,.ytp-ad-simple-ad-badge,' +
+    '.ytp-ad-badge,.ytp-ad-badge--clean-player,.ytp-ad-duration-remaining,.ytp-ad-player-overlay-instream-info';
   function supported() {
     if (!['www.youtube.com', 'www.youtube-nocookie.com'].includes(location.hostname) || location.protocol !== 'https:') return false;
     const url = new URL(location.href);
@@ -33,9 +34,11 @@
       }
     }
     function presented(element) {
-      if (!element || element.closest('[hidden],[aria-hidden="true"]')) return false;
+      // YouTube can hide a visible Sponsored badge from accessibility tools.
+      // aria-hidden does not mean the badge or Skip control is visually hidden.
+      if (!element || element.closest('[hidden]')) return false;
       const box = element.getBoundingClientRect(), style = getComputedStyle(element);
-      return box.width > 0 && box.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      return box.width > 0 && box.height > 0 && style.display !== 'none' && style.visibility === 'visible';
     }
     function confirmed(player) {
       return player.classList.contains('ad-showing') && [...player.querySelectorAll(evidenceSelector)].some(presented);

@@ -1,10 +1,10 @@
 # Reviewer notes
 
-Version 1.7.0. Free, open-source ad/tracker blocker. No login or payment is needed to test any feature. MIT license. English is the initial UI; nine other selectable languages and localized descriptions are included. Fonts are bundled with their own licenses. Private browsing is disabled in the manifest.
+Version 1.7.1. Free, open-source ad/tracker blocker. No login or payment is needed to test any feature. MIT license. English is the initial UI; nine other selectable languages and localized descriptions are included. Fonts are bundled with their own licenses. Private browsing is disabled in the manifest.
 
 ## YouTube media behavior
 
-Version 1.7.0 adds an isolated document-start script on explicit HTTPS YouTube desktop/embed matches. It requires native ad state plus presented ad UI, conceals/mutes ads, uses enabled native Skip controls and attempts bounded acceleration for stable short ad media. It never seeks content, calls play, replaces streams, injects MAIN-world code or requests new permissions. Media identity stays in memory; no player data is collected. Site/global/URL exceptions restore owned changes. Actual-media fixtures and Firefox integration are provided. Real pre-roll was observed; real mid-roll, full-video reliability and universal coverage remain unverified. Native Skip may leave waiting. See [validation](../docs/YOUTUBE.md).
+Version 1.7.1 adds an isolated document-start script on explicit HTTPS YouTube desktop/embed matches. It requires native ad state plus presented ad UI, conceals/mutes ads, uses enabled native Skip controls and attempts bounded acceleration for stable short ad media. It never seeks content, calls play, replaces streams, injects MAIN-world code or requests new permissions. Media identity stays in memory; no player data is collected. Site/global/URL exceptions restore owned changes. Actual-media fixtures and Firefox integration are provided. Real pre-roll was observed; real mid-roll, full-video reliability and universal coverage remain unverified. Native Skip may leave waiting. See [validation](../docs/YOUTUBE.md).
 
 ## Reproduce the build
 

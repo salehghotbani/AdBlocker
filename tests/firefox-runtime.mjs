@@ -182,6 +182,7 @@ try {
   }));
   const youtube=await context.newPage();await youtube.goto('https://www.youtube.com/watch?v=YtFixture01');
   await youtube.waitForFunction(()=>document.querySelector('video').readyState>=2);
+  await youtube.evaluate(()=>{document.querySelector('.ytp-ad-module span').className='ytp-ad-badge--clean-player';document.querySelector('.ytp-ad-module').setAttribute('aria-hidden','true');});
   await youtube.evaluate(()=>fixture.content(0,1.25));await youtube.evaluate(()=>fixture.ad(false));
   await youtube.waitForFunction(()=>document.querySelector('#movie_player').getAttribute('data-adblocker-youtube')==='ad');
   assert.equal(await youtube.locator('video').evaluate(video=>getComputedStyle(video).visibility),'hidden');
