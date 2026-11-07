@@ -86,7 +86,7 @@ ${t.nav.map((label, i) => `        <a href="#${['features', 'tests', 'install'][
   </header>
   <main id="main">
     <section class="wrap hero" aria-labelledby="headline">
-      <div>
+      <div class="hero-copy">
         <p class="eyebrow">${escape(t.kicker)}</p>
         <h1 id="headline">${escape(t.heading[0])} <span>${escape(t.heading[1])}</span></h1>
         <p class="intro">${escape(t.intro)}</p>
