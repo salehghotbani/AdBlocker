@@ -4,4 +4,4 @@ Run `node scripts/build-site.mjs` from the repository root to generate static HT
 
 Edit English and Persian copy in `content.mjs` and shared styles in `style.css`. The popup image is a cropped project screenshot with sample counters. The social card uses the project's shield artwork. The build bundles Inter and Shabnam with their license files.
 
-The sitemap lives at `/AdBlocker/sitemap.xml` and can be submitted with a verified Search Console property. The site is hosted under a project path, so it does not control `robots.txt` for the `salehghotbani.github.io` host.
+The GitHub Pages custom domain is `adblocker.ghotbani.ir`. Its DNS-only CNAME points to `salehghotbani.github.io`. The production sitemap is at [sitemap.xml](https://adblocker.ghotbani.ir/sitemap.xml) and is advertised in [robots.txt](https://adblocker.ghotbani.ir/robots.txt).

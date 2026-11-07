@@ -5,7 +5,7 @@ import { copy } from '../website/content.mjs';
 const root = new URL('../', import.meta.url);
 const output = new URL('dist/pages/', root);
 const repo = 'https://github.com/salehghotbani/AdBlocker';
-const site = 'https://salehghotbani.github.io/AdBlocker/';
+const site = 'https://adblocker.ghotbani.ir/';
 const basePath = new URL(site).pathname;
 const locales = ['en', 'fa'];
 const url = lang => `${site}${lang === 'en' ? '' : 'fa/'}`;
@@ -164,6 +164,7 @@ await Promise.all([
   writeFile(new URL('404.html', output), `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta http-equiv="Content-Security-Policy" content="${escape(csp)}"><link rel="stylesheet" href="${basePath}assets/style.css"><title>Page not found | AdBlocker</title></head>
 <body><main class="wrap section"><p class="eyebrow">404</p><h1>${copy.en.notFound}</h1><div class="actions">${button(basePath, copy.en.home, 'arrow', true)}<a class="button secondary" href="${basePath}fa/" lang="fa">${copy.fa.home}</a></div></main></body></html>\n`),
+  writeFile(new URL('robots.txt', output), `User-agent: *\nAllow: /\nSitemap: ${site}sitemap.xml\n`),
   writeFile(new URL('sitemap.xml', output), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${locales.map(lang => `  <url><loc>${url(lang)}</loc>${[...locales, 'x-default'].map(alt => `<xhtml:link rel="alternate" hreflang="${alt}" href="${url(alt === 'x-default' ? 'en' : alt)}"/>`).join('')}</url>`).join('\n')}
