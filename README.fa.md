@@ -4,6 +4,8 @@
 
 **فارسی** | [English](README.md)
 
+[صفحهٔ معرفی پروژه](https://salehghotbani.github.io/AdBlocker/fa/) · [دانلود](https://github.com/salehghotbani/AdBlocker/releases/latest)
+
 افزونهٔ مسدودسازی تبلیغات و ردیاب‌ها برای Chrome، Edge و Firefox، با رابط انگلیسی و بدون جمع‌آوری تاریخچه یا محتوای صفحات.
 
 ## امکانات

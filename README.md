@@ -4,6 +4,8 @@
 
 **English** | [فارسی](README.fa.md)
 
+[Project website](https://salehghotbani.github.io/AdBlocker/) · [Download](https://github.com/salehghotbani/AdBlocker/releases/latest)
+
 A free, open-source ad and tracker blocker for Chrome, Edge and Firefox. The interface starts in English and supports ten selectable languages; primary documentation is English with `.fa.md` Persian guides. Browsing history and page content are not collected.
 
 ## Features
