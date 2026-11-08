@@ -1,4 +1,5 @@
-import { copyFile, mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { copy } from '../website/content.mjs';
 
@@ -17,6 +18,7 @@ const paths = {
   download: '<path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/>',
   github: '<path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 4l-4 16"/>',
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18Z"/>',
+  moon: '<path d="M20.8 14.2A9 9 0 0 1 9.8 3.2 9 9 0 1 0 20.8 14.2Z"/>',
   filter: '<path d="M3 5h18l-7 8v5l-4 2v-7z"/>',
   sliders: '<path d="M4 7h8m4 0h4M4 17h4m4 0h8"/><circle cx="14" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
   bars: '<path d="M4 4v16h16M8 16v-4m5 4V8m5 8V5"/>',
@@ -27,7 +29,10 @@ const icon = name => `<svg class="${name}" aria-hidden="true" viewBox="0 0 24 24
 const button = (href, label, glyph, primary = false) => `<a class="button ${primary ? 'primary' : 'secondary'}" href="${href}">${icon(glyph)}${escape(label)}</a>`;
 const report = (href, label) => `<a class="text-link" href="${href}">${escape(label)}${icon('arrow')}</a>`;
 const doc = (file, lang, prefix = '') => `${repo}/blob/main/${prefix}${file}${lang === 'fa' ? '.fa' : ''}.md`;
-const csp = "default-src 'none'; img-src 'self'; style-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'";
+const themeScript = (await readFile(new URL('website/theme.js', root), 'utf8')).replace(/\r\n?/g, '\n');
+const themeHash = createHash('sha256').update(themeScript).digest('base64');
+const csp = `default-src 'none'; script-src 'sha256-${themeHash}'; img-src 'self'; style-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'`;
+const themeHead = `<meta name="theme-color" content="#ffffff">\n  <script>${themeScript}</script>`;
 
 function render(lang) {
   const t = copy[lang];
@@ -52,7 +57,7 @@ function render(lang) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="${escape(csp)}">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="theme-color" content="#ffffff">
+  ${themeHead}
   <title>${escape(t.title)}</title>
   <meta name="description" content="${escape(t.description)}">
   <link rel="canonical" href="${canonical}">
@@ -81,7 +86,10 @@ ${[...locales, 'x-default'].map(item => `  <link rel="alternate" hreflang="${ite
       <nav class="nav" aria-label="${escape(t.navLabel)}">
 ${t.nav.map((label, i) => `        <a href="#${['features', 'tests', 'install'][i]}">${escape(label)}</a>`).join('\n')}
       </nav>
-      <a class="language" href="${fa ? '../' : 'fa/'}" hreflang="${other}" lang="${other}">${icon('globe')}${escape(t.language)}</a>
+      <div class="head-actions">
+        <button class="theme-toggle" type="button" aria-label="${escape(t.darkMode)}" title="${escape(t.darkMode)}" aria-pressed="false" hidden>${icon('moon')}</button>
+        <a class="language" href="${fa ? '../' : 'fa/'}" hreflang="${other}" lang="${other}">${icon('globe')}${escape(t.language)}</a>
+      </div>
     </div>
   </header>
   <main id="main">
@@ -165,7 +173,7 @@ await Promise.all([
   writeFile(new URL('index.html', output), render('en')),
   writeFile(new URL('fa/index.html', output), render('fa')),
   writeFile(new URL('404.html', output), `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta http-equiv="Content-Security-Policy" content="${escape(csp)}"><link rel="stylesheet" href="${basePath}assets/style.css"><title>Page not found | AdBlocker</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta http-equiv="Content-Security-Policy" content="${escape(csp)}">${themeHead}<link rel="stylesheet" href="${basePath}assets/style.css"><title>Page not found | AdBlocker</title></head>
 <body><main class="wrap section"><p class="eyebrow">404</p><h1>${copy.en.notFound}</h1><div class="actions">${button(basePath, copy.en.home, 'arrow', true)}<a class="button secondary" href="${basePath}fa/" lang="fa">${copy.fa.home}</a></div></main></body></html>\n`),
   writeFile(new URL('robots.txt', output), `User-agent: *\nAllow: /\nSitemap: ${site}sitemap.xml\n`),
   writeFile(new URL('sitemap.xml', output), `<?xml version="1.0" encoding="UTF-8"?>
