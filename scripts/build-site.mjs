@@ -52,7 +52,7 @@ function render(lang) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="${escape(csp)}">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="theme-color" content="#101817">
+  <meta name="theme-color" content="#ffffff">
   <title>${escape(t.title)}</title>
   <meta name="description" content="${escape(t.description)}">
   <link rel="canonical" href="${canonical}">
@@ -69,7 +69,7 @@ ${[...locales, 'x-default'].map(item => `  <link rel="alternate" hreflang="${ite
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${socialAlt}">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="${assets}logo.png" type="image/png">
+  <link rel="icon" href="${assets}logo-48.png" type="image/png" sizes="48x48">
   <link rel="stylesheet" href="${assets}style.css">
   <script type="application/ld+json">${JSON.stringify(metadata).replaceAll('<', '\\u003c')}</script>
 </head>
@@ -77,7 +77,7 @@ ${[...locales, 'x-default'].map(item => `  <link rel="alternate" hreflang="${ite
   <a class="skip" href="#main">${escape(t.skip)}</a>
   <header class="site-head">
     <div class="wrap head-inner">
-      <a class="brand" href="./"><img src="${assets}logo.png" width="128" height="128" alt="">AdBlocker</a>
+      <a class="brand" href="./"><img src="${assets}logo-48.png" width="48" height="48" alt="">AdBlocker</a>
       <nav class="nav" aria-label="${escape(t.navLabel)}">
 ${t.nav.map((label, i) => `        <a href="#${['features', 'tests', 'install'][i]}">${escape(label)}</a>`).join('\n')}
       </nav>
@@ -94,8 +94,7 @@ ${t.nav.map((label, i) => `        <a href="#${['features', 'tests', 'install'][
       </div>
       <figure class="product">
         <div class="stage">
-          <div class="browser" aria-hidden="true"><div class="browser-bar"><i></i><i></i><i></i><span></span></div><div class="browser-body"><i></i><i></i><b></b><i></i></div></div>
-          <img class="popup" src="${assets}popup.webp" width="390" height="617" alt="" fetchpriority="high">
+          <img class="popup" src="${assets}popup.webp" width="390" height="617" alt="" decoding="async">
         </div>
         <figcaption>${escape(t.caption)}</figcaption>
       </figure>
@@ -103,7 +102,7 @@ ${t.nav.map((label, i) => `        <a href="#${['features', 'tests', 'install'][
     <ul class="wrap facts">
 ${t.facts.map(([n, label]) => `      <li><span aria-hidden="true">${escape(n)}</span>${escape(label)}</li>`).join('\n')}
     </ul>
-    <section id="features" class="section light">
+    <section id="features" class="section">
       <div class="wrap">
         <p class="eyebrow">${escape(t.featureLabel)}</p>
         <h2>${escape(t.featureTitle)}</h2>
@@ -121,7 +120,7 @@ ${t.features.map(([glyph, heading, description]) => `          <article class="f
         <article class="proof"><h3>${escape(t.youtubeTitle)}</h3><p>${escape(t.youtube)}</p>${report(doc('YOUTUBE', lang, 'docs/'), t.youtubeLink)}</article>
       </div>
     </section>
-    <section id="install" class="section light">
+    <section id="install" class="section ruled">
       <div class="wrap">
         <p class="eyebrow">${escape(t.installLabel)}</p>
         <h2>${escape(t.installTitle)}</h2>
@@ -152,10 +151,14 @@ ${t.faq.map(([q, a]) => `      <details><summary>${escape(q)}</summary><p>${esca
 await mkdir(new URL('assets/', output), { recursive: true });
 await mkdir(new URL('fa/', output), { recursive: true });
 const files = {
-  'logo.png': 'store/assets/icon-128.png', 'popup.webp': 'website/assets/popup.webp', 'share.jpg': 'website/assets/share.jpg',
+  'logo-48.png': 'extension/icons/48.png',
+  'popup.webp': 'website/assets/popup.webp',
+  'share.jpg': 'website/assets/share.jpg',
   'style.css': 'website/style.css',
-  ...Object.fromEntries(['InterVariable.woff2', 'Shabnam.woff2', 'Shabnam-Bold.woff2',
-    'LICENSE-Inter.txt', 'LICENSE-Shabnam.txt', 'LICENSE-Apache-2.0.txt'].map(name => [name, `extension/fonts/${name}`])),
+  'Shabnam.web.woff2': 'website/assets/Shabnam.web.woff2',
+  'Shabnam-Bold.web.woff2': 'website/assets/Shabnam-Bold.web.woff2',
+  'LICENSE-Shabnam.txt': 'extension/fonts/LICENSE-Shabnam.txt',
+  'LICENSE-Apache-2.0.txt': 'extension/fonts/LICENSE-Apache-2.0.txt',
 };
 await Promise.all(Object.entries(files).map(([target, source]) => copyFile(new URL(source, root), new URL(`assets/${target}`, output))));
 await Promise.all([

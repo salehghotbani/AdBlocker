@@ -8,7 +8,7 @@ on:
       - 'scripts/build-site.mjs'
       - 'website/**'
       - 'extension/fonts/**'
-      - 'store/assets/icon-128.png'
+      - 'extension/icons/48.png'
   workflow_dispatch:
 
 permissions: {}
